@@ -434,9 +434,10 @@ const MAIN_FEED_LIMIT = 50;
 loadContactBar();
 loadCategoryBar();
 setupSearch();
-loadBannerAd("adsBannerHeader", "headerBanner");
-loadStickyBanner("adsStickyBottom");
-watchStickyBannerResize("adsStickyBottom");
+loadBannerAd("adsBannerHeader", "headerBanner", () => {
+  loadStickyBanner("adsStickyBottom");
+  watchStickyBannerResize("adsStickyBottom");
+});
 loadSocialBar();
 
 document.getElementById("stickyAdClose").addEventListener("click", () => {
