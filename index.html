@@ -176,6 +176,8 @@
     align-items: center;
     padding: 4px 0;
     min-height: 68px;
+    max-height: 100px;
+    overflow: hidden;
   }
   body { padding-bottom: 76px; }
   body.ad-closed { padding-bottom: 0; }
@@ -201,6 +203,8 @@
     display: none;
     justify-content: center;
     margin: 14px 0;
+    max-width: 100%;
+    overflow: hidden;
   }
   @media (max-width: 768px) {
     .feed-native-ad { display: flex; }
@@ -354,11 +358,31 @@
     font-weight:600;
   }
 
+  .custom-chip-bar{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    flex-wrap:wrap;
+    padding: 8px 15px 0;
+  }
+
+  .custom-chip-bar a{
+    text-decoration:none;
+    background:#e0522f;
+    color:#fff;
+    padding:8px 12px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:600;
+  }
+
  .ads-banner{
   display:flex;
   justify-content:center;
   align-items:center;
   margin:12px auto;
+  max-width:100%;
+  overflow:hidden;
  }
 
 </style>
@@ -372,6 +396,8 @@
 </header>
 
 <div class="ads-banner" id="adsBannerHeader"></div>
+
+<div class="custom-chip-bar" id="customChipBar"></div>
 
 <div class="contact-bar" id="contactBar"></div>
 
@@ -432,6 +458,7 @@ let searchActive = false;
 const MAIN_FEED_LIMIT = 50;
 
 loadContactBar();
+loadCustomChipBar();
 loadCategoryBar();
 setupSearch();
 loadBannerAd("adsBannerHeader", "headerBanner", () => {
@@ -439,6 +466,7 @@ loadBannerAd("adsBannerHeader", "headerBanner", () => {
   watchStickyBannerResize("adsStickyBottom");
 });
 loadSocialBar();
+hardenAdIframes(["#adsBannerHeader", "#adsStickyBottom"]);
 
 document.getElementById("stickyAdClose").addEventListener("click", () => {
   document.getElementById("stickyAdBar").style.display = "none";
@@ -465,6 +493,33 @@ async function loadContactBar() {
   } catch (err) {
     console.error("Gagal memuat pengaturan kontak:", err);
   }
+}
+
+async function loadCustomChipBar() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "chipbar"));
+    if (!snap.exists()) return;
+    const data = snap.data();
+    const bar = document.getElementById("customChipBar");
+    const slots = [
+      { name: data.chip1Name, link: data.chip1Link },
+      { name: data.chip2Name, link: data.chip2Link },
+      { name: data.chip3Name, link: data.chip3Link }
+    ];
+    let html = "";
+    slots.forEach(({ name, link }) => {
+      if (name && link) {
+        html += `<a href="${escapeHtmlAttr(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`;
+      }
+    });
+    bar.innerHTML = html;
+  } catch (err) {
+    console.error("Gagal memuat chip bar custom:", err);
+  }
+}
+
+function escapeHtmlAttr(str) {
+  return String(str).replace(/"/g, "&quot;");
 }
 
 function loadCategoryBar() {
