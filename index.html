@@ -327,14 +327,16 @@
   <p>Konten update tiap hari</p>
 </header>
 
-<div class="ads-banner" id="adsBannerHeader"></div>
+<div class="ads-banner">
+  <div id="container-a34e353b3f1f0806d6dd98636848d1e3"></div>
+</div>
 
 <div class="contact-bar" id="contactBar"></div>
 
 <div class="search-bar">
   <div class="search-input-wrap">
     <button type="button" id="searchBtn" aria-label="Cari">🔍</button>
-    <input type="text" id="searchInput" placeholder="Search">
+    <input type="text" id="searchInput" placeholder="Cari tag atau judul...">
     <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
   </div>
   <div class="search-suggestions" id="searchSuggestions"></div>
@@ -385,7 +387,7 @@ const MAIN_FEED_LIMIT = 50;
 loadContactBar();
 loadCategoryBar();
 setupSearch();
-loadBannerAd("adsBannerHeader", "headerBanner");
+loadNativeAd("indexNative");
 loadSocialBar();
 
 async function loadContactBar() {
