@@ -94,6 +94,44 @@
   .post-item .shareBtn { background: #197278; }
   .empty { text-align: center; color: #999; font-size: 13px; padding: 10px 0; }
 
+  .admin-search-wrap {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .admin-search-wrap input {
+    width: 100%;
+    padding: 10px 34px 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+  .admin-search-wrap .clearSearchBtn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 15px;
+    cursor: pointer;
+    width: auto;
+    padding: 4px;
+    display: none;
+  }
+  .admin-search-count {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 10px;
+  }
+  .post-item mark {
+    background: #ffe083;
+    color: inherit;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+
   .link-row {
     display: flex;
     gap: 6px;
@@ -253,6 +291,13 @@ iframe{
 
 <div class="card" id="listCard" style="display:none;">
   <h2>🗂️ Konten Tersimpan</h2>
+
+  <div class="admin-search-wrap">
+    <input type="text" id="adminSearchInput" placeholder="🔍 Cari caption, tag, atau link...">
+    <button type="button" class="clearSearchBtn" id="adminSearchClear">✕</button>
+  </div>
+  <div class="admin-search-count" id="adminSearchCount"></div>
+
   <div id="postList"><p class="empty">Memuat...</p></div>
 </div>
 
@@ -306,6 +351,13 @@ const existingPreview = document.getElementById("existingPreview");
 let selectedFiles = [];
 let editingId = null;
 let editingExistingPhotos = [];
+
+document.getElementById("adminSearchInput").addEventListener("input", applyAdminSearch);
+document.getElementById("adminSearchClear").addEventListener("click", () => {
+  document.getElementById("adminSearchInput").value = "";
+  applyAdminSearch();
+  document.getElementById("adminSearchInput").focus();
+});
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -544,55 +596,122 @@ async function removePost(id) {
   }
 }
 
+let allPostsCache = []; // [{ id, data }]
+
+function normalizeSearchText(str) {
+  return (str || "")
+    .toString()
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // buang diakritik biar lebih akurat
+    .trim();
+}
+
+function getPostSearchBlob(data) {
+  const tagsList = data.tags || [];
+  const linksList = data.links || (data.taskLink ? [{ label: "Buka Link", url: data.taskLink }] : []);
+  const parts = [
+    data.caption || "",
+    tagsList.join(" "),
+    linksList.map(l => `${l.label || ""} ${l.url || ""}`).join(" ")
+  ];
+  return normalizeSearchText(parts.join(" "));
+}
+
+function highlightMatch(text, terms) {
+  if (!text) return "";
+  let escaped = escapeHtml(text);
+  if (!terms.length) return escaped;
+  terms.forEach(term => {
+    if (!term) return;
+    const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp("(" + safeTerm + ")", "gi");
+    escaped = escaped.replace(re, "<mark>$1</mark>");
+  });
+  return escaped;
+}
+
 function listenPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
-    const listEl = document.getElementById("postList");
-    if (snapshot.empty) {
-      listEl.innerHTML = '<p class="empty">Belum ada materi.</p>';
-      return;
-    }
-    listEl.innerHTML = "";
+    allPostsCache = [];
     snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const date = data.createdAt?.toDate
-        ? data.createdAt.toDate().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
-        : "";
-
-      const thumbs = (data.photoUrls || [])
-        .map(url => `<img src="${url}">`)
-        .join("");
-
-      const linksList = data.links || (data.taskLink ? [{ label: "Buka Link", url: data.taskLink }] : []);
-      const linksHtml = linksList
-        .map(l => `<div class="link">🔗 ${escapeHtml(l.label)}: ${escapeHtml(l.url)}</div>`)
-        .join("");
-
-      const tagsList = data.tags || [];
-      const tagsHtml = tagsList.length
-        ? `<div class="link">🏷️ ${tagsList.map(t => escapeHtml(t)).join(", ")}</div>`
-        : "";
-
-      const item = document.createElement("div");
-      item.className = "post-item";
-      item.innerHTML = `
-        <div class="date">${date}</div>
-        ${data.caption ? `<div class="caption">${escapeHtml(data.caption)}</div>` : ""}
-        <div class="thumbs">${thumbs}</div>
-        ${linksHtml}
-        ${tagsHtml}
-        <div class="actions">
-          <button class="editBtn">Edit</button>
-          <button class="shareBtn">🔗 Bagikan</button>
-          <button class="deleteBtn">Hapus</button>
-        </div>
-      `;
-      const postUrl = `${window.location.origin}/?post=${docSnap.id}`;
-      item.querySelector(".editBtn").onclick = () => startEdit(docSnap.id, data);
-      item.querySelector(".shareBtn").onclick = () => sharePostLink(postUrl);
-      item.querySelector(".deleteBtn").onclick = () => removePost(docSnap.id);
-      listEl.appendChild(item);
+      allPostsCache.push({ id: docSnap.id, data: docSnap.data() });
     });
+    applyAdminSearch();
+  });
+}
+
+function applyAdminSearch() {
+  const listEl = document.getElementById("postList");
+  const countEl = document.getElementById("adminSearchCount");
+  const clearBtn = document.getElementById("adminSearchClear");
+  const rawQuery = document.getElementById("adminSearchInput").value;
+  const normalizedQuery = normalizeSearchText(rawQuery);
+  const terms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+  clearBtn.style.display = rawQuery ? "block" : "none";
+
+  const filtered = terms.length
+    ? allPostsCache.filter(({ data }) => {
+        const blob = getPostSearchBlob(data);
+        return terms.every(term => blob.includes(term));
+      })
+    : allPostsCache;
+
+  if (terms.length) {
+    countEl.textContent = `${filtered.length} dari ${allPostsCache.length} postingan cocok`;
+  } else {
+    countEl.textContent = "";
+  }
+
+  if (allPostsCache.length === 0) {
+    listEl.innerHTML = '<p class="empty">Belum ada materi.</p>';
+    return;
+  }
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<p class="empty">Tidak ada postingan yang cocok dengan pencarian.</p>';
+    return;
+  }
+
+  listEl.innerHTML = "";
+  filtered.forEach(({ id, data }) => {
+    const date = data.createdAt?.toDate
+      ? data.createdAt.toDate().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
+      : "";
+
+    const thumbs = (data.photoUrls || [])
+      .map(url => `<img src="${url}">`)
+      .join("");
+
+    const linksList = data.links || (data.taskLink ? [{ label: "Buka Link", url: data.taskLink }] : []);
+    const linksHtml = linksList
+      .map(l => `<div class="link">🔗 ${highlightMatch(l.label, terms)}: ${highlightMatch(l.url, terms)}</div>`)
+      .join("");
+
+    const tagsList = data.tags || [];
+    const tagsHtml = tagsList.length
+      ? `<div class="link">🏷️ ${tagsList.map(t => highlightMatch(t, terms)).join(", ")}</div>`
+      : "";
+
+    const item = document.createElement("div");
+    item.className = "post-item";
+    item.innerHTML = `
+      <div class="date">${date}</div>
+      ${data.caption ? `<div class="caption">${highlightMatch(data.caption, terms)}</div>` : ""}
+      <div class="thumbs">${thumbs}</div>
+      ${linksHtml}
+      ${tagsHtml}
+      <div class="actions">
+        <button class="editBtn">Edit</button>
+        <button class="shareBtn">🔗 Bagikan</button>
+        <button class="deleteBtn">Hapus</button>
+      </div>
+    `;
+    const postUrl = `${window.location.origin}/?post=${id}`;
+    item.querySelector(".editBtn").onclick = () => startEdit(id, data);
+    item.querySelector(".shareBtn").onclick = () => sharePostLink(postUrl);
+    item.querySelector(".deleteBtn").onclick = () => removePost(id);
+    listEl.appendChild(item);
   });
 }
 
