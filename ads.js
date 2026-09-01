@@ -10,13 +10,12 @@ const AD_UNITS = {
     format: 'iframe',
     height: 250,
     width: 300
-  }
-};
-
-// Unit iklan Native Banner (menyatu dengan tampilan konten)
-const NATIVE_UNITS = {
-  indexNative: {
-    key: 'a34e353b3f1f0806d6dd98636848d1e3'
+  },
+  stickyBanner: {
+    key: 'f324ca3e73b4944375e33e086500c0c3',
+    format: 'iframe',
+    height: 60,
+    width: 468
   }
 };
 
@@ -46,30 +45,6 @@ function loadBannerAd(containerId, unitName) {
   const invokeScript = document.createElement('script');
   invokeScript.src = 'https://inputoppose.com/' + unit.key + '/invoke.js';
   container.appendChild(invokeScript);
-}
-
-/**
- * Menyuntikkan iklan Native Banner Adsterra.
- * Butuh elemen <div id="container-<key>"> sudah ada di HTML tempat iklan mau tampil;
- * kalau belum ada, dibuat otomatis lalu ditambahkan di akhir body.
- * @param {string} unitName - key di NATIVE_UNITS
- */
-function loadNativeAd(unitName) {
-  const unit = NATIVE_UNITS[unitName];
-  if (!unit) return;
-
-  const containerId = 'container-' + unit.key;
-  if (!document.getElementById(containerId)) {
-    const div = document.createElement('div');
-    div.id = containerId;
-    document.body.appendChild(div);
-  }
-
-  const invokeScript = document.createElement('script');
-  invokeScript.async = true;
-  invokeScript.setAttribute('data-cfasync', 'false');
-  invokeScript.src = 'https://inputoppose.com/' + unit.key + '/invoke.js';
-  document.body.appendChild(invokeScript);
 }
 
 /**
