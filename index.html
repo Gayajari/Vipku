@@ -178,6 +178,33 @@
     min-height: 68px;
   }
   body { padding-bottom: 76px; }
+  body.ad-closed { padding-bottom: 0; }
+
+  .sticky-ad-close {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    line-height: 19px;
+    text-align: center;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 101;
+  }
+
+  .feed-native-ad {
+    display: none;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  @media (max-width: 768px) {
+    .feed-native-ad { display: flex; }
+  }
 
   .search-bar {
     padding: 10px 15px 0 15px;
@@ -344,10 +371,7 @@
   <p>Konten update tiap hari</p>
 </header>
 
-<div class="ads-banner">
-<script async="async" data-cfasync="false" src="https://inputoppose.com/a34e353b3f1f0806d6dd98636848d1e3/invoke.js"></script>
-<div id="container-a34e353b3f1f0806d6dd98636848d1e3"></div>
-</div>
+<div class="ads-banner" id="adsBannerHeader"></div>
 
 <div class="contact-bar" id="contactBar"></div>
 
@@ -376,7 +400,10 @@
   <a href="./" class="home-btn-footer">🏠 Kembali ke Beranda</a>
 </footer>
 
-<div class="sticky-ad-bar" id="adsStickyBottom"></div>
+<div class="sticky-ad-bar" id="stickyAdBar">
+  <span class="sticky-ad-close" id="stickyAdClose" aria-label="Tutup iklan">✕</span>
+  <div id="adsStickyBottom"></div>
+</div>
 
 <script src="ads.js"></script>
 
@@ -407,8 +434,15 @@ const MAIN_FEED_LIMIT = 50;
 loadContactBar();
 loadCategoryBar();
 setupSearch();
-loadBannerAd("adsStickyBottom", "stickyBanner");
+loadBannerAd("adsBannerHeader", "headerBanner");
+loadStickyBanner("adsStickyBottom");
+watchStickyBannerResize("adsStickyBottom");
 loadSocialBar();
+
+document.getElementById("stickyAdClose").addEventListener("click", () => {
+  document.getElementById("stickyAdBar").style.display = "none";
+  document.body.classList.add("ad-closed");
+});
 
 async function loadContactBar() {
   try {
@@ -759,6 +793,7 @@ if (postId) {
     });
 
     postsEl.innerHTML = "";
+    let feedPostCounter = 0;
     const sections = [
       { key: "hariIni", label: "Hari Ini" },
       { key: "mingguIni", label: "Minggu Ini" },
@@ -773,6 +808,10 @@ if (postId) {
       postsEl.appendChild(title);
       groups[key].forEach((docSnap) => {
         postsEl.appendChild(renderPost(docSnap));
+        feedPostCounter++;
+        if (feedPostCounter % 3 === 0) {
+          postsEl.appendChild(createNativeAdSlot());
+        }
       });
     });
   });
