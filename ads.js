@@ -45,11 +45,13 @@ const SOCIAL_BAR_SRC = 'https://inputoppose.com/dc/36/31/dc3631cbbf8e7e7cd864408
  * Menyuntikkan iklan banner kotak Adsterra (atOptions) ke dalam sebuah container.
  * @param {string} containerId - id elemen tempat iklan dipasang
  * @param {string} unitName - key di AD_UNITS
+ * @param {Function} [onDone] - dipanggil setelah invoke.js selesai load/gagal,
+ *   dipakai supaya iklan atOptions lain tidak menimpa variabel global sebelum ini selesai
  */
-function loadBannerAd(containerId, unitName) {
+function loadBannerAd(containerId, unitName, onDone) {
   const unit = AD_UNITS[unitName];
   const container = document.getElementById(containerId);
-  if (!unit || !container) return;
+  if (!unit || !container) { if (onDone) onDone(); return; }
 
   const configScript = document.createElement('script');
   configScript.text = 'atOptions = ' + JSON.stringify({
@@ -62,6 +64,8 @@ function loadBannerAd(containerId, unitName) {
   container.appendChild(configScript);
 
   const invokeScript = document.createElement('script');
+  invokeScript.onload = () => { if (onDone) onDone(); };
+  invokeScript.onerror = () => { if (onDone) onDone(); };
   invokeScript.src = 'https://inputoppose.com/' + unit.key + '/invoke.js';
   container.appendChild(invokeScript);
 }
