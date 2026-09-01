@@ -263,6 +263,29 @@ iframe{
   <div class="msg" id="contactMsg"></div>
 </div>
 
+<div class="card" id="chipBarCard" style="display:none;">
+  <h2>🏷️ Chip Bar Custom (3 Slot)</h2>
+  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Muncul di halaman utama, di atas bar Telegram/Vipku/WhatsApp. Kosongkan nama & link kalau slot tidak dipakai.</p>
+
+  <label>Slot 1 — Nama Chip</label>
+  <input type="text" id="chip1Name" placeholder="misal: Grup Bonus">
+  <label>Slot 1 — Link</label>
+  <input type="url" id="chip1Link" placeholder="https://...">
+
+  <label>Slot 2 — Nama Chip</label>
+  <input type="text" id="chip2Name" placeholder="misal: Promo Terbaru">
+  <label>Slot 2 — Link</label>
+  <input type="url" id="chip2Link" placeholder="https://...">
+
+  <label>Slot 3 — Nama Chip</label>
+  <input type="text" id="chip3Name" placeholder="misal: Channel Utama">
+  <label>Slot 3 — Link</label>
+  <input type="url" id="chip3Link" placeholder="https://...">
+
+  <button id="saveChipBarBtn">Simpan Chip Bar</button>
+  <div class="msg" id="chipBarMsg"></div>
+</div>
+
 <div class="card" id="formCard" style="display:none;">
   <h2 id="formTitle">📤 Tambah Konten Baru</h2>
 
@@ -341,6 +364,7 @@ const loginCard = document.getElementById("loginCard");
 const formCard = document.getElementById("formCard");
 const listCard = document.getElementById("listCard");
 const contactCard = document.getElementById("contactCard");
+const chipBarCard = document.getElementById("chipBarCard");
 const loginMsg = document.getElementById("loginMsg");
 const formMsg = document.getElementById("formMsg");
 const formTitle = document.getElementById("formTitle");
@@ -365,13 +389,16 @@ onAuthStateChanged(auth, (user) => {
     formCard.style.display = "block";
     listCard.style.display = "block";
     contactCard.style.display = "block";
+    chipBarCard.style.display = "block";
     loadContactSettings();
+    loadChipBarSettings();
     listenPosts();
   } else {
     loginCard.style.display = "block";
     formCard.style.display = "none";
     listCard.style.display = "none";
     contactCard.style.display = "none";
+    chipBarCard.style.display = "none";
   }
 });
 
@@ -741,6 +768,44 @@ document.getElementById("saveContactBtn").onclick = async () => {
     });
     msgEl.className = "msg success";
     msgEl.textContent = "Pengaturan link sosmed berhasil disimpan!";
+  } catch (err) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Gagal: " + err.message;
+  }
+};
+
+async function loadChipBarSettings() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "chipbar"));
+    if (snap.exists()) {
+      const data = snap.data();
+      document.getElementById("chip1Name").value = data.chip1Name || "";
+      document.getElementById("chip1Link").value = data.chip1Link || "";
+      document.getElementById("chip2Name").value = data.chip2Name || "";
+      document.getElementById("chip2Link").value = data.chip2Link || "";
+      document.getElementById("chip3Name").value = data.chip3Name || "";
+      document.getElementById("chip3Link").value = data.chip3Link || "";
+    }
+  } catch (err) {
+    console.error("Gagal memuat chip bar:", err);
+  }
+}
+
+document.getElementById("saveChipBarBtn").onclick = async () => {
+  const msgEl = document.getElementById("chipBarMsg");
+  msgEl.className = "msg";
+  msgEl.textContent = "Menyimpan...";
+  try {
+    await setDoc(doc(db, "settings", "chipbar"), {
+      chip1Name: document.getElementById("chip1Name").value.trim() || null,
+      chip1Link: document.getElementById("chip1Link").value.trim() || null,
+      chip2Name: document.getElementById("chip2Name").value.trim() || null,
+      chip2Link: document.getElementById("chip2Link").value.trim() || null,
+      chip3Name: document.getElementById("chip3Name").value.trim() || null,
+      chip3Link: document.getElementById("chip3Link").value.trim() || null
+    });
+    msgEl.className = "msg success";
+    msgEl.textContent = "Chip bar berhasil disimpan!";
   } catch (err) {
     msgEl.className = "msg error";
     msgEl.textContent = "Gagal: " + err.message;
