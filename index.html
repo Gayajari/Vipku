@@ -162,6 +162,23 @@
   }
   .home-btn-footer:active { background: #1f2c50; }
 
+  .sticky-ad-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: #fff;
+    border-top: 1px solid #e3e5ec;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 0;
+    min-height: 68px;
+  }
+  body { padding-bottom: 76px; }
+
   .search-bar {
     padding: 10px 15px 0 15px;
     position: relative;
@@ -328,7 +345,8 @@
 </header>
 
 <div class="ads-banner">
-  <div id="container-a34e353b3f1f0806d6dd98636848d1e3"></div>
+<script async="async" data-cfasync="false" src="https://inputoppose.com/a34e353b3f1f0806d6dd98636848d1e3/invoke.js"></script>
+<div id="container-a34e353b3f1f0806d6dd98636848d1e3"></div>
 </div>
 
 <div class="contact-bar" id="contactBar"></div>
@@ -357,6 +375,8 @@
 <footer class="site-footer">
   <a href="./" class="home-btn-footer">🏠 Kembali ke Beranda</a>
 </footer>
+
+<div class="sticky-ad-bar" id="adsStickyBottom"></div>
 
 <script src="ads.js"></script>
 
@@ -387,7 +407,7 @@ const MAIN_FEED_LIMIT = 50;
 loadContactBar();
 loadCategoryBar();
 setupSearch();
-loadNativeAd("indexNative");
+loadBannerAd("adsStickyBottom", "stickyBanner");
 loadSocialBar();
 
 async function loadContactBar() {
