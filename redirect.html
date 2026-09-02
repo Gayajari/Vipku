@@ -198,7 +198,12 @@
     }
   };
 
-  loadBannerAd("adSlot", "redirectBanner");
+  try {
+    loadBannerAd("adSlot", "redirectBanner");
+    hardenAdIframes(["#adSlot"]);
+  } catch (err) {
+    console.error("Gagal memuat iklan (ads.js mungkin tidak termuat):", err);
+  }
   loadTargetURL();
 </script>
 
