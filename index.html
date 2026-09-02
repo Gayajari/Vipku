@@ -502,13 +502,13 @@ async function loadCustomChipBar() {
     const data = snap.data();
     const bar = document.getElementById("customChipBar");
     const slots = [
-      { name: data.chip1Name, link: data.chip1Link },
-      { name: data.chip2Name, link: data.chip2Link },
-      { name: data.chip3Name, link: data.chip3Link }
+      { name: data.chip1Name, link: data.chip1Link, active: data.chip1Active !== false },
+      { name: data.chip2Name, link: data.chip2Link, active: data.chip2Active !== false },
+      { name: data.chip3Name, link: data.chip3Link, active: data.chip3Active !== false }
     ];
     let html = "";
-    slots.forEach(({ name, link }) => {
-      if (name && link) {
+    slots.forEach(({ name, link, active }) => {
+      if (name && link && active) {
         html += `<a href="${escapeHtmlAttr(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`;
       }
     });
