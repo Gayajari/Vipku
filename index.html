@@ -79,20 +79,36 @@
     font-weight: 600;
   }
   .post-share {
-    display: block;
-    width: calc(100% - 30px);
-    margin: 0 15px 15px 15px;
+    display: table;
+    margin: 0 auto 15px auto;
     background: white;
     color: #2b3a67;
     text-align: center;
-    padding: 10px;
+    padding: 6px 14px;
     border-radius: 8px;
     border: 1.5px solid #2b3a67;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
   }
   .post-share:active { background: #eef1fb; }
+
+  .post-chip-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 0 15px 10px 15px;
+  }
+  .post-chip-bar a {
+    text-decoration: none;
+    background: #e0522f;
+    color: #fff;
+    padding: 6px 11px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+  }
 
   .post-tags {
     display: flex;
@@ -358,24 +374,6 @@
     font-weight:600;
   }
 
-  .custom-chip-bar{
-    display:flex;
-    justify-content:center;
-    gap:8px;
-    flex-wrap:wrap;
-    padding: 8px 15px 0;
-  }
-
-  .custom-chip-bar a{
-    text-decoration:none;
-    background:#e0522f;
-    color:#fff;
-    padding:8px 12px;
-    border-radius:8px;
-    font-size:12px;
-    font-weight:600;
-  }
-
  .ads-banner{
   display:flex;
   justify-content:center;
@@ -396,8 +394,6 @@
 </header>
 
 <div class="ads-banner" id="adsBannerHeader"></div>
-
-<div class="custom-chip-bar" id="customChipBar"></div>
 
 <div class="contact-bar" id="contactBar"></div>
 
@@ -455,6 +451,7 @@ const tagParam = new URLSearchParams(window.location.search).get("tag");
 
 let allDocsCache = [];
 let searchActive = false;
+let postChipBarHtml = "";
 const MAIN_FEED_LIMIT = 50;
 
 loadContactBar();
@@ -508,7 +505,6 @@ async function loadCustomChipBar() {
     const snap = await getDoc(doc(db, "settings", "chipbar"));
     if (!snap.exists()) return;
     const data = snap.data();
-    const bar = document.getElementById("customChipBar");
     const slots = [
       { name: data.chip1Name, link: data.chip1Link, active: data.chip1Active !== false },
       { name: data.chip2Name, link: data.chip2Link, active: data.chip2Active !== false },
@@ -520,7 +516,7 @@ async function loadCustomChipBar() {
         html += `<a href="${escapeHtmlAttr(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`;
       }
     });
-    bar.innerHTML = html;
+    postChipBarHtml = html ? `<div class="post-chip-bar">${html}</div>` : "";
   } catch (err) {
     console.error("Gagal memuat chip bar custom:", err);
   }
@@ -761,6 +757,7 @@ function renderPost(docSnap) {
     ${tagsHtml}
     <div class="${photosClass}">${photos}</div>
     ${linkBtns}
+    ${postChipBarHtml}
     <button class="post-share" onclick="sharePost('${shareUrl}')">🔗 Bagikan Konten</button>
   `;
   return post;
