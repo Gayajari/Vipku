@@ -265,24 +265,33 @@ iframe{
 
 <div class="card" id="chipBarCard" style="display:none;">
   <h2>🏷️ Chip Bar Custom (3 Slot)</h2>
-  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Muncul di halaman utama, di atas bar Telegram/Vipku/WhatsApp. Kosongkan nama & link kalau slot tidak dipakai.</p>
+  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Muncul di halaman utama, di atas bar Telegram/Vipku/WhatsApp. Kosongkan nama & link kalau slot tidak dipakai. Chip cuma tampil kalau nama+link terisi dan statusnya Aktif.</p>
 
   <label>Slot 1 — Nama Chip</label>
   <input type="text" id="chip1Name" placeholder="misal: Grup Bonus">
   <label>Slot 1 — Link</label>
   <input type="url" id="chip1Link" placeholder="https://...">
+  <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+    <input type="checkbox" id="chip1Active" style="width:auto;" checked> Aktif
+  </label>
 
-  <label>Slot 2 — Nama Chip</label>
+  <label style="margin-top:16px;">Slot 2 — Nama Chip</label>
   <input type="text" id="chip2Name" placeholder="misal: Promo Terbaru">
   <label>Slot 2 — Link</label>
   <input type="url" id="chip2Link" placeholder="https://...">
+  <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+    <input type="checkbox" id="chip2Active" style="width:auto;" checked> Aktif
+  </label>
 
-  <label>Slot 3 — Nama Chip</label>
+  <label style="margin-top:16px;">Slot 3 — Nama Chip</label>
   <input type="text" id="chip3Name" placeholder="misal: Channel Utama">
   <label>Slot 3 — Link</label>
   <input type="url" id="chip3Link" placeholder="https://...">
+  <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+    <input type="checkbox" id="chip3Active" style="width:auto;" checked> Aktif
+  </label>
 
-  <button id="saveChipBarBtn">Simpan Chip Bar</button>
+  <button id="saveChipBarBtn" style="margin-top:16px;">Simpan Chip Bar</button>
   <div class="msg" id="chipBarMsg"></div>
 </div>
 
@@ -781,10 +790,13 @@ async function loadChipBarSettings() {
       const data = snap.data();
       document.getElementById("chip1Name").value = data.chip1Name || "";
       document.getElementById("chip1Link").value = data.chip1Link || "";
+      document.getElementById("chip1Active").checked = data.chip1Active !== false;
       document.getElementById("chip2Name").value = data.chip2Name || "";
       document.getElementById("chip2Link").value = data.chip2Link || "";
+      document.getElementById("chip2Active").checked = data.chip2Active !== false;
       document.getElementById("chip3Name").value = data.chip3Name || "";
       document.getElementById("chip3Link").value = data.chip3Link || "";
+      document.getElementById("chip3Active").checked = data.chip3Active !== false;
     }
   } catch (err) {
     console.error("Gagal memuat chip bar:", err);
@@ -799,10 +811,13 @@ document.getElementById("saveChipBarBtn").onclick = async () => {
     await setDoc(doc(db, "settings", "chipbar"), {
       chip1Name: document.getElementById("chip1Name").value.trim() || null,
       chip1Link: document.getElementById("chip1Link").value.trim() || null,
+      chip1Active: document.getElementById("chip1Active").checked,
       chip2Name: document.getElementById("chip2Name").value.trim() || null,
       chip2Link: document.getElementById("chip2Link").value.trim() || null,
+      chip2Active: document.getElementById("chip2Active").checked,
       chip3Name: document.getElementById("chip3Name").value.trim() || null,
-      chip3Link: document.getElementById("chip3Link").value.trim() || null
+      chip3Link: document.getElementById("chip3Link").value.trim() || null,
+      chip3Active: document.getElementById("chip3Active").checked
     });
     msgEl.className = "msg success";
     msgEl.textContent = "Chip bar berhasil disimpan!";
