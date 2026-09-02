@@ -461,17 +461,25 @@ loadContactBar();
 loadCustomChipBar();
 loadCategoryBar();
 setupSearch();
-loadBannerAd("adsBannerHeader", "headerBanner", () => {
-  loadStickyBanner("adsStickyBottom");
-  watchStickyBannerResize("adsStickyBottom");
-});
-loadSocialBar();
-hardenAdIframes(["#adsBannerHeader", "#adsStickyBottom"]);
 
-document.getElementById("stickyAdClose").addEventListener("click", () => {
-  document.getElementById("stickyAdBar").style.display = "none";
-  document.body.classList.add("ad-closed");
-});
+try {
+  loadBannerAd("adsBannerHeader", "headerBanner", () => {
+    loadStickyBanner("adsStickyBottom");
+    watchStickyBannerResize("adsStickyBottom");
+  });
+  loadSocialBar();
+  hardenAdIframes(["#adsBannerHeader", "#adsStickyBottom"]);
+} catch (err) {
+  console.error("Gagal memuat iklan (ads.js mungkin tidak termuat):", err);
+}
+
+const stickyAdCloseBtn = document.getElementById("stickyAdClose");
+if (stickyAdCloseBtn) {
+  stickyAdCloseBtn.addEventListener("click", () => {
+    document.getElementById("stickyAdBar").style.display = "none";
+    document.body.classList.add("ad-closed");
+  });
+}
 
 async function loadContactBar() {
   try {
@@ -866,7 +874,11 @@ if (postId) {
         postsEl.appendChild(renderPost(docSnap));
         feedPostCounter++;
         if (feedPostCounter % 3 === 0) {
-          postsEl.appendChild(createNativeAdSlot());
+          try {
+            postsEl.appendChild(createNativeAdSlot());
+          } catch (err) {
+            console.error("Gagal memuat native ad slot:", err);
+          }
         }
       });
     });
