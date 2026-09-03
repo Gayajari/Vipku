@@ -21,6 +21,29 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     padding: 24px;
   }
+  .accordion-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #eef1fb;
+    color: #2b3a67;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 0;
+    text-align: left;
+  }
+  .accordion-bar.main-bar { font-size: 17px; background: #2b3a67; color: #fff; }
+  .accordion-arrow { font-size: 13px; opacity: 0.7; }
+  .accordion-body { display: none; padding: 18px 2px 4px; }
+  #settingsGroupBody { padding: 14px 0 0; }
+  .accordion-item { margin-bottom: 10px; }
+  .accordion-item .accordion-body { padding: 16px 4px 6px; }
+
   h2 { margin-top: 0; font-size: 19px; }
   label { font-size: 13px; font-weight: 600; display: block; margin: 14px 0 6px; }
   input[type="email"], input[type="password"], input[type="url"], input[type="text"], input[type="file"], textarea {
@@ -352,59 +375,80 @@ iframe{
   <div class="msg error" id="loginMsg"></div>
 </div>
 
-<div class="card" id="contactCard" style="display:none;">
-  <h2>🔗 Pengaturan Link Sosmed</h2>
-  <label>Link Telegram (kosongkan jika tidak dipakai)</label>
-  <input type="url" id="contactTelegram" placeholder="https://t.me/namagrup">
-  <label>Link Tutorial (kosongkan jika tidak dipakai)</label>
-  <input type="url" id="contactFacebook" placeholder="https://Tutorial.com/xxxx">
-  <label>Link WhatsApp (kosongkan jika tidak dipakai)</label>
-  <input type="url" id="contactWhatsapp" placeholder="https://chat.whatsapp.com/xxxx">
-  <button id="saveContactBtn">Simpan Pengaturan</button>
-  <div class="msg" id="contactMsg"></div>
-</div>
+<div class="card" id="settingsGroupCard" style="display:none;">
+  <button type="button" class="accordion-bar main-bar" id="settingsGroupToggle">
+    ⚙️ Pengaturan Utama Web <span class="accordion-arrow" id="settingsGroupArrow">▾</span>
+  </button>
+  <div class="accordion-body" id="settingsGroupBody">
 
-<div class="card" id="chipBarCard" style="display:none;">
-  <h2>🏷️ Chip Bar Custom (3 Slot)</h2>
-  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Muncul di halaman utama, di atas bar Telegram/Vipku/WhatsApp. Kosongkan nama & link kalau slot tidak dipakai. Chip cuma tampil kalau nama+link terisi dan statusnya Aktif.</p>
+    <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="contactToggle">
+        🔗 Pengaturan Link Sosmed <span class="accordion-arrow" id="contactArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="contactCard">
+        <label>Link Telegram (kosongkan jika tidak dipakai)</label>
+        <input type="url" id="contactTelegram" placeholder="https://t.me/namagrup">
+        <label>Link Tutorial (kosongkan jika tidak dipakai)</label>
+        <input type="url" id="contactFacebook" placeholder="https://Tutorial.com/xxxx">
+        <label>Link WhatsApp (kosongkan jika tidak dipakai)</label>
+        <input type="url" id="contactWhatsapp" placeholder="https://chat.whatsapp.com/xxxx">
+        <button id="saveContactBtn">Simpan Pengaturan</button>
+        <div class="msg" id="contactMsg"></div>
+      </div>
+    </div>
 
-  <label>Slot 1 — Nama Chip</label>
-  <input type="text" id="chip1Name" placeholder="misal: Grup Bonus">
-  <label>Slot 1 — Link</label>
-  <input type="url" id="chip1Link" placeholder="https://...">
-  <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
-    <input type="checkbox" id="chip1Active" style="width:auto;" checked> Aktif
-  </label>
+    <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="chipBarToggle">
+        🏷️ Chip Bar Custom (3 Slot) <span class="accordion-arrow" id="chipBarArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="chipBarCard">
+        <p style="font-size:12px; color:#888; margin:0 0 12px;">Muncul di halaman utama, di atas bar Telegram/Vipku/WhatsApp. Kosongkan nama & link kalau slot tidak dipakai. Chip cuma tampil kalau nama+link terisi dan statusnya Aktif.</p>
 
-  <label style="margin-top:16px;">Slot 2 — Nama Chip</label>
-  <input type="text" id="chip2Name" placeholder="misal: Promo Terbaru">
-  <label>Slot 2 — Link</label>
-  <input type="url" id="chip2Link" placeholder="https://...">
-  <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
-    <input type="checkbox" id="chip2Active" style="width:auto;" checked> Aktif
-  </label>
+        <label>Slot 1 — Nama Chip</label>
+        <input type="text" id="chip1Name" placeholder="misal: Grup Bonus">
+        <label>Slot 1 — Link</label>
+        <input type="url" id="chip1Link" placeholder="https://...">
+        <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+          <input type="checkbox" id="chip1Active" style="width:auto;" checked> Aktif
+        </label>
 
-  <label style="margin-top:16px;">Slot 3 — Nama Chip</label>
-  <input type="text" id="chip3Name" placeholder="misal: Channel Utama">
-  <label>Slot 3 — Link</label>
-  <input type="url" id="chip3Link" placeholder="https://...">
-  <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
-    <input type="checkbox" id="chip3Active" style="width:auto;" checked> Aktif
-  </label>
+        <label style="margin-top:16px;">Slot 2 — Nama Chip</label>
+        <input type="text" id="chip2Name" placeholder="misal: Promo Terbaru">
+        <label>Slot 2 — Link</label>
+        <input type="url" id="chip2Link" placeholder="https://...">
+        <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+          <input type="checkbox" id="chip2Active" style="width:auto;" checked> Aktif
+        </label>
 
-  <button id="saveChipBarBtn" style="margin-top:16px;">Simpan Chip Bar</button>
-  <div class="msg" id="chipBarMsg"></div>
-</div>
+        <label style="margin-top:16px;">Slot 3 — Nama Chip</label>
+        <input type="text" id="chip3Name" placeholder="misal: Channel Utama">
+        <label>Slot 3 — Link</label>
+        <input type="url" id="chip3Link" placeholder="https://...">
+        <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+          <input type="checkbox" id="chip3Active" style="width:auto;" checked> Aktif
+        </label>
 
-<div class="card" id="manualPaymentCard" style="display:none;">
-  <h2>💳 Metode Pembayaran Manual</h2>
-  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Dipakai untuk link kategori "Manual" (konten yang tidak boleh lewat Dongtube). Tambah sebanyak yang perlu — QRIS, rekening, e-wallet, dll. Gambar QR opsional.</p>
+        <button id="saveChipBarBtn" style="margin-top:16px;">Simpan Chip Bar</button>
+        <div class="msg" id="chipBarMsg"></div>
+      </div>
+    </div>
 
-  <div id="manualMethodsContainer"></div>
-  <button type="button" id="addManualMethodBtn">+ Tambah Metode Pembayaran</button>
+    <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="manualPaymentToggle">
+        💳 Payment Gateway — Metode Manual <span class="accordion-arrow" id="manualPaymentArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="manualPaymentCard">
+        <p style="font-size:12px; color:#888; margin:0 0 12px;">Dipakai untuk link kategori "Manual" (konten yang tidak boleh lewat Dongtube). Tambah sebanyak yang perlu — QRIS, rekening, e-wallet, dll. Gambar QR opsional.</p>
 
-  <button id="saveManualPaymentBtn" style="margin-top:16px;">Simpan Metode Pembayaran</button>
-  <div class="msg" id="manualPaymentMsg"></div>
+        <div id="manualMethodsContainer"></div>
+        <button type="button" id="addManualMethodBtn">+ Tambah Metode Pembayaran</button>
+
+        <button id="saveManualPaymentBtn" style="margin-top:16px;">Simpan Metode Pembayaran</button>
+        <div class="msg" id="manualPaymentMsg"></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <div class="card" id="manualOrdersCard" style="display:none;">
@@ -490,9 +534,7 @@ async function uploadToImgbb(file) {
 const loginCard = document.getElementById("loginCard");
 const formCard = document.getElementById("formCard");
 const listCard = document.getElementById("listCard");
-const contactCard = document.getElementById("contactCard");
-const chipBarCard = document.getElementById("chipBarCard");
-const manualPaymentCard = document.getElementById("manualPaymentCard");
+const settingsGroupCard = document.getElementById("settingsGroupCard");
 const manualOrdersCard = document.getElementById("manualOrdersCard");
 const loginMsg = document.getElementById("loginMsg");
 const formMsg = document.getElementById("formMsg");
@@ -517,9 +559,7 @@ onAuthStateChanged(auth, (user) => {
     loginCard.style.display = "none";
     formCard.style.display = "block";
     listCard.style.display = "block";
-    contactCard.style.display = "block";
-    chipBarCard.style.display = "block";
-    manualPaymentCard.style.display = "block";
+    settingsGroupCard.style.display = "block";
     manualOrdersCard.style.display = "block";
     loadContactSettings();
     loadChipBarSettings();
@@ -530,12 +570,26 @@ onAuthStateChanged(auth, (user) => {
     loginCard.style.display = "block";
     formCard.style.display = "none";
     listCard.style.display = "none";
-    contactCard.style.display = "none";
-    chipBarCard.style.display = "none";
-    manualPaymentCard.style.display = "none";
+    settingsGroupCard.style.display = "none";
     manualOrdersCard.style.display = "none";
   }
 });
+
+// Accordion: tiap bar diklik, buka/tutup body-nya sendiri (independen satu sama lain)
+function setupAccordion(barId, bodyId, arrowId) {
+  const bar = document.getElementById(barId);
+  const body = document.getElementById(bodyId);
+  const arrow = document.getElementById(arrowId);
+  bar.addEventListener("click", () => {
+    const willOpen = body.style.display !== "block";
+    body.style.display = willOpen ? "block" : "none";
+    if (arrow) arrow.textContent = willOpen ? "▴" : "▾";
+  });
+}
+setupAccordion("settingsGroupToggle", "settingsGroupBody", "settingsGroupArrow");
+setupAccordion("contactToggle", "contactCard", "contactArrow");
+setupAccordion("chipBarToggle", "chipBarCard", "chipBarArrow");
+setupAccordion("manualPaymentToggle", "manualPaymentCard", "manualPaymentArrow");
 
 document.getElementById("loginBtn").onclick = async () => {
   loginMsg.textContent = "";
