@@ -78,6 +78,21 @@
     text-decoration: none;
     font-weight: 600;
   }
+  .post-link-paid {
+    width: calc(100% - 30px);
+    background: #b8860b;
+    color: white;
+    border: none;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .post-link-paid:active { background: #966f09; }
+  .post-link-paid:disabled { opacity: 0.6; cursor: default; }
   .post-share {
     display: table;
     margin: 0 auto 15px auto;
@@ -356,6 +371,64 @@
     border-radius: 8px;
   }
 
+  /* modal pembayaran manual */
+  .manual-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+  }
+  .manual-modal-overlay.open { display: flex; }
+  .manual-modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .manual-modal h3 { margin: 0 0 6px; font-size: 16px; color: #2b3a67; }
+  .manual-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #888;
+    cursor: pointer;
+  }
+  .manual-modal-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #b8860b;
+    margin-bottom: 14px;
+  }
+  .manual-method-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .manual-method-card .mm-name { font-weight: 700; color: #2b3a67; margin-bottom: 2px; }
+  .manual-method-card img { max-width: 140px; display: block; margin-top: 6px; border-radius: 6px; }
+  .manual-modal-status {
+    font-size: 13px;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+  }
+  .manual-modal-status.pending { background: #fff3cd; color: #856404; }
+  .manual-modal-status.verified { background: #d4edda; color: #155724; }
+  .manual-modal-status.rejected { background: #f8d7da; color: #721c24; }
+
   .contact-bar{
     display:flex;
     justify-content:center;
@@ -414,6 +487,23 @@
 
 <div class="container" id="oldRotationWrap"></div>
 
+<div class="manual-modal-overlay" id="manualModalOverlay">
+  <div class="manual-modal">
+    <button type="button" class="manual-modal-close" id="manualModalClose">✕</button>
+    <h3 id="manualModalTitle">Pembayaran Manual</h3>
+    <div id="manualModalPrice" class="manual-modal-price"></div>
+    <div id="manualModalMethods"></div>
+    <div id="manualModalStatus"></div>
+    <div id="manualModalForm">
+      <label style="font-size:12px; color:#555; display:block; margin:12px 0 4px;">Kontak kamu (opsional, WA/Telegram — biar gampang dihubungi kalau ada masalah)</label>
+      <input type="text" id="manualContactInput" placeholder="mis. 08xxxxxxxxxx" style="width:100%; box-sizing:border-box; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
+      <label style="font-size:12px; color:#555; display:block; margin:10px 0 4px;">Catatan (opsional)</label>
+      <input type="text" id="manualNoteInput" placeholder="mis. sudah transfer jam 10 a.n Budi" style="width:100%; box-sizing:border-box; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
+      <button type="button" id="manualSubmitBtn" style="width:100%; margin-top:14px; padding:11px; background:#2e8b57; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Saya Sudah Transfer</button>
+    </div>
+  </div>
+</div>
+
 <div class="lightbox" id="lightbox" onclick="this.style.display='none'">
   <img id="lightbox-img" src="">
 </div>
@@ -431,7 +521,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, query, where, orderBy, limit, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, query, where, orderBy, limit, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyD-7D1tKtRAtFu9aOneL8TfpInol7WFORc",
   authDomain: "vipku-6f309.firebaseapp.com",
@@ -445,9 +535,232 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// GANTI dengan URL backend Vercel kamu setelah deploy folder paywall-backend
+const PAYWALL_BACKEND_URL = "https://GANTI-DENGAN-URL-BACKEND-VERCEL.vercel.app";
+
+function getBuyerId() {
+  let id = localStorage.getItem("buyerId");
+  if (!id) {
+    id = "b_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem("buyerId", id);
+  }
+  return id;
+}
+
+async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
+  const buyerId = getBuyerId();
+  const accessId = `${buyerId}_${postId}_${linkIndex}`;
+  const originalText = btnEl.textContent;
+  btnEl.disabled = true;
+
+  try {
+    btnEl.textContent = "Mengecek status...";
+    const accessSnap = await getDoc(doc(db, "paidAccess", accessId));
+
+    if (accessSnap.exists() && accessSnap.data().status === "paid") {
+      btnEl.textContent = "Membuka...";
+      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, linkIndex, buyerId })
+      });
+      const resData = await res.json();
+      if (resData.url) {
+        window.open(resData.url, "_blank", "noopener,noreferrer");
+        btnEl.textContent = "🔓 " + label;
+        return;
+      }
+      alert(resData.error || "Gagal membuka link.");
+      btnEl.textContent = originalText;
+      return;
+    }
+
+    btnEl.textContent = "Menyiapkan pembayaran...";
+    const res = await fetch(`${PAYWALL_BACKEND_URL}/api/create-transaction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId, linkIndex, price, buyerId, label })
+    });
+    const resData = await res.json();
+
+    if (resData.alreadyPaid) {
+      btnEl.disabled = false;
+      return handlePaidLinkClick(postId, linkIndex, price, label, btnEl);
+    }
+    if (resData.paymentUrl) {
+      window.location.href = resData.paymentUrl;
+      return;
+    }
+    alert(resData.error || "Gagal membuat transaksi pembayaran.");
+    btnEl.textContent = originalText;
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan koneksi ke server pembayaran. Coba lagi.");
+    btnEl.textContent = originalText;
+  } finally {
+    btnEl.disabled = false;
+  }
+}
+
+/* ================== PEMBAYARAN MANUAL (VERIFIKASI ADMIN) ================== */
+
+let manualPaymentMethodsCache = null;
+async function getManualPaymentMethods() {
+  if (manualPaymentMethodsCache) return manualPaymentMethodsCache;
+  try {
+    const snap = await getDoc(doc(db, "settings", "manualPayment"));
+    manualPaymentMethodsCache = snap.exists() ? (snap.data().methods || []) : [];
+  } catch (err) {
+    console.error(err);
+    manualPaymentMethodsCache = [];
+  }
+  return manualPaymentMethodsCache;
+}
+
+let manualOrderUnsub = null; // buat lepas listener status order lama saat modal dibuka ulang
+
+function closeManualModal() {
+  document.getElementById("manualModalOverlay").classList.remove("open");
+  if (manualOrderUnsub) {
+    manualOrderUnsub();
+    manualOrderUnsub = null;
+  }
+}
+
+document.getElementById("manualModalClose").addEventListener("click", closeManualModal);
+document.getElementById("manualModalOverlay").addEventListener("click", (e) => {
+  if (e.target.id === "manualModalOverlay") closeManualModal();
+});
+
+function setManualModalStatus(text, kind) {
+  const el = document.getElementById("manualModalStatus");
+  if (!text) {
+    el.className = "";
+    el.innerHTML = "";
+    return;
+  }
+  el.className = "manual-modal-status " + kind;
+  el.textContent = text;
+}
+
+async function openManualBuyLink(postId, linkIndex, buyerId, btnEl) {
+  try {
+    const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId, linkIndex, buyerId })
+    });
+    const resData = await res.json();
+    if (resData.url) {
+      window.open(resData.url, "_blank", "noopener,noreferrer");
+      if (btnEl) btnEl.textContent = "🔓 Terverifikasi — buka lagi";
+    } else {
+      alert(resData.error || "Gagal membuka link.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Gagal terhubung ke server. Coba lagi.");
+  }
+}
+
+async function openManualPaymentModal(postId, linkIndex, price, label, btnEl) {
+  const buyerId = getBuyerId();
+  const overlay = document.getElementById("manualModalOverlay");
+  const priceEl = document.getElementById("manualModalPrice");
+  const methodsEl = document.getElementById("manualModalMethods");
+  const formEl = document.getElementById("manualModalForm");
+
+  document.getElementById("manualModalTitle").textContent = label;
+  priceEl.textContent = "Rp " + price.toLocaleString("id-ID");
+  setManualModalStatus("", "");
+  formEl.style.display = "none";
+  methodsEl.innerHTML = '<p style="font-size:12px; color:#888;">Memuat metode pembayaran...</p>';
+  overlay.classList.add("open");
+
+  if (manualOrderUnsub) { manualOrderUnsub(); manualOrderUnsub = null; }
+
+  const methods = await getManualPaymentMethods();
+  methodsEl.innerHTML = methods.length
+    ? methods.map(m => `
+        <div class="manual-method-card">
+          <div class="mm-name">${escapeHtml(m.name)}</div>
+          ${m.detail ? `<div>${escapeHtml(m.detail)}</div>` : ""}
+          ${m.qrImageUrl ? `<img src="${m.qrImageUrl}" alt="QR ${escapeHtml(m.name)}">` : ""}
+        </div>
+      `).join("")
+    : '<p style="font-size:12px; color:#c0392b;">Metode pembayaran belum diatur admin. Hubungi admin dulu.</p>';
+
+  // Cek klaim TERBARU untuk kombinasi buyer+post+link ini, dan pantau live
+  // (kalau admin verifikasi SAAT modal masih terbuka, otomatis update).
+  const q = query(
+    collection(db, "manualOrders"),
+    where("buyerId", "==", buyerId),
+    where("postId", "==", postId),
+    where("linkIndex", "==", linkIndex),
+    orderBy("createdAt", "desc"),
+    limit(1)
+  );
+
+  manualOrderUnsub = onSnapshot(q, (snapshot) => {
+    if (snapshot.empty) {
+      formEl.style.display = "block";
+      setManualModalStatus("", "");
+      return;
+    }
+    const orderData = snapshot.docs[0].data();
+    if (orderData.status === "pending") {
+      formEl.style.display = "none";
+      setManualModalStatus("⏳ Klaim kamu sedang menunggu diverifikasi admin. Halaman ini akan otomatis update begitu diverifikasi.", "pending");
+    } else if (orderData.status === "verified") {
+      formEl.style.display = "none";
+      setManualModalStatus("✅ Pembayaran terverifikasi! Membuka link...", "verified");
+      openManualBuyLink(postId, linkIndex, buyerId, btnEl);
+    } else if (orderData.status === "rejected") {
+      formEl.style.display = "block";
+      setManualModalStatus("❌ Klaim sebelumnya ditolak admin (mungkin bukti tidak sesuai). Kamu bisa kirim klaim baru di bawah.", "rejected");
+    }
+  }, (err) => {
+    console.error("Gagal memantau status order manual:", err);
+  });
+
+  document.getElementById("manualSubmitBtn").onclick = async () => {
+    const submitBtn = document.getElementById("manualSubmitBtn");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Mengirim klaim...";
+    try {
+      await addDoc(collection(db, "manualOrders"), {
+        buyerId,
+        postId,
+        linkIndex,
+        price,
+        label,
+        contact: document.getElementById("manualContactInput").value.trim() || null,
+        note: document.getElementById("manualNoteInput").value.trim() || null,
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+      submitBtn.textContent = "Saya Sudah Transfer";
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mengirim klaim: " + err.message);
+      submitBtn.textContent = "Saya Sudah Transfer";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  };
+}
+
 const postsEl = document.getElementById("posts");
 const postId = new URLSearchParams(window.location.search).get("post");
 const tagParam = new URLSearchParams(window.location.search).get("tag");
+const paidReturnParam = new URLSearchParams(window.location.search).get("paid");
+
+if (paidReturnParam === "1") {
+  const notice = document.createElement("div");
+  notice.style.cssText = "background:#fff3cd; color:#856404; text-align:center; padding:10px 15px; font-size:13px; margin:10px 15px; border-radius:8px;";
+  notice.textContent = "Kalau kamu baru saja menyelesaikan pembayaran, tunggu beberapa detik lalu tekan lagi tombol link yang tadi dibayar untuk membukanya.";
+  document.body.insertBefore(notice, postsEl);
+}
 
 let allDocsCache = [];
 let searchActive = false;
@@ -735,7 +1048,14 @@ function renderPost(docSnap) {
 
   const linksList = data.links || (data.taskLink ? [{ label: "Buka video", url: data.taskLink }] : []);
   const linkBtns = linksList
-    .map(l => `<a class="post-link" href="${l.url}" target="_blank" rel="noopener noreferrer">▶️ ${escapeHtml(l.label)}</a>`)
+    .map((l, idx) => {
+      if (l.price > 0) {
+        const priceLabel = Number(l.price).toLocaleString("id-ID");
+        const category = l.category === "manual" ? "manual" : "auto";
+        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">🔒 ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
+      }
+      return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">▶️ ${escapeHtml(l.label)}</a>`;
+    })
     .join("");
 
   const caption = data.caption
@@ -760,6 +1080,29 @@ function renderPost(docSnap) {
     ${postChipBarHtml}
     <button class="post-share" onclick="sharePost('${shareUrl}')">🔗 Bagikan Konten</button>
   `;
+
+  post.querySelectorAll(".post-link-paid").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.category === "manual") {
+        openManualPaymentModal(
+          btn.dataset.postId,
+          Number(btn.dataset.linkIndex),
+          Number(btn.dataset.price),
+          btn.dataset.label,
+          btn
+        );
+      } else {
+        handlePaidLinkClick(
+          btn.dataset.postId,
+          Number(btn.dataset.linkIndex),
+          Number(btn.dataset.price),
+          btn.dataset.label,
+          btn
+        );
+      }
+    });
+  });
+
   return post;
 }
 

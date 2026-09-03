@@ -134,10 +134,19 @@
 
   .link-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 6px;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 8px;
   }
-  .link-row input[type="text"] {
+  .link-row .link-row-main {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+  }
+  .link-row input[type="text"].link-label-input {
     flex: 0 0 35%;
     padding: 10px;
     border: 1px solid #ddd;
@@ -146,6 +155,37 @@
   }
   .link-row input[type="url"] {
     flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .link-row .link-price-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 2px;
+  }
+  .link-row .link-price-row label {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+    white-space: nowrap;
+  }
+  .link-row input.link-price-input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .link-row select.link-category-select {
+    flex: 1;
+    padding: 8px 6px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 12px;
   }
   .link-row button {
     width: auto;
@@ -162,6 +202,67 @@
     padding: 8px;
     font-size: 13px;
   }
+
+  .manual-method-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+  }
+  .manual-method-row input[type="text"] {
+    flex: 1 1 45%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .manual-method-row input[type="file"] {
+    flex: 1 1 100%;
+    font-size: 12px;
+  }
+  .manual-method-row img {
+    max-width: 80px;
+    border-radius: 6px;
+    display: block;
+  }
+  .manual-method-row button {
+    width: auto;
+    margin: 0;
+    padding: 0 12px;
+    background: #c0392b;
+    border-radius: 8px;
+  }
+  #addManualMethodBtn {
+    background: white;
+    color: #2b3a67;
+    border: 1.5px dashed #2b3a67;
+    margin-top: 4px;
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .manual-order-item {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .manual-order-item .mo-price { color: #c0392b; font-weight: 700; }
+  .manual-order-item .mo-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .manual-order-item .mo-actions button {
+    width: auto;
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  .manual-order-item .verifyBtn { background: #2e8b57; }
+  .manual-order-item .rejectBtn { background: #c0392b; }
+
 /* ===== Responsive Layout ===== */
 
 html{
@@ -295,6 +396,23 @@ iframe{
   <div class="msg" id="chipBarMsg"></div>
 </div>
 
+<div class="card" id="manualPaymentCard" style="display:none;">
+  <h2>💳 Metode Pembayaran Manual</h2>
+  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Dipakai untuk link kategori "Manual" (konten yang tidak boleh lewat Duitku). Tambah sebanyak yang perlu — QRIS, rekening, e-wallet, dll. Gambar QR opsional.</p>
+
+  <div id="manualMethodsContainer"></div>
+  <button type="button" id="addManualMethodBtn">+ Tambah Metode Pembayaran</button>
+
+  <button id="saveManualPaymentBtn" style="margin-top:16px;">Simpan Metode Pembayaran</button>
+  <div class="msg" id="manualPaymentMsg"></div>
+</div>
+
+<div class="card" id="manualOrdersCard" style="display:none;">
+  <h2>📋 Verifikasi Pembayaran Manual</h2>
+  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Klaim "sudah bayar" dari pembeli konten kategori Manual muncul di sini. Cek mutasi kamu sendiri dulu sebelum menekan Verifikasi.</p>
+  <div id="manualOrdersList"><p class="empty">Memuat...</p></div>
+</div>
+
 <div class="card" id="formCard" style="display:none;">
   <h2 id="formTitle">📤 Tambah Konten Baru</h2>
 
@@ -374,6 +492,8 @@ const formCard = document.getElementById("formCard");
 const listCard = document.getElementById("listCard");
 const contactCard = document.getElementById("contactCard");
 const chipBarCard = document.getElementById("chipBarCard");
+const manualPaymentCard = document.getElementById("manualPaymentCard");
+const manualOrdersCard = document.getElementById("manualOrdersCard");
 const loginMsg = document.getElementById("loginMsg");
 const formMsg = document.getElementById("formMsg");
 const formTitle = document.getElementById("formTitle");
@@ -399,8 +519,12 @@ onAuthStateChanged(auth, (user) => {
     listCard.style.display = "block";
     contactCard.style.display = "block";
     chipBarCard.style.display = "block";
+    manualPaymentCard.style.display = "block";
+    manualOrdersCard.style.display = "block";
     loadContactSettings();
     loadChipBarSettings();
+    loadManualPaymentSettings();
+    listenManualOrders();
     listenPosts();
   } else {
     loginCard.style.display = "block";
@@ -408,6 +532,8 @@ onAuthStateChanged(auth, (user) => {
     listCard.style.display = "none";
     contactCard.style.display = "none";
     chipBarCard.style.display = "none";
+    manualPaymentCard.style.display = "none";
+    manualOrdersCard.style.display = "none";
   }
 });
 
@@ -437,13 +563,23 @@ document.getElementById("photos").addEventListener("change", (e) => {
 
 const linksContainer = document.getElementById("linksContainer");
 
-function addLinkRow(label = "", url = "") {
+function addLinkRow(label = "", url = "", price = "", category = "auto") {
   const row = document.createElement("div");
   row.className = "link-row";
   row.innerHTML = `
-    <input type="text" placeholder="Nama (mis. Kuis)" value="${escapeAttr(label)}">
-    <input type="url" placeholder="https://..." value="${escapeAttr(url)}">
-    <button type="button">✕</button>
+    <div class="link-row-main">
+      <input type="text" class="link-label-input" placeholder="Nama (mis. Kuis)" value="${escapeAttr(label)}">
+      <input type="url" placeholder="https://..." value="${escapeAttr(url)}">
+      <button type="button">✕</button>
+    </div>
+    <div class="link-price-row">
+      <label>Harga (Rp)</label>
+      <input type="number" class="link-price-input" placeholder="Kosongkan = gratis" min="0" step="500" value="${escapeAttr(price)}">
+      <select class="link-category-select" title="Jalur pembayaran">
+        <option value="auto" ${category === "auto" ? "selected" : ""}>Otomatis (Duitku)</option>
+        <option value="manual" ${category === "manual" ? "selected" : ""}>Manual (Verifikasi Admin)</option>
+      </select>
+    </div>
   `;
   row.querySelector("button").onclick = () => row.remove();
   linksContainer.appendChild(row);
@@ -456,8 +592,11 @@ function getLinksFromForm() {
     const inputs = row.querySelectorAll("input");
     const label = inputs[0].value.trim();
     const url = inputs[1].value.trim();
+    const priceRaw = inputs[2].value.trim();
+    const price = priceRaw ? Math.max(0, Math.round(Number(priceRaw))) : 0;
+    const category = row.querySelector(".link-category-select").value;
     if (url) {
-      links.push({ label: label || "Buka video", url });
+      links.push({ label: label || "Buka video", url, price, category: price > 0 ? category : "auto" });
     }
   });
   return links;
@@ -496,6 +635,25 @@ function resetForm() {
 
 cancelEditBtn.onclick = resetForm;
 
+function splitLinksForSave(links) {
+  // links: [{ label, url, price, category }]
+  // publicLinks: yang masuk dokumen "posts" (publik) — link gratis tetap bawa url,
+  // link berbayar TIDAK bawa url (biar tidak bocor sebelum bayar).
+  // secretMap: url asli link berbayar, disimpan terpisah di "linkSecrets".
+  const publicLinks = [];
+  const secretMap = {};
+  links.forEach((l, idx) => {
+    const price = l.price || 0;
+    if (price > 0) {
+      publicLinks.push({ label: l.label, price, category: l.category === "manual" ? "manual" : "auto" });
+      secretMap[String(idx)] = l.url;
+    } else {
+      publicLinks.push({ label: l.label, url: l.url, price: 0 });
+    }
+  });
+  return { publicLinks, secretMap };
+}
+
 submitBtn.onclick = async () => {
   formMsg.className = "msg";
   formMsg.textContent = "";
@@ -525,13 +683,19 @@ submitBtn.onclick = async () => {
 
     formMsg.textContent = "Menyimpan data...";
 
+    const { publicLinks, secretMap } = splitLinksForSave(links);
+
     if (editingId) {
       await updateDoc(doc(db, "posts", editingId), {
         photoUrls,
-        links,
+        links: publicLinks,
         tags,
         caption: caption || null
       });
+      // Selalu tulis ulang linkSecrets (walau kosong) supaya link lama yang
+      // sudah dihapus/diubah jadi gratis tidak nyangkut di sana.
+      await setDoc(doc(db, "linkSecrets", editingId), secretMap);
+
       formMsg.className = "msg success";
       formMsg.textContent = "Materi berhasil diperbarui!";
 
@@ -545,11 +709,15 @@ submitBtn.onclick = async () => {
     } else {
       const docRef = await addDoc(collection(db, "posts"), {
         photoUrls,
-        links,
+        links: publicLinks,
         tags,
         caption: caption || null,
         createdAt: serverTimestamp()
       });
+      if (Object.keys(secretMap).length > 0) {
+        await setDoc(doc(db, "linkSecrets", docRef.id), secretMap);
+      }
+
       formMsg.className = "msg success";
       formMsg.textContent = "Berhasil dibagikan konten!";
 
@@ -581,7 +749,7 @@ function resetFieldsOnly() {
   }
 }
 
-function startEdit(id, data) {
+async function startEdit(id, data) {
   editingId = id;
   editingExistingPhotos = data.photoUrls || [];
   formTitle.textContent = "✏️ Edit konten";
@@ -590,10 +758,27 @@ function startEdit(id, data) {
 
   linksContainer.innerHTML = "";
   const existingLinks = data.links || (data.taskLink ? [{ label: "Buka video", url: data.taskLink }] : []);
+
+  // Link berbayar tidak bawa "url" di dokumen posts (biar tidak bocor ke publik),
+  // jadi ambil URL aslinya dari linkSecrets khusus buat ditampilkan di form edit.
+  let secretMap = {};
+  const hasPaidLink = existingLinks.some(l => l.price > 0);
+  if (hasPaidLink) {
+    try {
+      const secretSnap = await getDoc(doc(db, "linkSecrets", id));
+      if (secretSnap.exists()) secretMap = secretSnap.data();
+    } catch (err) {
+      console.error("Gagal ambil linkSecrets:", err);
+    }
+  }
+
   if (existingLinks.length === 0) {
     addLinkRow();
   } else {
-    existingLinks.forEach(l => addLinkRow(l.label, l.url));
+    existingLinks.forEach((l, idx) => {
+      const url = l.price > 0 ? (secretMap[String(idx)] || "") : l.url;
+      addLinkRow(l.label, url, l.price || "", l.category || "auto");
+    });
   }
 
   document.getElementById("tags").value = (data.tags || []).join(", ");
@@ -721,7 +906,10 @@ function applyAdminSearch() {
 
     const linksList = data.links || (data.taskLink ? [{ label: "Buka Link", url: data.taskLink }] : []);
     const linksHtml = linksList
-      .map(l => `<div class="link">🔗 ${highlightMatch(l.label, terms)}: ${highlightMatch(l.url, terms)}</div>`)
+      .map(l => {
+        const priceLabel = l.price ? ` <strong style="color:#c0392b;">(Rp ${Number(l.price).toLocaleString("id-ID")})</strong>` : ' <span style="color:#4caf50;">(Gratis)</span>';
+        return `<div class="link">🔗 ${highlightMatch(l.label, terms)}${priceLabel}: ${highlightMatch(l.url, terms)}</div>`;
+      })
       .join("");
 
     const tagsList = data.tags || [];
@@ -826,6 +1014,144 @@ document.getElementById("saveChipBarBtn").onclick = async () => {
     msgEl.textContent = "Gagal: " + err.message;
   }
 };
+
+/* ================== METODE PEMBAYARAN MANUAL ================== */
+
+const manualMethodsContainer = document.getElementById("manualMethodsContainer");
+
+function addManualMethodRow(name = "", detail = "", qrImageUrl = "") {
+  const row = document.createElement("div");
+  row.className = "manual-method-row";
+  row.innerHTML = `
+    <input type="text" class="mm-name" placeholder="Nama metode (mis. QRIS / BCA / DANA)" value="${escapeAttr(name)}">
+    <input type="text" class="mm-detail" placeholder="Nomor rekening / e-wallet / catatan" value="${escapeAttr(detail)}">
+    <input type="file" class="mm-qr-file" accept="image/*">
+    <button type="button" class="mm-remove">✕</button>
+    <div class="mm-qr-preview"></div>
+  `;
+  row.dataset.qrImageUrl = qrImageUrl || "";
+
+  const preview = row.querySelector(".mm-qr-preview");
+  function renderPreview() {
+    preview.innerHTML = row.dataset.qrImageUrl
+      ? `<img src="${row.dataset.qrImageUrl}" title="Gambar QR tersimpan">`
+      : "";
+  }
+  renderPreview();
+
+  row.querySelector(".mm-remove").onclick = () => row.remove();
+  row.querySelector(".mm-qr-file").onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    preview.innerHTML = `<span style="font-size:11px; color:#888;">Mengunggah QR...</span>`;
+    try {
+      const url = await uploadToImgbb(file);
+      row.dataset.qrImageUrl = url;
+      renderPreview();
+    } catch (err) {
+      preview.innerHTML = `<span style="font-size:11px; color:#c0392b;">Gagal upload QR</span>`;
+      console.error(err);
+    }
+  };
+
+  manualMethodsContainer.appendChild(row);
+}
+
+function getManualMethodsFromForm() {
+  const rows = manualMethodsContainer.querySelectorAll(".manual-method-row");
+  const methods = [];
+  rows.forEach((row) => {
+    const name = row.querySelector(".mm-name").value.trim();
+    const detail = row.querySelector(".mm-detail").value.trim();
+    const qrImageUrl = row.dataset.qrImageUrl || "";
+    if (name && (detail || qrImageUrl)) {
+      methods.push({ name, detail, qrImageUrl });
+    }
+  });
+  return methods;
+}
+
+document.getElementById("addManualMethodBtn").onclick = () => addManualMethodRow();
+
+async function loadManualPaymentSettings() {
+  try {
+    manualMethodsContainer.innerHTML = "";
+    const snap = await getDoc(doc(db, "settings", "manualPayment"));
+    const methods = snap.exists() ? (snap.data().methods || []) : [];
+    if (methods.length === 0) {
+      addManualMethodRow();
+    } else {
+      methods.forEach(m => addManualMethodRow(m.name, m.detail, m.qrImageUrl));
+    }
+  } catch (err) {
+    console.error("Gagal memuat metode pembayaran manual:", err);
+  }
+}
+
+document.getElementById("saveManualPaymentBtn").onclick = async () => {
+  const msgEl = document.getElementById("manualPaymentMsg");
+  msgEl.className = "msg";
+  msgEl.textContent = "Menyimpan...";
+  try {
+    const methods = getManualMethodsFromForm();
+    await setDoc(doc(db, "settings", "manualPayment"), { methods });
+    msgEl.className = "msg success";
+    msgEl.textContent = "Metode pembayaran berhasil disimpan!";
+  } catch (err) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Gagal: " + err.message;
+  }
+};
+
+/* ================== VERIFIKASI KLAIM PEMBAYARAN MANUAL ================== */
+
+function listenManualOrders() {
+  const q = query(collection(db, "manualOrders"), orderBy("createdAt", "desc"));
+  onSnapshot(q, (snapshot) => {
+    const listEl = document.getElementById("manualOrdersList");
+    const pendingDocs = snapshot.docs.filter(d => d.data().status === "pending");
+
+    if (pendingDocs.length === 0) {
+      listEl.innerHTML = '<p class="empty">Tidak ada klaim pembayaran yang menunggu verifikasi.</p>';
+      return;
+    }
+
+    listEl.innerHTML = "";
+    pendingDocs.forEach((docSnap) => {
+      const data = docSnap.data();
+      const createdAt = data.createdAt?.toDate
+        ? data.createdAt.toDate().toLocaleString("id-ID")
+        : "";
+      const item = document.createElement("div");
+      item.className = "manual-order-item";
+      item.innerHTML = `
+        <div><strong>${escapeHtml(data.label || "Link")}</strong> — <span class="mo-price">Rp ${Number(data.price || 0).toLocaleString("id-ID")}</span></div>
+        <div style="color:#888; font-size:12px;">Post ID: ${escapeHtml(data.postId)} • ${createdAt}</div>
+        ${data.contact ? `<div>📞 Kontak: ${escapeHtml(data.contact)}</div>` : ""}
+        ${data.note ? `<div>📝 Catatan: ${escapeHtml(data.note)}</div>` : ""}
+        <div class="mo-actions">
+          <button type="button" class="verifyBtn">✅ Verifikasi (Buka Akses)</button>
+          <button type="button" class="rejectBtn">❌ Tolak</button>
+        </div>
+      `;
+      item.querySelector(".verifyBtn").onclick = () => updateManualOrderStatus(docSnap.id, "verified");
+      item.querySelector(".rejectBtn").onclick = () => updateManualOrderStatus(docSnap.id, "rejected");
+      listEl.appendChild(item);
+    });
+  });
+}
+
+async function updateManualOrderStatus(orderId, status) {
+  try {
+    await updateDoc(doc(db, "manualOrders", orderId), {
+      status,
+      verifiedAt: serverTimestamp()
+    });
+  } catch (err) {
+    alert("Gagal update status: " + err.message);
+    console.error(err);
+  }
+}
 
 async function sharePostLink(url) {
   const shareData = { url: url };
