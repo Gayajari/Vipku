@@ -504,6 +504,19 @@
   </div>
 </div>
 
+<div class="manual-modal-overlay" id="qrisModalOverlay">
+  <div class="manual-modal">
+    <button type="button" class="manual-modal-close" id="qrisModalClose">✕</button>
+    <h3 id="qrisModalTitle">Bayar QRIS</h3>
+    <div id="qrisModalPrice" class="manual-modal-price"></div>
+    <div style="text-align:center;">
+      <img id="qrisModalImg" src="" alt="QRIS" style="width:220px; max-width:100%; border-radius:8px; border:1px solid #eee;">
+      <div id="qrisModalExpiry" style="font-size:12px; color:#888; margin-top:8px;"></div>
+    </div>
+    <div id="qrisModalStatus"></div>
+  </div>
+</div>
+
 <div class="lightbox" id="lightbox" onclick="this.style.display='none'">
   <img id="lightbox-img" src="">
 </div>
@@ -587,8 +600,10 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
       btnEl.disabled = false;
       return handlePaidLinkClick(postId, linkIndex, price, label, btnEl);
     }
-    if (resData.paymentUrl) {
-      window.location.href = resData.paymentUrl;
+    if (resData.qrisImage) {
+      btnEl.textContent = originalText;
+      btnEl.disabled = false;
+      openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData: resData });
       return;
     }
     alert(resData.error || "Gagal membuat transaksi pembayaran.");
@@ -600,6 +615,104 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
   } finally {
     btnEl.disabled = false;
   }
+}
+
+/* ================== MODAL QRIS (DONGTUBE PAYMENT) ================== */
+
+let qrisUnsub = null; // listener status pembayaran realtime
+let qrisCountdownTimer = null; // countdown kadaluarsa QRIS
+
+function closeQrisModal() {
+  document.getElementById("qrisModalOverlay").classList.remove("open");
+  if (qrisUnsub) { qrisUnsub(); qrisUnsub = null; }
+  if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
+}
+
+document.getElementById("qrisModalClose").addEventListener("click", closeQrisModal);
+document.getElementById("qrisModalOverlay").addEventListener("click", (e) => {
+  if (e.target.id === "qrisModalOverlay") closeQrisModal();
+});
+
+function setQrisModalStatus(text, kind) {
+  const el = document.getElementById("qrisModalStatus");
+  if (!text) {
+    el.className = "";
+    el.innerHTML = "";
+    return;
+  }
+  el.className = "manual-modal-status " + kind;
+  el.textContent = text;
+}
+
+function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }) {
+  const overlay = document.getElementById("qrisModalOverlay");
+  const accessId = `${buyerId}_${postId}_${linkIndex}`;
+
+  document.getElementById("qrisModalTitle").textContent = label;
+  document.getElementById("qrisModalPrice").textContent =
+    "Rp " + Number(invoiceData.total || invoiceData.amount).toLocaleString("id-ID");
+  document.getElementById("qrisModalImg").src = invoiceData.qrisImage;
+  setQrisModalStatus("⏳ Menunggu pembayaran... scan QRIS di atas pakai e-wallet/m-banking. Halaman ini otomatis update begitu lunas.", "pending");
+  overlay.classList.add("open");
+
+  if (qrisUnsub) { qrisUnsub(); qrisUnsub = null; }
+  if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
+
+  const expiryEl = document.getElementById("qrisModalExpiry");
+  expiryEl.textContent = "";
+  if (invoiceData.expiredAt) {
+    const expiryDate = new Date(invoiceData.expiredAt);
+    qrisCountdownTimer = setInterval(() => {
+      const diff = expiryDate - new Date();
+      if (diff <= 0) {
+        expiryEl.textContent = "QRIS sudah kadaluarsa.";
+        setQrisModalStatus("❌ QRIS kadaluarsa. Tutup modal ini lalu klik tombol bayar lagi buat bikin QRIS baru.", "rejected");
+        clearInterval(qrisCountdownTimer);
+        qrisCountdownTimer = null;
+        return;
+      }
+      const mins = Math.floor(diff / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      expiryEl.textContent = `Berlaku ${mins}:${String(secs).padStart(2, "0")} lagi`;
+    }, 1000);
+  }
+
+  qrisUnsub = onSnapshot(doc(db, "paidAccess", accessId), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    if (data.status === "paid") {
+      if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
+      setQrisModalStatus("✅ Pembayaran diterima! Membuka link...", "verified");
+      setTimeout(async () => {
+        closeQrisModal();
+        btnEl.textContent = "Membuka...";
+        btnEl.disabled = true;
+        try {
+          const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ postId, linkIndex, buyerId })
+          });
+          const resData = await res.json();
+          if (resData.url) {
+            window.open(resData.url, "_blank", "noopener,noreferrer");
+            btnEl.textContent = "🔓 " + label;
+          } else {
+            alert(resData.error || "Gagal membuka link.");
+            btnEl.textContent = label;
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Gagal terhubung ke server. Coba lagi.");
+          btnEl.textContent = label;
+        } finally {
+          btnEl.disabled = false;
+        }
+      }, 900);
+    }
+  }, (err) => {
+    console.error("Gagal memantau status pembayaran QRIS:", err);
+  });
 }
 
 /* ================== PEMBAYARAN MANUAL (VERIFIKASI ADMIN) ================== */
