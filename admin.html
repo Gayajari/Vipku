@@ -398,7 +398,7 @@ iframe{
 
 <div class="card" id="manualPaymentCard" style="display:none;">
   <h2>💳 Metode Pembayaran Manual</h2>
-  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Dipakai untuk link kategori "Manual" (konten yang tidak boleh lewat Duitku). Tambah sebanyak yang perlu — QRIS, rekening, e-wallet, dll. Gambar QR opsional.</p>
+  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Dipakai untuk link kategori "Manual" (konten yang tidak boleh lewat Pakasir). Tambah sebanyak yang perlu — QRIS, rekening, e-wallet, dll. Gambar QR opsional.</p>
 
   <div id="manualMethodsContainer"></div>
   <button type="button" id="addManualMethodBtn">+ Tambah Metode Pembayaran</button>
@@ -576,7 +576,7 @@ function addLinkRow(label = "", url = "", price = "", category = "auto") {
       <label>Harga (Rp)</label>
       <input type="number" class="link-price-input" placeholder="Kosongkan = gratis" min="0" step="500" value="${escapeAttr(price)}">
       <select class="link-category-select" title="Jalur pembayaran">
-        <option value="auto" ${category === "auto" ? "selected" : ""}>Otomatis (Duitku)</option>
+        <option value="auto" ${category === "auto" ? "selected" : ""}>Otomatis (Pakasir)</option>
         <option value="manual" ${category === "manual" ? "selected" : ""}>Manual (Verifikasi Admin)</option>
       </select>
     </div>
