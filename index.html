@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vipku</title>
+<link rel="icon" id="siteFavicon" href="">
 <style>
   * { box-sizing: border-box; }
   body {
@@ -547,6 +548,51 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+/* ================== FAVICON (dari dasbor admin, di-cache di localStorage) ================== */
+// Cache biar tab icon langsung muncul tanpa nunggu round-trip ke Firestore
+// tiap kali situs dibuka, dan biar gak boros baca Firestore tiap page load.
+const FAVICON_CACHE_KEY = "vipku_favicon_cache";
+const FAVICON_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 jam — cukup cepat kalau admin ganti favicon, gak boros baca
+
+function applyFaviconTag(url) {
+  if (!url) return;
+  const link = document.getElementById("siteFavicon");
+  if (link) link.href = url;
+}
+
+function loadCachedFavicon() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(FAVICON_CACHE_KEY) || "null");
+    if (cached && cached.url) {
+      applyFaviconTag(cached.url);
+      return cached;
+    }
+  } catch (err) {
+    console.warn("Cache favicon rusak, diabaikan:", err);
+  }
+  return null;
+}
+
+async function refreshFaviconFromServer() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "favicon"));
+    if (snap.exists() && snap.data().url) {
+      const url = snap.data().url;
+      applyFaviconTag(url);
+      localStorage.setItem(FAVICON_CACHE_KEY, JSON.stringify({ url, cachedAt: Date.now() }));
+    }
+  } catch (err) {
+    console.error("Gagal memuat favicon dari server:", err);
+  }
+}
+
+(function initFavicon() {
+  const cached = loadCachedFavicon(); // pasang versi cache dulu — instan, tanpa flicker
+  const isStale = !cached || (Date.now() - cached.cachedAt > FAVICON_CACHE_TTL);
+  if (isStale) refreshFaviconFromServer(); // baru cek ke server kalau cache kosong/basi
+})();
+
 
 // GANTI dengan URL backend Vercel kamu setelah deploy folder paywall-backend
 const PAYWALL_BACKEND_URL = "https://GANTI-DENGAN-URL-BACKEND-VERCEL.vercel.app";
