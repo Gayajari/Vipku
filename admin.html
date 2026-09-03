@@ -434,6 +434,21 @@ iframe{
     </div>
 
     <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="faviconToggle">
+        🖼️ Favicon Website <span class="accordion-arrow" id="faviconArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="faviconCard">
+        <p style="font-size:12px; color:#888; margin:0 0 12px;">Ikon kecil yang muncul di tab browser & bookmark. Pakai gambar persegi (disarankan PNG 512x512 atau .ico) biar tidak gepeng.</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+          <img id="faviconPreview" src="" alt="Preview favicon" style="display:none; width:48px; height:48px; border-radius:8px; border:1px solid #eee; object-fit:cover;">
+          <input type="file" id="faviconFile" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/svg+xml,image/jpeg" style="flex:1;">
+        </div>
+        <button id="saveFaviconBtn">Simpan Favicon</button>
+        <div class="msg" id="faviconMsg"></div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
       <button type="button" class="accordion-bar" id="manualPaymentToggle">
         💳 Payment Gateway — Metode Manual <span class="accordion-arrow" id="manualPaymentArrow">▾</span>
       </button>
@@ -563,6 +578,7 @@ onAuthStateChanged(auth, (user) => {
     manualOrdersCard.style.display = "block";
     loadContactSettings();
     loadChipBarSettings();
+    loadFaviconSettings();
     loadManualPaymentSettings();
     listenManualOrders();
     listenPosts();
@@ -589,6 +605,7 @@ function setupAccordion(barId, bodyId, arrowId) {
 setupAccordion("settingsGroupToggle", "settingsGroupBody", "settingsGroupArrow");
 setupAccordion("contactToggle", "contactCard", "contactArrow");
 setupAccordion("chipBarToggle", "chipBarCard", "chipBarArrow");
+setupAccordion("faviconToggle", "faviconCard", "faviconArrow");
 setupAccordion("manualPaymentToggle", "manualPaymentCard", "manualPaymentArrow");
 
 document.getElementById("loginBtn").onclick = async () => {
@@ -1063,6 +1080,72 @@ document.getElementById("saveChipBarBtn").onclick = async () => {
     });
     msgEl.className = "msg success";
     msgEl.textContent = "Chip bar berhasil disimpan!";
+  } catch (err) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Gagal: " + err.message;
+  }
+};
+
+/* ================== FAVICON WEBSITE (+ CACHE localStorage) ================== */
+
+const FAVICON_CACHE_KEY = "vipku_favicon_cache";
+
+document.getElementById("faviconFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById("faviconPreview");
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "inline-block";
+});
+
+async function loadFaviconSettings() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "favicon"));
+    if (snap.exists() && snap.data().url) {
+      const url = snap.data().url;
+      const preview = document.getElementById("faviconPreview");
+      preview.src = url;
+      preview.style.display = "inline-block";
+      applyFaviconTag(url);
+    }
+  } catch (err) {
+    console.error("Gagal memuat favicon:", err);
+  }
+}
+
+function applyFaviconTag(url) {
+  if (!url) return;
+  let link = document.querySelector("link[rel~='icon']");
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "icon";
+    document.head.appendChild(link);
+  }
+  link.href = url;
+}
+
+document.getElementById("saveFaviconBtn").onclick = async () => {
+  const msgEl = document.getElementById("faviconMsg");
+  const file = document.getElementById("faviconFile").files[0];
+  if (!file) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Pilih file favicon dulu.";
+    return;
+  }
+  msgEl.className = "msg";
+  msgEl.textContent = "Mengupload & menyimpan...";
+  try {
+    const url = await uploadToImgbb(file);
+    await setDoc(doc(db, "settings", "favicon"), {
+      url,
+      updatedAt: new Date().toISOString()
+    });
+    // Update cache di localStorage biar index.html langsung pakai versi baru
+    // tanpa nunggu TTL cache-nya habis (lihat FAVICON_CACHE_TTL di index.html).
+    localStorage.setItem(FAVICON_CACHE_KEY, JSON.stringify({ url, cachedAt: Date.now() }));
+    applyFaviconTag(url);
+    msgEl.className = "msg success";
+    msgEl.textContent = "Favicon berhasil disimpan! Perubahan bakal muncul di situs utama (cache otomatis refresh, maks 6 jam).";
   } catch (err) {
     msgEl.className = "msg error";
     msgEl.textContent = "Gagal: " + err.message;
