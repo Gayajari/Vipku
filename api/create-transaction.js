@@ -1,10 +1,11 @@
 // api/create-transaction.js
 // Dipanggil dari index.html saat user klik "Bayar Sekarang" pada sebuah link.
 // Menerima: postId, linkIndex, price, buyerId, label
-// Mengembalikan: paymentUrl (halaman Duitku buat user pilih metode & bayar)
+// Mengembalikan: qrisImage + invoiceId (ditampilkan sebagai modal QR di frontend,
+// BUKAN redirect ke halaman bayar seperti provider sebelumnya).
 
 const { getDb } = require("../lib/firebaseAdmin");
-const { createTransaction } = require("../lib/duitku");
+const { createInvoice, resolveImageUrl } = require("../lib/dongtube");
 
 module.exports = async (req, res) => {
   // Izinkan dipanggil dari domain situs kamu (ganti sesuai domain asli nanti)
@@ -15,7 +16,7 @@ module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { postId, linkIndex, price, buyerId, label } = req.body || {};
+    const { postId, linkIndex, price, buyerId } = req.body || {};
 
     if (!postId || linkIndex === undefined || !price || !buyerId) {
       return res.status(400).json({ error: "Data tidak lengkap (postId/linkIndex/price/buyerId)." });
@@ -29,41 +30,58 @@ module.exports = async (req, res) => {
 
     // ID unik & deterministik per (pembeli + post + link) — dipakai buat cek status "sudah bayar"
     const accessId = `${buyerId}_${postId}_${linkIndex}`;
+    const accessRef = db.collection("paidAccess").doc(accessId);
+    const existing = await accessRef.get();
 
-    // Kalau sebelumnya SUDAH pernah bayar link ini, langsung bilang sudah lunas,
-    // tidak perlu bikin transaksi baru.
-    const existing = await db.collection("paidAccess").doc(accessId).get();
     if (existing.exists && existing.data().status === "paid") {
       return res.status(200).json({ alreadyPaid: true });
     }
 
-    // merchantOrderId harus unik tiap kali coba bayar (beda dari accessId)
-    const merchantOrderId = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Kalau masih ada invoice QRIS pending & belum kadaluarsa, pakai lagi
+    // (biar user gak numpuk banyak invoice tiap kali klik ulang / reload).
+    if (existing.exists) {
+      const d = existing.data();
+      if (d.status === "pending" && d.expiredAt && new Date(d.expiredAt) > new Date()) {
+        return res.status(200).json({
+          accessId,
+          invoiceId: d.invoiceId,
+          qrisImage: resolveImageUrl(d.qrisImage),
+          amount: d.price,
+          total: d.total,
+          fee: d.fee,
+          expiredAt: d.expiredAt
+        });
+      }
+    }
 
-    const siteUrl = process.env.SITE_URL; // contoh: https://vipku-mu.vercel.app atau domain kamu
-    const backendUrl = process.env.BACKEND_URL; // URL backend Vercel ini sendiri
+    const invoice = await createInvoice(amount);
 
-    const duitkuRes = await createTransaction({
-      merchantOrderId,
-      paymentAmount: amount,
-      productDetails: label || "Akses Konten",
-      email: "buyer@vipku.local", // Duitku wajib ada email; ini bukan email asli pembeli
-      callbackUrl: `${backendUrl}/api/duitku-callback`,
-      returnUrl: `${siteUrl}/?post=${encodeURIComponent(postId)}&paid=1`
-    });
-
-    // Simpan transaksi berstatus "pending" — nanti diupdate jadi "paid" oleh callback
-    await db.collection("paidAccess").doc(accessId).set({
+    // Simpan transaksi berstatus "pending" — nanti diupdate jadi "paid" oleh
+    // webhook (lihat api/dongtube-callback.js), lalu frontend memantau
+    // dokumen ini secara realtime lewat onSnapshot.
+    await accessRef.set({
       buyerId,
       postId,
       linkIndex,
       price: amount,
       status: "pending",
-      merchantOrderId,
+      invoiceId: invoice.invoice_id,
+      total: invoice.total,
+      fee: invoice.fee,
+      qrisImage: invoice.qris_image,
+      expiredAt: invoice.expired_at,
       createdAt: new Date().toISOString()
     });
 
-    return res.status(200).json({ paymentUrl: duitkuRes.paymentUrl, merchantOrderId });
+    return res.status(200).json({
+      accessId,
+      invoiceId: invoice.invoice_id,
+      qrisImage: resolveImageUrl(invoice.qris_image),
+      amount: invoice.amount,
+      total: invoice.total,
+      fee: invoice.fee,
+      expiredAt: invoice.expired_at
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message || "Terjadi kesalahan server." });
