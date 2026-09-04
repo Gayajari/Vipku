@@ -600,7 +600,7 @@ async function refreshFaviconFromServer() {
 
 
 // GANTI dengan URL backend Vercel kamu setelah deploy folder paywall-backend
-const PAYWALL_BACKEND_URL = "https://vipkuu.vercel.app";
+const PAYWALL_BACKEND_URL = "https://GANTI-DENGAN-URL-BACKEND-VERCEL.vercel.app";
 
 function getBuyerId() {
   let id = localStorage.getItem("buyerId");
@@ -628,19 +628,9 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
 
     if (isStillValid) {
       btnEl.textContent = "Membuka...";
-      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, linkIndex, buyerId })
-      });
-      const resData = await res.json();
-      if (resData.url) {
-        window.open(resData.url, "_blank", "noopener,noreferrer");
-        btnEl.textContent = "🔓 " + label;
-        return;
-      }
-      alert(resData.error || "Gagal membuka link.");
-      btnEl.textContent = originalText;
+      const opened = await openPaidLink({ postId, linkIndex, buyerId, label, btnEl });
+      if (!opened) btnEl.textContent = originalText;
+      btnEl.disabled = false;
       return;
     }
 
@@ -671,6 +661,63 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
   } finally {
     btnEl.disabled = false;
   }
+}
+
+/* ================== BUKA LINK BERBAYAR (SHORTLINK PERMANEN + SAVE HINT) ================== */
+
+// Ambil {url, shortUrl} dari backend, buka shortUrl (bukan url mentah) di tab
+// baru, terus tampilin tombol "Salin Link" biar bisa disave/bookmark buat
+// dibuka lagi nanti tanpa balik ke situs. shortUrl selalu ngecek ulang status
+// bayar + ambil tujuan TERBARU tiap kali dibuka (lihat api/l/[token].js),
+// jadi aman disave dan otomatis ngikutin kalau admin ganti link di dasbor.
+async function openPaidLink({ postId, linkIndex, buyerId, label, btnEl }) {
+  try {
+    const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId, linkIndex, buyerId })
+    });
+    const resData = await res.json();
+    if (resData.url) {
+      const openUrl = resData.shortUrl || resData.url;
+      window.open(openUrl, "_blank", "noopener,noreferrer");
+      btnEl.textContent = "🔓 " + label;
+      if (resData.shortUrl) showSavedLinkHint(btnEl, resData.shortUrl);
+      return true;
+    }
+    alert(resData.error || "Gagal membuka link.");
+    return false;
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan koneksi ke server pembayaran. Coba lagi.");
+    return false;
+  }
+}
+
+// Nampilin link + tombol "Salin" di bawah tombol, biar pembeli bisa
+// simpan/bookmark buat akses lagi nanti tanpa harus balik ke situs.
+function showSavedLinkHint(btnEl, shortUrl) {
+  const existing = btnEl.parentElement.querySelector(".saved-link-hint");
+  if (existing) existing.remove();
+
+  const hint = document.createElement("div");
+  hint.className = "saved-link-hint";
+  hint.style.cssText = "font-size:11px; color:#888; margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;";
+  hint.innerHTML = `
+    <span>💾 Simpan link ini biar bisa buka lagi kapan aja:</span>
+    <button type="button" style="font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #ccc; background:#f5f6fa; cursor:pointer;">📋 Salin Link</button>
+  `;
+  const copyBtn = hint.querySelector("button");
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+      copyBtn.textContent = "✅ Tersalin!";
+      setTimeout(() => { copyBtn.textContent = "📋 Salin Link"; }, 1800);
+    } catch (err) {
+      prompt("Salin link ini manual:", shortUrl);
+    }
+  });
+  btnEl.insertAdjacentElement("afterend", hint);
 }
 
 /* ================== MODAL QRIS (DONGTUBE PAYMENT) ================== */
@@ -743,27 +790,9 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
         closeQrisModal();
         btnEl.textContent = "Membuka...";
         btnEl.disabled = true;
-        try {
-          const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ postId, linkIndex, buyerId })
-          });
-          const resData = await res.json();
-          if (resData.url) {
-            window.open(resData.url, "_blank", "noopener,noreferrer");
-            btnEl.textContent = "🔓 " + label;
-          } else {
-            alert(resData.error || "Gagal membuka link.");
-            btnEl.textContent = label;
-          }
-        } catch (err) {
-          console.error(err);
-          alert("Gagal terhubung ke server. Coba lagi.");
-          btnEl.textContent = label;
-        } finally {
-          btnEl.disabled = false;
-        }
+        const opened = await openPaidLink({ postId, linkIndex, buyerId, label, btnEl });
+        if (!opened) btnEl.textContent = label;
+        btnEl.disabled = false;
       }, 900);
     }
   }, (err) => {
@@ -821,8 +850,12 @@ async function openManualBuyLink(postId, linkIndex, buyerId, btnEl) {
     });
     const resData = await res.json();
     if (resData.url) {
-      window.open(resData.url, "_blank", "noopener,noreferrer");
-      if (btnEl) btnEl.textContent = "🔓 Terverifikasi — buka lagi";
+      const openUrl = resData.shortUrl || resData.url;
+      window.open(openUrl, "_blank", "noopener,noreferrer");
+      if (btnEl) {
+        btnEl.textContent = "🔓 Terverifikasi — buka lagi";
+        if (resData.shortUrl) showSavedLinkHint(btnEl, resData.shortUrl);
+      }
     } else {
       alert(resData.error || "Gagal membuka link.");
     }
