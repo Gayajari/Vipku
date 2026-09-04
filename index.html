@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vipku</title>
 <link rel="icon" id="siteFavicon" href="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
   * { box-sizing: border-box; }
   body {
@@ -81,7 +83,8 @@
   }
   .post-link-paid {
     width: calc(100% - 30px);
-    background: #b8860b;
+    background: linear-gradient(135deg, #b8860b, #d4a017);
+    background-size: 200% 200%;
     color: white;
     border: none;
     text-align: center;
@@ -91,9 +94,24 @@
     font-size: 14px;
     cursor: pointer;
     font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    animation: paidBtnGlow 3s ease-in-out infinite;
   }
-  .post-link-paid:active { background: #966f09; }
-  .post-link-paid:disabled { opacity: 0.6; cursor: default; }
+  .post-link-paid:active { background: #966f09; animation: none; }
+  .post-link-paid:disabled { opacity: 0.6; cursor: default; animation: none; }
+  .post-link-paid .lock-icon { flex-shrink: 0; }
+  .post-link-paid .lock-shackle { transform-origin: 8px 10.5px; animation: lockShackleSwing 2.4s ease-in-out infinite; }
+  @keyframes paidBtnGlow {
+    0%, 100% { background-position: 0% 50%; box-shadow: 0 0 0 rgba(184,134,11,0); }
+    50% { background-position: 100% 50%; box-shadow: 0 0 10px rgba(184,134,11,0.55); }
+  }
+  @keyframes lockShackleSwing {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-6deg); }
+  }
   .post-share {
     display: table;
     margin: 0 auto 15px auto;
@@ -256,9 +274,11 @@
     border-radius: 20px;
     font-size: 13px;
     outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
   }
   .search-input-wrap input:focus {
     border-color: #2b3a67;
+    box-shadow: 0 0 0 3px rgba(43,58,103,0.12);
   }
   .search-input-wrap #searchBtn {
     position: absolute;
@@ -273,8 +293,25 @@
     border-radius: 50%;
     background: #2b3a67;
     color: #fff;
-    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(43,58,103,0.35);
     cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .search-input-wrap #searchBtn:active {
+    transform: translateY(-50%) scale(0.85);
+    background: #1f2c50;
+  }
+  .search-input-wrap input:focus ~ #searchBtn,
+  .search-input-wrap #searchBtn.bounce {
+    animation: searchIconBounce 0.5s ease;
+  }
+  @keyframes searchIconBounce {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    40% { transform: translateY(-50%) scale(1.18) rotate(-12deg); }
+    70% { transform: translateY(-50%) scale(0.95) rotate(4deg); }
   }
   .search-input-wrap #clearBtn {
     display: none;
@@ -430,6 +467,44 @@
   .manual-modal-status.verified { background: #d4edda; color: #155724; }
   .manual-modal-status.rejected { background: #f8d7da; color: #721c24; }
 
+  /* animasi sukses pembayaran QRIS */
+  .qris-success-anim {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0 6px;
+  }
+  .qris-success-anim.show { display: flex; }
+  .qsa-circle {
+    stroke-dasharray: 283;
+    stroke-dashoffset: 283;
+    animation: qsaCircleDraw 0.5s ease-out forwards;
+  }
+  .qsa-check {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: qsaCheckDraw 0.35s ease-out 0.45s forwards;
+  }
+  .qsa-label {
+    margin-top: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #2e8b57;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: qsaLabelPop 0.35s ease-out 0.75s forwards;
+  }
+  @keyframes qsaCircleDraw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes qsaCheckDraw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes qsaLabelPop {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .contact-bar{
     display:flex;
     justify-content:center;
@@ -473,8 +548,10 @@
 
 <div class="search-bar">
   <div class="search-input-wrap">
-    <button type="button" id="searchBtn" aria-label="Cari">🔍</button>
-    <input type="text" id="searchInput" placeholder="Cari tag atau judul...">
+    <button type="button" id="searchBtn" aria-label="Cari">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+    </button>
+    <input type="text" id="searchInput" placeholder="Cari">
     <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
   </div>
   <div class="search-suggestions" id="searchSuggestions"></div>
@@ -510,7 +587,7 @@
     <button type="button" class="manual-modal-close" id="qrisModalClose">✕</button>
     <h3 id="qrisModalTitle">Bayar QRIS</h3>
     <div id="qrisModalPrice" class="manual-modal-price"></div>
-    <div style="text-align:center;">
+    <div id="qrisModalQrWrap" style="text-align:center;">
       <img id="qrisModalImg" src="" alt="QRIS" style="width:220px; max-width:100%; border-radius:8px; border:1px solid #eee;">
       <div style="font-size:11px; color:#999; margin-top:10px; line-height:1.5;">
         ✅ Support semua e-wallet & m-banking berlogo QRIS:<br>
@@ -518,6 +595,13 @@
         Tinggal scan pakai app apa aja, nggak perlu app khusus.
       </div>
       <div id="qrisModalExpiry" style="font-size:12px; color:#888; margin-top:8px;"></div>
+    </div>
+    <div id="qrisSuccessAnim" class="qris-success-anim">
+      <svg viewBox="0 0 100 100" width="88" height="88">
+        <circle class="qsa-circle" cx="50" cy="50" r="45" fill="none" stroke="#2e8b57" stroke-width="6"/>
+        <path class="qsa-check" fill="none" stroke="#2e8b57" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" d="M28 52 L44 68 L74 34"/>
+      </svg>
+      <div class="qsa-label">Pembayaran Berhasil!</div>
     </div>
     <div id="qrisModalStatus"></div>
   </div>
@@ -628,9 +712,19 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
 
     if (isStillValid) {
       btnEl.textContent = "Membuka...";
-      const opened = await openPaidLink({ postId, linkIndex, buyerId, label, btnEl });
-      if (!opened) btnEl.textContent = originalText;
-      btnEl.disabled = false;
+      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, linkIndex, buyerId })
+      });
+      const resData = await res.json();
+      if (resData.url) {
+        window.open(resData.url, "_blank", "noopener,noreferrer");
+        btnEl.textContent = "🔓 " + label;
+        return;
+      }
+      alert(resData.error || "Gagal membuka link.");
+      btnEl.textContent = originalText;
       return;
     }
 
@@ -663,72 +757,18 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
   }
 }
 
-/* ================== BUKA LINK BERBAYAR (SHORTLINK PERMANEN + SAVE HINT) ================== */
-
-// Ambil {url, shortUrl} dari backend, buka shortUrl (bukan url mentah) di tab
-// baru, terus tampilin tombol "Salin Link" biar bisa disave/bookmark buat
-// dibuka lagi nanti tanpa balik ke situs. shortUrl selalu ngecek ulang status
-// bayar + ambil tujuan TERBARU tiap kali dibuka (lihat api/l/[token].js),
-// jadi aman disave dan otomatis ngikutin kalau admin ganti link di dasbor.
-async function openPaidLink({ postId, linkIndex, buyerId, label, btnEl }) {
-  try {
-    const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postId, linkIndex, buyerId })
-    });
-    const resData = await res.json();
-    if (resData.url) {
-      const openUrl = resData.shortUrl || resData.url;
-      window.open(openUrl, "_blank", "noopener,noreferrer");
-      btnEl.textContent = "🔓 " + label;
-      if (resData.shortUrl) showSavedLinkHint(btnEl, resData.shortUrl);
-      return true;
-    }
-    alert(resData.error || "Gagal membuka link.");
-    return false;
-  } catch (err) {
-    console.error(err);
-    alert("Terjadi kesalahan koneksi ke server pembayaran. Coba lagi.");
-    return false;
-  }
-}
-
-// Nampilin link + tombol "Salin" di bawah tombol, biar pembeli bisa
-// simpan/bookmark buat akses lagi nanti tanpa harus balik ke situs.
-function showSavedLinkHint(btnEl, shortUrl) {
-  const existing = btnEl.parentElement.querySelector(".saved-link-hint");
-  if (existing) existing.remove();
-
-  const hint = document.createElement("div");
-  hint.className = "saved-link-hint";
-  hint.style.cssText = "font-size:11px; color:#888; margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;";
-  hint.innerHTML = `
-    <span>💾 Simpan link ini biar bisa buka lagi kapan aja:</span>
-    <button type="button" style="font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #ccc; background:#f5f6fa; cursor:pointer;">📋 Salin Link</button>
-  `;
-  const copyBtn = hint.querySelector("button");
-  copyBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(shortUrl);
-      copyBtn.textContent = "✅ Tersalin!";
-      setTimeout(() => { copyBtn.textContent = "📋 Salin Link"; }, 1800);
-    } catch (err) {
-      prompt("Salin link ini manual:", shortUrl);
-    }
-  });
-  btnEl.insertAdjacentElement("afterend", hint);
-}
-
 /* ================== MODAL QRIS (DONGTUBE PAYMENT) ================== */
 
 let qrisUnsub = null; // listener status pembayaran realtime
 let qrisCountdownTimer = null; // countdown kadaluarsa QRIS
+let qrisPollTimer = null; // jalur cadangan: nanya status aktif tiap beberapa detik,
+                           // jaga-jaga webhook Dongtube telat/gagal sampai
 
 function closeQrisModal() {
   document.getElementById("qrisModalOverlay").classList.remove("open");
   if (qrisUnsub) { qrisUnsub(); qrisUnsub = null; }
   if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
+  if (qrisPollTimer) { clearInterval(qrisPollTimer); qrisPollTimer = null; }
 }
 
 document.getElementById("qrisModalClose").addEventListener("click", closeQrisModal);
@@ -755,6 +795,8 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
   document.getElementById("qrisModalPrice").textContent =
     "Rp " + Number(invoiceData.total || invoiceData.amount).toLocaleString("id-ID");
   document.getElementById("qrisModalImg").src = invoiceData.qrisImage;
+  document.getElementById("qrisModalQrWrap").style.display = "block";
+  document.getElementById("qrisSuccessAnim").classList.remove("show");
   setQrisModalStatus("⏳ Menunggu pembayaran... scan QRIS di atas pakai e-wallet/m-banking. Halaman ini otomatis update begitu lunas.", "pending");
   overlay.classList.add("open");
 
@@ -780,24 +822,73 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
     }, 1000);
   }
 
+  async function handleQrisPaidConfirmed() {
+    if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
+    if (qrisPollTimer) { clearInterval(qrisPollTimer); qrisPollTimer = null; }
+    document.getElementById("qrisModalQrWrap").style.display = "none";
+    setQrisModalStatus("", "");
+    document.getElementById("qrisSuccessAnim").classList.add("show");
+    setTimeout(async () => {
+      closeQrisModal();
+      btnEl.textContent = "Membuka...";
+      btnEl.disabled = true;
+      try {
+        const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ postId, linkIndex, buyerId })
+        });
+        const resData = await res.json();
+        if (resData.url) {
+          window.open(resData.url, "_blank", "noopener,noreferrer");
+          btnEl.textContent = "🔓 " + label;
+        } else {
+          alert(resData.error || "Gagal membuka link.");
+          btnEl.textContent = label;
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Gagal terhubung ke server. Coba lagi.");
+        btnEl.textContent = label;
+      } finally {
+        btnEl.disabled = false;
+      }
+    }, 1400);
+  }
+
+  // Jalur 1 (utama, instan): dengar perubahan Firestore realtime — biasanya
+  // ini yang lebih dulu triggered kalau webhook Dongtube jalan normal.
   qrisUnsub = onSnapshot(doc(db, "paidAccess", accessId), (snap) => {
     if (!snap.exists()) return;
     const data = snap.data();
-    if (data.status === "paid") {
-      if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
-      setQrisModalStatus("✅ Pembayaran diterima! Membuka link...", "verified");
-      setTimeout(async () => {
-        closeQrisModal();
-        btnEl.textContent = "Membuka...";
-        btnEl.disabled = true;
-        const opened = await openPaidLink({ postId, linkIndex, buyerId, label, btnEl });
-        if (!opened) btnEl.textContent = label;
-        btnEl.disabled = false;
-      }, 900);
-    }
+    if (data.status === "paid") handleQrisPaidConfirmed();
   }, (err) => {
     console.error("Gagal memantau status pembayaran QRIS:", err);
   });
+
+  // Jalur 2 (cadangan): tiap 5 detik, AKTIF nanya ke backend "sudah lunas
+  // belum?" — backend-nya sendiri yang nanya langsung ke Dongtube kalau
+  // Firestore masih bilang pending. Ini jaga-jaga kalau webhook Dongtube
+  // gagal/telat sampai, sistem tetap "sembuh sendiri" tanpa user harus
+  // ngapa-ngapain selain nunggu.
+  qrisPollTimer = setInterval(async () => {
+    try {
+      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/check-invoice-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, linkIndex, buyerId })
+      });
+      const resData = await res.json();
+      if (resData.status === "paid") {
+        handleQrisPaidConfirmed();
+      } else if (resData.status === "expired") {
+        clearInterval(qrisPollTimer);
+        qrisPollTimer = null;
+      }
+    } catch (err) {
+      console.error("Polling status QRIS gagal (dicoba lagi 5 detik lagi):", err);
+    }
+  }, 5000);
 }
 
 /* ================== PEMBAYARAN MANUAL (VERIFIKASI ADMIN) ================== */
@@ -850,12 +941,8 @@ async function openManualBuyLink(postId, linkIndex, buyerId, btnEl) {
     });
     const resData = await res.json();
     if (resData.url) {
-      const openUrl = resData.shortUrl || resData.url;
-      window.open(openUrl, "_blank", "noopener,noreferrer");
-      if (btnEl) {
-        btnEl.textContent = "🔓 Terverifikasi — buka lagi";
-        if (resData.shortUrl) showSavedLinkHint(btnEl, resData.shortUrl);
-      }
+      window.open(resData.url, "_blank", "noopener,noreferrer");
+      if (btnEl) btnEl.textContent = "🔓 Terverifikasi — buka lagi";
     } else {
       alert(resData.error || "Gagal membuka link.");
     }
@@ -1122,6 +1209,11 @@ function setupSearch() {
   const clearBtn = document.getElementById("clearBtn");
   const suggestBox = document.getElementById("searchSuggestions");
 
+  input.addEventListener("focus", () => {
+    btn.classList.add("bounce");
+    setTimeout(() => btn.classList.remove("bounce"), 500);
+  });
+
   input.addEventListener("input", (e) => {
     const qText = e.target.value.trim().toLowerCase();
     clearBtn.style.display = e.target.value ? "block" : "none";
@@ -1248,13 +1340,15 @@ function renderPost(docSnap) {
     .join("");
   const photosClass = photoUrls.length > 1 ? "post-photos multi" : "post-photos single";
 
+  const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path class="lock-shackle" d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>`;
+
   const linksList = data.links || (data.taskLink ? [{ label: "Buka video", url: data.taskLink }] : []);
   const linkBtns = linksList
     .map((l, idx) => {
       if (l.price > 0) {
         const priceLabel = Number(l.price).toLocaleString("id-ID");
         const category = l.category === "manual" ? "manual" : "auto";
-        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">🔒 ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
+        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
       }
       return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">▶️ ${escapeHtml(l.label)}</a>`;
     })
