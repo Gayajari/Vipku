@@ -63,7 +63,13 @@ module.exports = async (req, res) => {
       return res.status(404).json({ error: "Link tidak ditemukan." });
     }
 
-    return res.status(200).json({ url });
+    // Shortlink permanen buat link ini — teksnya gak pernah berubah walau
+    // tujuannya (linkSecrets) diganti admin nanti. Bisa disave/bookmark.
+    const token = Buffer.from(accessId, "utf8").toString("base64url");
+    const backendUrl = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
+    const shortUrl = `${backendUrl}/api/l/${token}`;
+
+    return res.status(200).json({ url, shortUrl });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message || "Terjadi kesalahan server." });
