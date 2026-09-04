@@ -512,6 +512,11 @@
     <div id="qrisModalPrice" class="manual-modal-price"></div>
     <div style="text-align:center;">
       <img id="qrisModalImg" src="" alt="QRIS" style="width:220px; max-width:100%; border-radius:8px; border:1px solid #eee;">
+      <div style="font-size:11px; color:#999; margin-top:10px; line-height:1.5;">
+        ✅ Support semua e-wallet & m-banking berlogo QRIS:<br>
+        <b>DANA · OVO · GoPay · ShopeePay · LinkAja · BCA · BRI · Mandiri · BNI</b>, dll.<br>
+        Tinggal scan pakai app apa aja, nggak perlu app khusus.
+      </div>
       <div id="qrisModalExpiry" style="font-size:12px; color:#888; margin-top:8px;"></div>
     </div>
     <div id="qrisModalStatus"></div>
@@ -595,7 +600,7 @@ async function refreshFaviconFromServer() {
 
 
 // GANTI dengan URL backend Vercel kamu setelah deploy folder paywall-backend
-const PAYWALL_BACKEND_URL = "https://vipkuu.vercel.app";
+const PAYWALL_BACKEND_URL = "https://GANTI-DENGAN-URL-BACKEND-VERCEL.vercel.app";
 
 function getBuyerId() {
   let id = localStorage.getItem("buyerId");
@@ -615,8 +620,13 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
   try {
     btnEl.textContent = "Mengecek status...";
     const accessSnap = await getDoc(doc(db, "paidAccess", accessId));
+    const accessData = accessSnap.exists() ? accessSnap.data() : null;
+    const isStillValid =
+      accessData &&
+      accessData.status === "paid" &&
+      (!accessData.expiresAt || new Date(accessData.expiresAt) > new Date());
 
-    if (accessSnap.exists() && accessSnap.data().status === "paid") {
+    if (isStillValid) {
       btnEl.textContent = "Membuka...";
       const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
         method: "POST",
