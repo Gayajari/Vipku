@@ -4,6 +4,13 @@
 // sini otomatis begitu invoice QRIS LUNAS. Endpoint ini TIDAK dipanggil dari
 // browser — murni server-ke-server.
 //
+// CATATAN: kalau webhook ini karena suatu sebab nggak pernah sampai (URL
+// salah didaftarkan, ke-block, dsb), ada JALUR CADANGAN di
+// api/check-invoice-status.js yang di-poll aktif dari frontend selagi modal
+// QRIS terbuka — jadi sistem tetap bisa "sembuh sendiri" walau webhook ini
+// gagal total. Tapi tetap pastikan URL webhook ini didaftarkan dengan benar
+// di dashboard Dongtube, karena ini jalur yang paling instan/real-time.
+//
 // Dongtube mengirim header X-Signature = sha256=HMAC-SHA256(body mentah, API Key).
 // Kita WAJIB verifikasi signature ini pakai BODY MENTAH (belum di-parse JSON),
 // makanya bodyParser bawaan Vercel dimatikan (lewat handler.config di bagian
@@ -12,7 +19,7 @@
 
 const crypto = require("crypto");
 const { getDb } = require("../lib/firebaseAdmin");
-const { API_KEY } = require("../lib/dongtube");
+const { API_KEY, markAccessPaid } = require("../lib/dongtube");
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -39,6 +46,14 @@ async function handler(req, res) {
   try {
     const rawBody = await readRawBody(req);
     const signature = req.headers["x-signature"];
+
+    // LOG SEMENTARA buat debugging — begitu payment beneran masuk, cek tab
+    // "Logs" di Vercel dashboard. Kalau baris ini SAMA SEKALI nggak muncul
+    // pas kamu bayar, artinya webhook-nya nggak sampai ke server ini sama
+    // sekali (URL di dashboard Dongtube salah/belum didaftarkan) — bukan
+    // soal signature. Hapus 2 baris console.log ini kalau sudah yakin beres.
+    console.log("Webhook Dongtube masuk. Signature header:", signature);
+    console.log("Raw body:", rawBody);
 
     if (!isValidSignature(rawBody, signature)) {
       console.warn("Signature webhook Dongtube tidak valid — kemungkinan bukan dari Dongtube.");
@@ -67,24 +82,7 @@ async function handler(req, res) {
     const docRef = snap.docs[0].ref;
 
     if (status === "paid" || payload.event === "invoice.paid") {
-      // Ambil durasi akses yang diset admin (settings/accessDuration.hours).
-      // 0/kosong = permanen (nggak dikasih expiresAt sama sekali).
-      let expiresAt = null;
-      try {
-        const durationSnap = await db.collection("settings").doc("accessDuration").get();
-        const hours = durationSnap.exists ? Number(durationSnap.data().hours) || 0 : 0;
-        if (hours > 0) {
-          expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
-        }
-      } catch (err) {
-        console.error("Gagal ambil setting durasi akses, fallback ke permanen:", err);
-      }
-
-      await docRef.update({
-        status: "paid",
-        paidAt: paidAt || new Date().toISOString(),
-        expiresAt // null = permanen
-      });
+      await markAccessPaid(db, docRef, paidAt);
     }
 
     return res.status(200).send("OK");
