@@ -6,15 +6,13 @@
 //
 // Dongtube mengirim header X-Signature = sha256=HMAC-SHA256(body mentah, API Key).
 // Kita WAJIB verifikasi signature ini pakai BODY MENTAH (belum di-parse JSON),
-// makanya bodyParser bawaan Vercel dimatikan di bawah (config.api.bodyParser).
+// makanya bodyParser bawaan Vercel dimatikan (lewat handler.config di bagian
+// paling bawah file ini — HARUS ditempel ke fungsi yang sama yang di-export,
+// bukan di-assign ke module.exports duluan, karena nanti ketimpa).
 
 const crypto = require("crypto");
 const { getDb } = require("../lib/firebaseAdmin");
 const { API_KEY } = require("../lib/dongtube");
-
-module.exports.config = {
-  api: { bodyParser: false }
-};
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -35,7 +33,7 @@ function isValidSignature(rawBody, signatureHeader) {
   return crypto.timingSafeEqual(a, b);
 }
 
-module.exports = async (req, res) => {
+async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).send("Method not allowed");
 
   try {
@@ -80,4 +78,14 @@ module.exports = async (req, res) => {
     console.error(err);
     return res.status(500).send("Server error");
   }
+}
+
+// PENTING: config ditempel ke fungsi yang SAMA yang di-export, bukan
+// di-assign ke module.exports secara terpisah sebelum ini (itu bug-nya
+// yang kemarin — module.exports = handler di bawah akan MENIMPA apapun
+// yang sebelumnya nempel di module.exports, termasuk .config).
+handler.config = {
+  api: { bodyParser: false }
 };
+
+module.exports = handler;
