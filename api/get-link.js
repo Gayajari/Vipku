@@ -20,15 +20,21 @@ module.exports = async (req, res) => {
     }
 
     const db = getDb();
+    const now = Date.now();
 
-    // Jalur 1: sudah lunas otomatis via Duitku ("paidAccess")
+    // Jalur 1: sudah lunas otomatis via QRIS ("paidAccess")
     const accessId = `${buyerId}_${postId}_${linkIndex}`;
     const accessSnap = await db.collection("paidAccess").doc(accessId).get();
-    const isPaidViaDuitku = accessSnap.exists && accessSnap.data().status === "paid";
+    let isPaidAuto = false;
+    if (accessSnap.exists && accessSnap.data().status === "paid") {
+      const d = accessSnap.data();
+      const stillValid = !d.expiresAt || new Date(d.expiresAt).getTime() > now;
+      isPaidAuto = stillValid;
+    }
 
     // Jalur 2: sudah diverifikasi manual admin ("manualOrders")
     let isVerifiedManual = false;
-    if (!isPaidViaDuitku) {
+    if (!isPaidAuto) {
       const manualSnap = await db
         .collection("manualOrders")
         .where("buyerId", "==", buyerId)
@@ -37,11 +43,14 @@ module.exports = async (req, res) => {
         .where("status", "==", "verified")
         .limit(1)
         .get();
-      isVerifiedManual = !manualSnap.empty;
+      if (!manualSnap.empty) {
+        const md = manualSnap.docs[0].data();
+        isVerifiedManual = !md.expiresAt || new Date(md.expiresAt).getTime() > now;
+      }
     }
 
-    if (!isPaidViaDuitku && !isVerifiedManual) {
-      return res.status(403).json({ error: "Belum lunas/terverifikasi untuk link ini." });
+    if (!isPaidAuto && !isVerifiedManual) {
+      return res.status(403).json({ error: "Akses untuk link ini belum lunas atau sudah kadaluarsa. Silakan bayar lagi." });
     }
 
     const secretSnap = await db.collection("linkSecrets").doc(postId).get();
