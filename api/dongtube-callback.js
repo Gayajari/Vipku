@@ -67,9 +67,23 @@ async function handler(req, res) {
     const docRef = snap.docs[0].ref;
 
     if (status === "paid" || payload.event === "invoice.paid") {
+      // Ambil durasi akses yang diset admin (settings/accessDuration.hours).
+      // 0/kosong = permanen (nggak dikasih expiresAt sama sekali).
+      let expiresAt = null;
+      try {
+        const durationSnap = await db.collection("settings").doc("accessDuration").get();
+        const hours = durationSnap.exists ? Number(durationSnap.data().hours) || 0 : 0;
+        if (hours > 0) {
+          expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+        }
+      } catch (err) {
+        console.error("Gagal ambil setting durasi akses, fallback ke permanen:", err);
+      }
+
       await docRef.update({
         status: "paid",
-        paidAt: paidAt || new Date().toISOString()
+        paidAt: paidAt || new Date().toISOString(),
+        expiresAt // null = permanen
       });
     }
 
