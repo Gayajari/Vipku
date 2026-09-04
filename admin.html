@@ -3,539 +3,531 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vipku</title>
-<link rel="icon" id="siteFavicon" href="">
+<title>Admin - Catatan Konten</title>
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: "Segoe UI", Arial, sans-serif;
     background: #f5f6fa;
     margin: 0;
-    padding: 0 0 40px 0;
+    padding: 20px;
     color: #222;
   }
-  header {
-    background: #2b3a67;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    position: relative;
-  }
-  header h1 { margin: 0; font-size: 22px; }
-  header p { margin: 5px 0 0; font-size: 13px; opacity: 0.85; }
-
-  .container {
-    max-width: 640px;
+  .card {
+    max-width: 520px;
     margin: 20px auto;
-    padding: 0 15px;
-  }
-
-  .post {
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
-    overflow: hidden;
+    padding: 24px;
   }
-  .post-date {
-    font-size: 12px;
-    color: #888;
-    padding: 12px 15px 0 15px;
-  }
-  .post-caption {
-    padding: 8px 15px 0 15px;
-    font-size: 15px;
-    white-space: pre-wrap;
-  }
-  .post-photos {
-    padding: 10px 15px;
-  }
-  .post-photos.single img {
+  .accordion-bar {
     width: 100%;
-    border-radius: 8px;
-    display: block;
-    cursor: pointer;
-  }
-  .post-photos.multi {
-    column-count: 2;
-    column-gap: 4px;
-  }
-  .post-photos.multi img {
-    width: 100%;
-    border-radius: 8px;
-    display: block;
-    cursor: pointer;
-    margin-bottom: 4px;
-    break-inside: avoid;
-  }
-  .post-link {
-    display: block;
-    margin: 0 15px 15px 15px;
-    background: #2b3a67;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .post-link-paid {
-    width: calc(100% - 30px);
-    background: #b8860b;
-    color: white;
-    border: none;
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .post-link-paid:active { background: #966f09; }
-  .post-link-paid:disabled { opacity: 0.6; cursor: default; }
-  .post-share {
-    display: table;
-    margin: 0 auto 15px auto;
-    background: white;
-    color: #2b3a67;
-    text-align: center;
-    padding: 6px 14px;
-    border-radius: 8px;
-    border: 1.5px solid #2b3a67;
-    font-weight: 600;
-    font-size: 12px;
-    cursor: pointer;
-  }
-  .post-share:active { background: #eef1fb; }
-
-  .post-chip-bar {
     display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin: 0 15px 10px 15px;
-  }
-  .post-chip-bar a {
-    text-decoration: none;
-    background: #e0522f;
-    color: #fff;
-    padding: 6px 11px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  .post-tags {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    padding: 8px 15px 0 15px;
-  }
-  .tag-chip {
-    text-decoration: none;
+    align-items: center;
+    justify-content: space-between;
     background: #eef1fb;
     color: #2b3a67;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .tag-chip:active { background: #dde3f7; }
-
-  .category-bar {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 14px 15px 4px 15px;
-    margin-top: 14px;
-    border-top: 1px solid #e3e5ec;
-    -webkit-overflow-scrolling: touch;
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    background: #f5f6fa;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
-  .category-bar::-webkit-scrollbar { display: none; }
-
-  .home-btn {
-    position: absolute;
-    left: 15px;
-    top: 18px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    text-decoration: none;
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .home-btn:active { background: rgba(255,255,255,0.3); }
-
-  .site-footer {
-    max-width: 640px;
-    margin: 24px auto 0;
-    padding: 0 15px;
-    text-align: center;
-  }
-  .home-btn-footer {
-    display: inline-block;
-    text-decoration: none;
-    background: #2b3a67;
-    color: #fff;
-    padding: 10px 20px;
+    border: none;
     border-radius: 8px;
-    font-size: 13px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 0;
+    text-align: left;
+  }
+  .accordion-bar.main-bar { font-size: 17px; background: #2b3a67; color: #fff; }
+  .accordion-arrow { font-size: 13px; opacity: 0.7; }
+  .accordion-body { display: none; padding: 18px 2px 4px; }
+  #settingsGroupBody { padding: 14px 0 0; }
+  .accordion-item { margin-bottom: 10px; }
+  .accordion-item .accordion-body { padding: 16px 4px 6px; }
+
+  h2 { margin-top: 0; font-size: 19px; }
+  label { font-size: 13px; font-weight: 600; display: block; margin: 14px 0 6px; }
+  input[type="email"], input[type="password"], input[type="url"], input[type="text"], input[type="file"], textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px;
+    background: #2b3a67;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
     font-weight: 600;
+    cursor: pointer;
   }
-  .home-btn-footer:active { background: #1f2c50; }
-
-  .sticky-ad-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 100;
-    background: #fff;
-    border-top: 1px solid #e3e5ec;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 4px 0;
-    min-height: 68px;
-    max-height: 100px;
-    overflow: hidden;
-  }
-  body { padding-bottom: 76px; }
-  body.ad-closed { padding-bottom: 0; }
-
-  .sticky-ad-close {
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  .msg { font-size: 13px; margin-top: 10px; }
+  .msg.error { color: #c0392b; }
+  .msg.success { color: #27ae60; }
+  #logoutBtn { background: #999; margin-top: 8px; }
+  #cancelEditBtn { background: #999; margin-top: 8px; display: none; }
+  .preview { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; }
+  .preview-item { position: relative; width: 70px; height: 70px; }
+  .preview-item img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; display: block; }
+  .preview-item .removeBtn {
     position: absolute;
-    top: 4px;
-    right: 8px;
+    top: -6px;
+    right: -6px;
     width: 20px;
     height: 20px;
-    line-height: 19px;
-    text-align: center;
     border-radius: 50%;
-    background: rgba(0,0,0,0.55);
+    background: #c0392b;
     color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    z-index: 101;
-  }
-
-  .feed-native-ad {
-    display: none;
-    justify-content: center;
-    margin: 14px 0;
-    max-width: 100%;
-    overflow: hidden;
-  }
-  @media (max-width: 768px) {
-    .feed-native-ad { display: flex; }
-  }
-
-  .search-bar {
-    padding: 10px 15px 0 15px;
-    position: relative;
-  }
-  .search-input-wrap {
-    position: relative;
-  }
-  .search-input-wrap input {
-    width: 100%;
-    padding: 10px 36px 10px 44px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    font-size: 13px;
-    outline: none;
-  }
-  .search-input-wrap input:focus {
-    border-color: #2b3a67;
-  }
-  .search-input-wrap #searchBtn {
-    position: absolute;
-    left: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    margin: 0;
-    padding: 0;
     border: none;
-    border-radius: 50%;
-    background: #2b3a67;
-    color: #fff;
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 20px;
+    padding: 0;
+    margin: 0;
     cursor: pointer;
   }
-  .search-input-wrap #clearBtn {
-    display: none;
+
+  .post-item {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .post-item .date { font-size: 11px; color: #999; }
+  .post-item .caption { font-size: 14px; margin: 4px 0; white-space: pre-wrap; }
+  .post-item .thumbs { display: flex; gap: 4px; margin: 6px 0; flex-wrap: wrap; }
+  .post-item .thumbs img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+  .post-item .link { font-size: 12px; color: #2b3a67; word-break: break-all; }
+  .post-item .actions { display: flex; gap: 8px; margin-top: 8px; }
+  .post-item .actions button {
+    width: auto;
+    margin-top: 0;
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  .post-item .editBtn { background: #2b3a67; }
+  .post-item .deleteBtn { background: #c0392b; }
+  .post-item .shareBtn { background: #197278; }
+  .empty { text-align: center; color: #999; font-size: 13px; padding: 10px 0; }
+
+  .admin-search-wrap {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .admin-search-wrap input {
+    width: 100%;
+    padding: 10px 34px 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+  .admin-search-wrap .clearSearchBtn {
     position: absolute;
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    width: 22px;
-    height: 22px;
-    margin: 0;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background: #ccc;
-    color: #333;
-    font-size: 12px;
-    line-height: 22px;
-    text-align: center;
-    cursor: pointer;
-  }
-  .search-suggestions {
-    display: none;
-    background: #fff;
-    border-radius: 10px;
-    margin-top: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    overflow: hidden;
-  }
-  .search-suggestions.show {
-    display: block;
-  }
-  .search-suggestion-item {
-    display: block;
-    padding: 10px 14px;
-    font-size: 13px;
-    color: #222;
-    text-decoration: none;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  .search-suggestion-item:last-child {
-    border-bottom: none;
-  }
-  .search-suggestion-item:active {
-    background: #f5f6fa;
-  }
-  .search-suggestion-item .tag-label {
-    color: #2b3a67;
-    font-weight: 600;
-  }
-  .category-chip {
-    flex: 0 0 auto;
-    text-decoration: none;
-    background: #2b3a67;
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .category-chip.active {
-    background: #eef1fb;
-    color: #2b3a67;
-    border: 1.5px solid #2b3a67;
-  }
-  .empty {
-    text-align: center;
-    color: #999;
-    margin-top: 60px;
-  }
-  .section-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #2b3a67;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 24px 0 10px;
-  }
-  .section-title:first-child { margin-top: 0; }
-
-  /* lightbox sederhana */
-  .lightbox {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.85);
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    padding: 20px;
-  }
-  .lightbox img {
-    max-width: 100%;
-    max-height: 100%;
-    border-radius: 8px;
-  }
-
-  /* modal pembayaran manual */
-  .manual-modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.6);
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 16px;
-  }
-  .manual-modal-overlay.open { display: flex; }
-  .manual-modal {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    max-width: 400px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: relative;
-  }
-  .manual-modal h3 { margin: 0 0 6px; font-size: 16px; color: #2b3a67; }
-  .manual-modal-close {
-    position: absolute;
-    top: 12px;
-    right: 14px;
     background: none;
     border: none;
-    font-size: 16px;
-    color: #888;
+    color: #999;
+    font-size: 15px;
     cursor: pointer;
+    width: auto;
+    padding: 4px;
+    display: none;
   }
-  .manual-modal-price {
-    font-size: 20px;
-    font-weight: 700;
-    color: #b8860b;
-    margin-bottom: 14px;
+  .admin-search-count {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 10px;
   }
-  .manual-method-card {
+  .post-item mark {
+    background: #ffe083;
+    color: inherit;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+
+  .link-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+  }
+  .link-row .link-row-main {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+  }
+  .link-row input[type="text"].link-label-input {
+    flex: 0 0 35%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .link-row input[type="url"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .link-row .link-price-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 2px;
+  }
+  .link-row .link-price-row label {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+    white-space: nowrap;
+  }
+  .link-row input.link-price-input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .link-row select.link-category-select {
+    flex: 1;
+    padding: 8px 6px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+  .link-row button {
+    width: auto;
+    margin: 0;
+    padding: 0 12px;
+    background: #c0392b;
+    border-radius: 8px;
+  }
+  #addLinkBtn {
+    background: white;
+    color: #2b3a67;
+    border: 1.5px dashed #2b3a67;
+    margin-top: 8px;
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .manual-method-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+  }
+  .manual-method-row input[type="text"] {
+    flex: 1 1 45%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .manual-method-row input[type="file"] {
+    flex: 1 1 100%;
+    font-size: 12px;
+  }
+  .manual-method-row img {
+    max-width: 80px;
+    border-radius: 6px;
+    display: block;
+  }
+  .manual-method-row button {
+    width: auto;
+    margin: 0;
+    padding: 0 12px;
+    background: #c0392b;
+    border-radius: 8px;
+  }
+  #addManualMethodBtn {
+    background: white;
+    color: #2b3a67;
+    border: 1.5px dashed #2b3a67;
+    margin-top: 4px;
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .manual-order-item {
     border: 1px solid #eee;
     border-radius: 8px;
     padding: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-size: 13px;
   }
-  .manual-method-card .mm-name { font-weight: 700; color: #2b3a67; margin-bottom: 2px; }
-  .manual-method-card img { max-width: 140px; display: block; margin-top: 6px; border-radius: 6px; }
-  .manual-modal-status {
-    font-size: 13px;
-    padding: 10px;
-    border-radius: 8px;
-    margin: 10px 0;
+  .manual-order-item .mo-price { color: #c0392b; font-weight: 700; }
+  .manual-order-item .mo-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .manual-order-item .mo-actions button {
+    width: auto;
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 6px;
   }
-  .manual-modal-status.pending { background: #fff3cd; color: #856404; }
-  .manual-modal-status.verified { background: #d4edda; color: #155724; }
-  .manual-modal-status.rejected { background: #f8d7da; color: #721c24; }
+  .manual-order-item .verifyBtn { background: #2e8b57; }
+  .manual-order-item .rejectBtn { background: #c0392b; }
 
-  .contact-bar{
-    display:flex;
-    justify-content:center;
-    gap:8px;
-    flex-wrap:wrap;
-    padding: 0 15px;
-  }
+/* ===== Responsive Layout ===== */
 
-  .contact-bar a{
-    text-decoration:none;
-    background:#2b3a67;
-    color:#fff;
-    padding:8px 12px;
-    border-radius:8px;
-    font-size:12px;
-    font-weight:600;
-  }
+html{
+  scroll-behavior:smooth;
+}
 
- .ads-banner{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  margin:12px auto;
+body{
+  width:100%;
+}
+
+.page-wrap{
+  width:100%;
+  max-width:700px;
+  margin:0 auto;
+  padding:16px;
+}
+
+img{
   max-width:100%;
-  overflow:hidden;
- }
+  height:auto;
+  display:block;
+}
 
+iframe{
+  max-width:100%;
+}
+
+.ads-banner{
+  width:100%;
+  text-align:center;
+  margin:12px auto;
+  overflow:hidden;
+}
+
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.gallery img{
+  width:100%;
+  border-radius:8px;
+}
+
+/* Tablet */
+@media (min-width:768px){
+  .page-wrap{
+    max-width:900px;
+    padding:24px;
+  }
+
+  .gallery{
+    gap:12px;
+  }
+
+  h1{
+    font-size:32px;
+  }
+}
+
+/* Desktop */
+@media (min-width:1200px){
+  .page-wrap{
+    max-width:1100px;
+  }
+
+  .gallery{
+    gap:16px;
+  }
+
+  h1{
+    font-size:36px;
+  }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <a href="./" class="home-btn" aria-label="Kembali ke Beranda">🏠 Beranda</a>
-  <h1>Vipku🥵</h1>
-  <p>Konten update tiap hari</p>
-</header>
-
-<div class="ads-banner" id="adsBannerHeader"></div>
-
-<div class="contact-bar" id="contactBar"></div>
-
-<div class="search-bar">
-  <div class="search-input-wrap">
-    <button type="button" id="searchBtn" aria-label="Cari">🔍</button>
-    <input type="text" id="searchInput" placeholder="Cari tag atau judul...">
-    <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
-  </div>
-  <div class="search-suggestions" id="searchSuggestions"></div>
+<div class="card" id="loginCard">
+  <h2>🔐 Login </h2>
+  <label>Email</label>
+  <input type="email" id="email" placeholder="email@contoh.com">
+  <label>Password</label>
+  <input type="password" id="password">
+  <button id="loginBtn">Masuk</button>
+  <div class="msg error" id="loginMsg"></div>
 </div>
 
-<div class="category-bar" id="categoryBar"></div>
+<div class="card" id="settingsGroupCard" style="display:none;">
+  <button type="button" class="accordion-bar main-bar" id="settingsGroupToggle">
+    ⚙️ Pengaturan Utama Web <span class="accordion-arrow" id="settingsGroupArrow">▾</span>
+  </button>
+  <div class="accordion-body" id="settingsGroupBody">
 
-<div class="container" id="posts">
-  <p class="empty">Memuat konten...</p>
-</div>
-
-<div class="container" id="oldRotationWrap"></div>
-
-<div class="manual-modal-overlay" id="manualModalOverlay">
-  <div class="manual-modal">
-    <button type="button" class="manual-modal-close" id="manualModalClose">✕</button>
-    <h3 id="manualModalTitle">Pembayaran Manual</h3>
-    <div id="manualModalPrice" class="manual-modal-price"></div>
-    <div id="manualModalMethods"></div>
-    <div id="manualModalStatus"></div>
-    <div id="manualModalForm">
-      <label style="font-size:12px; color:#555; display:block; margin:12px 0 4px;">Kontak kamu (opsional, WA/Telegram — biar gampang dihubungi kalau ada masalah)</label>
-      <input type="text" id="manualContactInput" placeholder="mis. 08xxxxxxxxxx" style="width:100%; box-sizing:border-box; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
-      <label style="font-size:12px; color:#555; display:block; margin:10px 0 4px;">Catatan (opsional)</label>
-      <input type="text" id="manualNoteInput" placeholder="mis. sudah transfer jam 10 a.n Budi" style="width:100%; box-sizing:border-box; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
-      <button type="button" id="manualSubmitBtn" style="width:100%; margin-top:14px; padding:11px; background:#2e8b57; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Saya Sudah Transfer</button>
+    <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="contactToggle">
+        🔗 Pengaturan Link Sosmed <span class="accordion-arrow" id="contactArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="contactCard">
+        <label>Link Telegram (kosongkan jika tidak dipakai)</label>
+        <input type="url" id="contactTelegram" placeholder="https://t.me/namagrup">
+        <label>Link Tutorial (kosongkan jika tidak dipakai)</label>
+        <input type="url" id="contactFacebook" placeholder="https://Tutorial.com/xxxx">
+        <label>Link WhatsApp (kosongkan jika tidak dipakai)</label>
+        <input type="url" id="contactWhatsapp" placeholder="https://chat.whatsapp.com/xxxx">
+        <button id="saveContactBtn">Simpan Pengaturan</button>
+        <div class="msg" id="contactMsg"></div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div class="manual-modal-overlay" id="qrisModalOverlay">
-  <div class="manual-modal">
-    <button type="button" class="manual-modal-close" id="qrisModalClose">✕</button>
-    <h3 id="qrisModalTitle">Bayar QRIS</h3>
-    <div id="qrisModalPrice" class="manual-modal-price"></div>
-    <div style="text-align:center;">
-      <img id="qrisModalImg" src="" alt="QRIS" style="width:220px; max-width:100%; border-radius:8px; border:1px solid #eee;">
-      <div id="qrisModalExpiry" style="font-size:12px; color:#888; margin-top:8px;"></div>
+    <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="chipBarToggle">
+        🏷️ Chip Bar Custom (3 Slot) <span class="accordion-arrow" id="chipBarArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="chipBarCard">
+        <p style="font-size:12px; color:#888; margin:0 0 12px;">Muncul di halaman utama, di atas bar Telegram/Vipku/WhatsApp. Kosongkan nama & link kalau slot tidak dipakai. Chip cuma tampil kalau nama+link terisi dan statusnya Aktif.</p>
+
+        <label>Slot 1 — Nama Chip</label>
+        <input type="text" id="chip1Name" placeholder="misal: Grup Bonus">
+        <label>Slot 1 — Link</label>
+        <input type="url" id="chip1Link" placeholder="https://...">
+        <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+          <input type="checkbox" id="chip1Active" style="width:auto;" checked> Aktif
+        </label>
+
+        <label style="margin-top:16px;">Slot 2 — Nama Chip</label>
+        <input type="text" id="chip2Name" placeholder="misal: Promo Terbaru">
+        <label>Slot 2 — Link</label>
+        <input type="url" id="chip2Link" placeholder="https://...">
+        <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+          <input type="checkbox" id="chip2Active" style="width:auto;" checked> Aktif
+        </label>
+
+        <label style="margin-top:16px;">Slot 3 — Nama Chip</label>
+        <input type="text" id="chip3Name" placeholder="misal: Channel Utama">
+        <label>Slot 3 — Link</label>
+        <input type="url" id="chip3Link" placeholder="https://...">
+        <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+          <input type="checkbox" id="chip3Active" style="width:auto;" checked> Aktif
+        </label>
+
+        <button id="saveChipBarBtn" style="margin-top:16px;">Simpan Chip Bar</button>
+        <div class="msg" id="chipBarMsg"></div>
+      </div>
     </div>
-    <div id="qrisModalStatus"></div>
+
+    <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="faviconToggle">
+        🖼️ Favicon Website <span class="accordion-arrow" id="faviconArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="faviconCard">
+        <p style="font-size:12px; color:#888; margin:0 0 12px;">Ikon kecil yang muncul di tab browser & bookmark. Pakai gambar persegi (disarankan PNG 512x512 atau .ico) biar tidak gepeng.</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+          <img id="faviconPreview" src="" alt="Preview favicon" style="display:none; width:48px; height:48px; border-radius:8px; border:1px solid #eee; object-fit:cover;">
+          <input type="file" id="faviconFile" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/svg+xml,image/jpeg" style="flex:1;">
+        </div>
+        <button id="saveFaviconBtn">Simpan Favicon</button>
+        <div class="msg" id="faviconMsg"></div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="manualPaymentToggle">
+        💳 Payment Gateway — Metode Manual <span class="accordion-arrow" id="manualPaymentArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="manualPaymentCard">
+        <p style="font-size:12px; color:#888; margin:0 0 12px;">Dipakai untuk link kategori "Manual" (konten yang tidak boleh lewat Dongtube). Tambah sebanyak yang perlu — QRIS, rekening, e-wallet, dll. Gambar QR opsional.</p>
+
+        <div id="manualMethodsContainer"></div>
+        <button type="button" id="addManualMethodBtn">+ Tambah Metode Pembayaran</button>
+
+        <button id="saveManualPaymentBtn" style="margin-top:16px;">Simpan Metode Pembayaran</button>
+        <div class="msg" id="manualPaymentMsg"></div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button type="button" class="accordion-bar" id="durationToggle">
+        ⏱️ Durasi Akses Setelah Bayar <span class="accordion-arrow" id="durationArrow">▾</span>
+      </button>
+      <div class="accordion-body" id="durationCard">
+        <p style="font-size:12px; color:#888; margin:0 0 12px;">Berlaku buat SEMUA link berbayar (otomatis via QRIS maupun manual). Setelah bayar, tombol link di situs bisa dipakai selama durasi ini. Kosongkan atau isi 0 = akses permanen (nggak pernah kadaluarsa).</p>
+        <label>Durasi Akses (jam)</label>
+        <input type="number" id="accessDurationHours" min="0" step="1" placeholder="0 = permanen">
+        <button id="saveDurationBtn" style="margin-top:16px;">Simpan Durasi Akses</button>
+        <div class="msg" id="durationMsg"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<div class="lightbox" id="lightbox" onclick="this.style.display='none'">
-  <img id="lightbox-img" src="">
+<div class="card" id="manualOrdersCard" style="display:none;">
+  <h2>📋 Verifikasi Pembayaran Manual</h2>
+  <p style="font-size:12px; color:#888; margin:-6px 0 12px;">Klaim "sudah bayar" dari pembeli konten kategori Manual muncul di sini. Cek mutasi kamu sendiri dulu sebelum menekan Verifikasi.</p>
+  <div id="manualOrdersList"><p class="empty">Memuat...</p></div>
 </div>
 
-<footer class="site-footer">
-  <a href="./" class="home-btn-footer">🏠 Kembali ke Beranda</a>
-</footer>
+<div class="card" id="formCard" style="display:none;">
+  <h2 id="formTitle">📤 Tambah Konten Baru</h2>
 
-<div class="sticky-ad-bar" id="stickyAdBar">
-  <span class="sticky-ad-close" id="stickyAdClose" aria-label="Tutup iklan">✕</span>
-  <div id="adsStickyBottom"></div>
+  <label>Foto konten/catatan (bisa lebih dari satu)</label>
+  <input type="file" id="photos" accept="image/*" multiple>
+  <div class="preview" id="preview"></div>
+  <div class="preview" id="existingPreview"></div>
+
+  <label>Link (konten, video, dll — bisa lebih dari satu)</label>
+  <div id="linksContainer"></div>
+  <button type="button" id="addLinkBtn">+ Tambah Link</button>
+
+  <label>Kategori/Tag (opsional, pisah dengan koma — misal: kuis, grammar)</label>
+  <input type="text" id="tags" placeholder="misal: kuis, grammar">
+
+  <label>Catatan Judul (opsional)</label>
+  <textarea id="caption" placeholder="Contoh: Konten hari ini tentang..."></textarea>
+
+  <button id="submitBtn">Bagikan Konten</button>
+  <div class="msg" id="formMsg"></div>
+  <div id="resultLink" style="display:none; margin-top:12px; padding:12px; background:#eef1fb; border-radius:8px; font-size:13px; word-break:break-all;"></div>
+
+  <button id="cancelEditBtn">Batal Edit</button>
+  <button id="logoutBtn">Keluar</button>
 </div>
 
-<script src="ads.js"></script>
+<div class="card" id="listCard" style="display:none;">
+  <h2>🗂️ Konten Tersimpan</h2>
+
+  <div class="admin-search-wrap">
+    <input type="text" id="adminSearchInput" placeholder="🔍 Cari caption, tag, atau link...">
+    <button type="button" class="clearSearchBtn" id="adminSearchClear">✕</button>
+  </div>
+  <div class="admin-search-count" id="adminSearchCount"></div>
+
+  <div id="postList"><p class="empty">Memuat...</p></div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, query, where, orderBy, limit, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyD-7D1tKtRAtFu9aOneL8TfpInol7WFORc",
   authDomain: "vipku-6f309.firebaseapp.com",
@@ -546,858 +538,826 @@ const firebaseConfig = {
   measurementId: "G-M02GCZ8LTL"
 };
 
+// API key gratis dari https://api.imgbb.com/ - dipakai untuk upload foto
+const IMGBB_API_KEY = "42fd13de011d1800659343811eddc8da";
+
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* ================== FAVICON (dari dasbor admin, di-cache di localStorage) ================== */
-// Cache biar tab icon langsung muncul tanpa nunggu round-trip ke Firestore
-// tiap kali situs dibuka, dan biar gak boros baca Firestore tiap page load.
-const FAVICON_CACHE_KEY = "vipku_favicon_cache";
-const FAVICON_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 jam — cukup cepat kalau admin ganti favicon, gak boros baca
-
-function applyFaviconTag(url) {
-  if (!url) return;
-  const link = document.getElementById("siteFavicon");
-  if (link) link.href = url;
-}
-
-function loadCachedFavicon() {
-  try {
-    const cached = JSON.parse(localStorage.getItem(FAVICON_CACHE_KEY) || "null");
-    if (cached && cached.url) {
-      applyFaviconTag(cached.url);
-      return cached;
-    }
-  } catch (err) {
-    console.warn("Cache favicon rusak, diabaikan:", err);
+async function uploadToImgbb(file) {
+  const formData = new FormData();
+  formData.append("image", file);
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: "POST",
+    body: formData
+  });
+  const data = await res.json();
+  if (!data.success) {
+    throw new Error(data.error?.message || "Upload ke ImgBB gagal");
   }
-  return null;
+  return data.data.url;
 }
 
-async function refreshFaviconFromServer() {
-  try {
-    const snap = await getDoc(doc(db, "settings", "favicon"));
-    if (snap.exists() && snap.data().url) {
-      const url = snap.data().url;
-      applyFaviconTag(url);
-      localStorage.setItem(FAVICON_CACHE_KEY, JSON.stringify({ url, cachedAt: Date.now() }));
-    }
-  } catch (err) {
-    console.error("Gagal memuat favicon dari server:", err);
-  }
-}
+const loginCard = document.getElementById("loginCard");
+const formCard = document.getElementById("formCard");
+const listCard = document.getElementById("listCard");
+const settingsGroupCard = document.getElementById("settingsGroupCard");
+const manualOrdersCard = document.getElementById("manualOrdersCard");
+const loginMsg = document.getElementById("loginMsg");
+const formMsg = document.getElementById("formMsg");
+const formTitle = document.getElementById("formTitle");
+const submitBtn = document.getElementById("submitBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+const existingPreview = document.getElementById("existingPreview");
 
-(function initFavicon() {
-  const cached = loadCachedFavicon(); // pasang versi cache dulu — instan, tanpa flicker
-  const isStale = !cached || (Date.now() - cached.cachedAt > FAVICON_CACHE_TTL);
-  if (isStale) refreshFaviconFromServer(); // baru cek ke server kalau cache kosong/basi
-})();
+let selectedFiles = [];
+let editingId = null;
+let editingExistingPhotos = [];
 
-
-// GANTI dengan URL backend Vercel kamu setelah deploy folder paywall-backend
-const PAYWALL_BACKEND_URL = "https://vipkuu.vercel.app";
-
-function getBuyerId() {
-  let id = localStorage.getItem("buyerId");
-  if (!id) {
-    id = "b_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem("buyerId", id);
-  }
-  return id;
-}
-
-async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
-  const buyerId = getBuyerId();
-  const accessId = `${buyerId}_${postId}_${linkIndex}`;
-  const originalText = btnEl.textContent;
-  btnEl.disabled = true;
-
-  try {
-    btnEl.textContent = "Mengecek status...";
-    const accessSnap = await getDoc(doc(db, "paidAccess", accessId));
-
-    if (accessSnap.exists() && accessSnap.data().status === "paid") {
-      btnEl.textContent = "Membuka...";
-      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, linkIndex, buyerId })
-      });
-      const resData = await res.json();
-      if (resData.url) {
-        window.open(resData.url, "_blank", "noopener,noreferrer");
-        btnEl.textContent = "🔓 " + label;
-        return;
-      }
-      alert(resData.error || "Gagal membuka link.");
-      btnEl.textContent = originalText;
-      return;
-    }
-
-    btnEl.textContent = "Menyiapkan pembayaran...";
-    const res = await fetch(`${PAYWALL_BACKEND_URL}/api/create-transaction`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postId, linkIndex, price, buyerId, label })
-    });
-    const resData = await res.json();
-
-    if (resData.alreadyPaid) {
-      btnEl.disabled = false;
-      return handlePaidLinkClick(postId, linkIndex, price, label, btnEl);
-    }
-    if (resData.qrisImage) {
-      btnEl.textContent = originalText;
-      btnEl.disabled = false;
-      openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData: resData });
-      return;
-    }
-    alert(resData.error || "Gagal membuat transaksi pembayaran.");
-    btnEl.textContent = originalText;
-  } catch (err) {
-    console.error(err);
-    alert("Terjadi kesalahan koneksi ke server pembayaran. Coba lagi.");
-    btnEl.textContent = originalText;
-  } finally {
-    btnEl.disabled = false;
-  }
-}
-
-/* ================== MODAL QRIS (DONGTUBE PAYMENT) ================== */
-
-let qrisUnsub = null; // listener status pembayaran realtime
-let qrisCountdownTimer = null; // countdown kadaluarsa QRIS
-
-function closeQrisModal() {
-  document.getElementById("qrisModalOverlay").classList.remove("open");
-  if (qrisUnsub) { qrisUnsub(); qrisUnsub = null; }
-  if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
-}
-
-document.getElementById("qrisModalClose").addEventListener("click", closeQrisModal);
-document.getElementById("qrisModalOverlay").addEventListener("click", (e) => {
-  if (e.target.id === "qrisModalOverlay") closeQrisModal();
+document.getElementById("adminSearchInput").addEventListener("input", applyAdminSearch);
+document.getElementById("adminSearchClear").addEventListener("click", () => {
+  document.getElementById("adminSearchInput").value = "";
+  applyAdminSearch();
+  document.getElementById("adminSearchInput").focus();
 });
 
-function setQrisModalStatus(text, kind) {
-  const el = document.getElementById("qrisModalStatus");
-  if (!text) {
-    el.className = "";
-    el.innerHTML = "";
-    return;
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loginCard.style.display = "none";
+    formCard.style.display = "block";
+    listCard.style.display = "block";
+    settingsGroupCard.style.display = "block";
+    manualOrdersCard.style.display = "block";
+    loadContactSettings();
+    loadChipBarSettings();
+    loadFaviconSettings();
+    loadDurationSettings();
+    loadManualPaymentSettings();
+    listenManualOrders();
+    listenPosts();
+  } else {
+    loginCard.style.display = "block";
+    formCard.style.display = "none";
+    listCard.style.display = "none";
+    settingsGroupCard.style.display = "none";
+    manualOrdersCard.style.display = "none";
   }
-  el.className = "manual-modal-status " + kind;
-  el.textContent = text;
-}
+});
 
-function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }) {
-  const overlay = document.getElementById("qrisModalOverlay");
-  const accessId = `${buyerId}_${postId}_${linkIndex}`;
-
-  document.getElementById("qrisModalTitle").textContent = label;
-  document.getElementById("qrisModalPrice").textContent =
-    "Rp " + Number(invoiceData.total || invoiceData.amount).toLocaleString("id-ID");
-  document.getElementById("qrisModalImg").src = invoiceData.qrisImage;
-  setQrisModalStatus("⏳ Menunggu pembayaran... scan QRIS di atas pakai e-wallet/m-banking. Halaman ini otomatis update begitu lunas.", "pending");
-  overlay.classList.add("open");
-
-  if (qrisUnsub) { qrisUnsub(); qrisUnsub = null; }
-  if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
-
-  const expiryEl = document.getElementById("qrisModalExpiry");
-  expiryEl.textContent = "";
-  if (invoiceData.expiredAt) {
-    const expiryDate = new Date(invoiceData.expiredAt);
-    qrisCountdownTimer = setInterval(() => {
-      const diff = expiryDate - new Date();
-      if (diff <= 0) {
-        expiryEl.textContent = "QRIS sudah kadaluarsa.";
-        setQrisModalStatus("❌ QRIS kadaluarsa. Tutup modal ini lalu klik tombol bayar lagi buat bikin QRIS baru.", "rejected");
-        clearInterval(qrisCountdownTimer);
-        qrisCountdownTimer = null;
-        return;
-      }
-      const mins = Math.floor(diff / 60000);
-      const secs = Math.floor((diff % 60000) / 1000);
-      expiryEl.textContent = `Berlaku ${mins}:${String(secs).padStart(2, "0")} lagi`;
-    }, 1000);
-  }
-
-  qrisUnsub = onSnapshot(doc(db, "paidAccess", accessId), (snap) => {
-    if (!snap.exists()) return;
-    const data = snap.data();
-    if (data.status === "paid") {
-      if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
-      setQrisModalStatus("✅ Pembayaran diterima! Membuka link...", "verified");
-      setTimeout(async () => {
-        closeQrisModal();
-        btnEl.textContent = "Membuka...";
-        btnEl.disabled = true;
-        try {
-          const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ postId, linkIndex, buyerId })
-          });
-          const resData = await res.json();
-          if (resData.url) {
-            window.open(resData.url, "_blank", "noopener,noreferrer");
-            btnEl.textContent = "🔓 " + label;
-          } else {
-            alert(resData.error || "Gagal membuka link.");
-            btnEl.textContent = label;
-          }
-        } catch (err) {
-          console.error(err);
-          alert("Gagal terhubung ke server. Coba lagi.");
-          btnEl.textContent = label;
-        } finally {
-          btnEl.disabled = false;
-        }
-      }, 900);
-    }
-  }, (err) => {
-    console.error("Gagal memantau status pembayaran QRIS:", err);
+// Accordion: tiap bar diklik, buka/tutup body-nya sendiri (independen satu sama lain)
+function setupAccordion(barId, bodyId, arrowId) {
+  const bar = document.getElementById(barId);
+  const body = document.getElementById(bodyId);
+  const arrow = document.getElementById(arrowId);
+  bar.addEventListener("click", () => {
+    const willOpen = body.style.display !== "block";
+    body.style.display = willOpen ? "block" : "none";
+    if (arrow) arrow.textContent = willOpen ? "▴" : "▾";
   });
 }
+setupAccordion("settingsGroupToggle", "settingsGroupBody", "settingsGroupArrow");
+setupAccordion("contactToggle", "contactCard", "contactArrow");
+setupAccordion("chipBarToggle", "chipBarCard", "chipBarArrow");
+setupAccordion("faviconToggle", "faviconCard", "faviconArrow");
+setupAccordion("durationToggle", "durationCard", "durationArrow");
+setupAccordion("manualPaymentToggle", "manualPaymentCard", "manualPaymentArrow");
 
-/* ================== PEMBAYARAN MANUAL (VERIFIKASI ADMIN) ================== */
-
-let manualPaymentMethodsCache = null;
-async function getManualPaymentMethods() {
-  if (manualPaymentMethodsCache) return manualPaymentMethodsCache;
+document.getElementById("loginBtn").onclick = async () => {
+  loginMsg.textContent = "";
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
   try {
-    const snap = await getDoc(doc(db, "settings", "manualPayment"));
-    manualPaymentMethodsCache = snap.exists() ? (snap.data().methods || []) : [];
+    await signInWithEmailAndPassword(auth, email, password);
   } catch (err) {
-    console.error(err);
-    manualPaymentMethodsCache = [];
+    loginMsg.textContent = "Login gagal: email/password salah.";
   }
-  return manualPaymentMethodsCache;
-}
+};
 
-let manualOrderUnsub = null; // buat lepas listener status order lama saat modal dibuka ulang
+document.getElementById("logoutBtn").onclick = () => signOut(auth);
 
-function closeManualModal() {
-  document.getElementById("manualModalOverlay").classList.remove("open");
-  if (manualOrderUnsub) {
-    manualOrderUnsub();
-    manualOrderUnsub = null;
-  }
-}
-
-document.getElementById("manualModalClose").addEventListener("click", closeManualModal);
-document.getElementById("manualModalOverlay").addEventListener("click", (e) => {
-  if (e.target.id === "manualModalOverlay") closeManualModal();
+document.getElementById("photos").addEventListener("change", (e) => {
+  selectedFiles = Array.from(e.target.files);
+  const preview = document.getElementById("preview");
+  preview.innerHTML = "";
+  selectedFiles.forEach(file => {
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    preview.appendChild(img);
+  });
 });
 
-function setManualModalStatus(text, kind) {
-  const el = document.getElementById("manualModalStatus");
-  if (!text) {
-    el.className = "";
-    el.innerHTML = "";
-    return;
-  }
-  el.className = "manual-modal-status " + kind;
-  el.textContent = text;
+const linksContainer = document.getElementById("linksContainer");
+
+function addLinkRow(label = "", url = "", price = "", category = "auto") {
+  const row = document.createElement("div");
+  row.className = "link-row";
+  row.innerHTML = `
+    <div class="link-row-main">
+      <input type="text" class="link-label-input" placeholder="Nama (mis. Kuis)" value="${escapeAttr(label)}">
+      <input type="url" placeholder="https://..." value="${escapeAttr(url)}">
+      <button type="button">✕</button>
+    </div>
+    <div class="link-price-row">
+      <label>Harga (Rp)</label>
+      <input type="number" class="link-price-input" placeholder="Kosongkan = gratis" min="0" step="500" value="${escapeAttr(price)}">
+      <select class="link-category-select" title="Jalur pembayaran">
+        <option value="auto" ${category === "auto" ? "selected" : ""}>Otomatis (Dongtube)</option>
+        <option value="manual" ${category === "manual" ? "selected" : ""}>Manual (Verifikasi Admin)</option>
+      </select>
+    </div>
+  `;
+  row.querySelector("button").onclick = () => row.remove();
+  linksContainer.appendChild(row);
 }
 
-async function openManualBuyLink(postId, linkIndex, buyerId, btnEl) {
-  try {
-    const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postId, linkIndex, buyerId })
-    });
-    const resData = await res.json();
-    if (resData.url) {
-      window.open(resData.url, "_blank", "noopener,noreferrer");
-      if (btnEl) btnEl.textContent = "🔓 Terverifikasi — buka lagi";
+function getLinksFromForm() {
+  const rows = linksContainer.querySelectorAll(".link-row");
+  const links = [];
+  rows.forEach((row) => {
+    const inputs = row.querySelectorAll("input");
+    const label = inputs[0].value.trim();
+    const url = inputs[1].value.trim();
+    const priceRaw = inputs[2].value.trim();
+    const price = priceRaw ? Math.max(0, Math.round(Number(priceRaw))) : 0;
+    const category = row.querySelector(".link-category-select").value;
+    if (url) {
+      links.push({ label: label || "Buka video", url, price, category: price > 0 ? category : "auto" });
+    }
+  });
+  return links;
+}
+
+function getTagsFromForm() {
+  const raw = document.getElementById("tags").value.trim();
+  if (!raw) return [];
+  return raw.split(",").map(t => t.trim()).filter(Boolean);
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/"/g, "&quot;");
+}
+
+document.getElementById("addLinkBtn").onclick = () => addLinkRow();
+addLinkRow(); // baris kosong pertama saat halaman dibuka
+
+function resetForm() {
+  editingId = null;
+  editingExistingPhotos = [];
+  formTitle.textContent = "📤 Tambah Konten Baru";
+  submitBtn.textContent = "Bagikan Konten";
+  cancelEditBtn.style.display = "none";
+  document.getElementById("photos").value = "";
+  document.getElementById("preview").innerHTML = "";
+  existingPreview.innerHTML = "";
+  linksContainer.innerHTML = "";
+  addLinkRow();
+  document.getElementById("tags").value = "";
+  document.getElementById("caption").value = "";
+  document.getElementById("resultLink").style.display = "none";
+  selectedFiles = [];
+  formMsg.textContent = "";
+}
+
+cancelEditBtn.onclick = resetForm;
+
+function splitLinksForSave(links) {
+  // links: [{ label, url, price, category }]
+  // publicLinks: yang masuk dokumen "posts" (publik) — link gratis tetap bawa url,
+  // link berbayar TIDAK bawa url (biar tidak bocor sebelum bayar).
+  // secretMap: url asli link berbayar, disimpan terpisah di "linkSecrets".
+  const publicLinks = [];
+  const secretMap = {};
+  links.forEach((l, idx) => {
+    const price = l.price || 0;
+    if (price > 0) {
+      publicLinks.push({ label: l.label, price, category: l.category === "manual" ? "manual" : "auto" });
+      secretMap[String(idx)] = l.url;
     } else {
-      alert(resData.error || "Gagal membuka link.");
+      publicLinks.push({ label: l.label, url: l.url, price: 0 });
     }
-  } catch (err) {
-    console.error(err);
-    alert("Gagal terhubung ke server. Coba lagi.");
-  }
+  });
+  return { publicLinks, secretMap };
 }
 
-async function openManualPaymentModal(postId, linkIndex, price, label, btnEl) {
-  const buyerId = getBuyerId();
-  const overlay = document.getElementById("manualModalOverlay");
-  const priceEl = document.getElementById("manualModalPrice");
-  const methodsEl = document.getElementById("manualModalMethods");
-  const formEl = document.getElementById("manualModalForm");
+submitBtn.onclick = async () => {
+  formMsg.className = "msg";
+  formMsg.textContent = "";
 
-  document.getElementById("manualModalTitle").textContent = label;
-  priceEl.textContent = "Rp " + price.toLocaleString("id-ID");
-  setManualModalStatus("", "");
-  formEl.style.display = "none";
-  methodsEl.innerHTML = '<p style="font-size:12px; color:#888;">Memuat metode pembayaran...</p>';
-  overlay.classList.add("open");
+  const links = getLinksFromForm();
+  const tags = getTagsFromForm();
+  const caption = document.getElementById("caption").value.trim();
 
-  if (manualOrderUnsub) { manualOrderUnsub(); manualOrderUnsub = null; }
+  if (selectedFiles.length === 0 && editingExistingPhotos.length === 0 && links.length === 0 && !caption) {
+    formMsg.className = "msg error";
+    formMsg.textContent = "Isi minimal satu: foto, link, atau catatan.";
+    return;
+  }
 
-  const methods = await getManualPaymentMethods();
-  methodsEl.innerHTML = methods.length
-    ? methods.map(m => `
-        <div class="manual-method-card">
-          <div class="mm-name">${escapeHtml(m.name)}</div>
-          ${m.detail ? `<div>${escapeHtml(m.detail)}</div>` : ""}
-          ${m.qrImageUrl ? `<img src="${m.qrImageUrl}" alt="QR ${escapeHtml(m.name)}">` : ""}
-        </div>
-      `).join("")
-    : '<p style="font-size:12px; color:#c0392b;">Metode pembayaran belum diatur admin. Hubungi admin dulu.</p>';
+  submitBtn.disabled = true;
+  formMsg.textContent = "Memproses...";
 
-  // Cek klaim TERBARU untuk kombinasi buyer+post+link ini, dan pantau live
-  // (kalau admin verifikasi SAAT modal masih terbuka, otomatis update).
-  const q = query(
-    collection(db, "manualOrders"),
-    where("buyerId", "==", buyerId),
-    where("postId", "==", postId),
-    where("linkIndex", "==", linkIndex),
-    orderBy("createdAt", "desc"),
-    limit(1)
-  );
-
-  manualOrderUnsub = onSnapshot(q, (snapshot) => {
-    if (snapshot.empty) {
-      formEl.style.display = "block";
-      setManualModalStatus("", "");
-      return;
+  try {
+    const photoUrls = [...editingExistingPhotos];
+    let i = 0;
+    for (const file of selectedFiles) {
+      i++;
+      formMsg.textContent = `Mengunggah foto ${i} dari ${selectedFiles.length}...`;
+      const url = await uploadToImgbb(file);
+      photoUrls.push(url);
     }
-    const orderData = snapshot.docs[0].data();
-    if (orderData.status === "pending") {
-      formEl.style.display = "none";
-      setManualModalStatus("⏳ Klaim kamu sedang menunggu diverifikasi admin. Halaman ini akan otomatis update begitu diverifikasi.", "pending");
-    } else if (orderData.status === "verified") {
-      formEl.style.display = "none";
-      setManualModalStatus("✅ Pembayaran terverifikasi! Membuka link...", "verified");
-      openManualBuyLink(postId, linkIndex, buyerId, btnEl);
-    } else if (orderData.status === "rejected") {
-      formEl.style.display = "block";
-      setManualModalStatus("❌ Klaim sebelumnya ditolak admin (mungkin bukti tidak sesuai). Kamu bisa kirim klaim baru di bawah.", "rejected");
-    }
-  }, (err) => {
-    console.error("Gagal memantau status order manual:", err);
-  });
 
-  document.getElementById("manualSubmitBtn").onclick = async () => {
-    const submitBtn = document.getElementById("manualSubmitBtn");
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Mengirim klaim...";
-    try {
-      await addDoc(collection(db, "manualOrders"), {
-        buyerId,
-        postId,
-        linkIndex,
-        price,
-        label,
-        contact: document.getElementById("manualContactInput").value.trim() || null,
-        note: document.getElementById("manualNoteInput").value.trim() || null,
-        status: "pending",
+    formMsg.textContent = "Menyimpan data...";
+
+    const { publicLinks, secretMap } = splitLinksForSave(links);
+
+    if (editingId) {
+      await updateDoc(doc(db, "posts", editingId), {
+        photoUrls,
+        links: publicLinks,
+        tags,
+        caption: caption || null
+      });
+      // Selalu tulis ulang linkSecrets (walau kosong) supaya link lama yang
+      // sudah dihapus/diubah jadi gratis tidak nyangkut di sana.
+      await setDoc(doc(db, "linkSecrets", editingId), secretMap);
+
+      formMsg.className = "msg success";
+      formMsg.textContent = "Materi berhasil diperbarui!";
+
+      const editedUrl = `${window.location.origin}/?post=${editingId}`;
+      const editedResultEl = document.getElementById("resultLink");
+      editedResultEl.style.display = "block";
+      editedResultEl.innerHTML = `Link konten ini:<br><b>${editedUrl}</b><br><button type="button" class="shareBtn" style="width:auto; margin-top:8px; padding:8px 14px; font-size:12px; border-radius:6px; color:#fff; border:none; cursor:pointer;">🔗 Bagikan</button>`;
+      editedResultEl.querySelector(".shareBtn").onclick = () => sharePostLink(editedUrl);
+
+      resetFieldsOnly();
+    } else {
+      const docRef = await addDoc(collection(db, "posts"), {
+        photoUrls,
+        links: publicLinks,
+        tags,
+        caption: caption || null,
         createdAt: serverTimestamp()
       });
-      submitBtn.textContent = "Saya Sudah Transfer";
-    } catch (err) {
-      console.error(err);
-      alert("Gagal mengirim klaim: " + err.message);
-      submitBtn.textContent = "Saya Sudah Transfer";
-    } finally {
-      submitBtn.disabled = false;
+      if (Object.keys(secretMap).length > 0) {
+        await setDoc(doc(db, "linkSecrets", docRef.id), secretMap);
+      }
+
+      formMsg.className = "msg success";
+      formMsg.textContent = "Berhasil dibagikan konten!";
+
+      const postUrl = `${window.location.origin}/?post=${docRef.id}`;
+      const resultEl = document.getElementById("resultLink");
+      resultEl.style.display = "block";
+      resultEl.innerHTML = `Link khusus konten ini:<br><b>${postUrl}</b><br><button type="button" class="shareBtn" style="width:auto; margin-top:8px; padding:8px 14px; font-size:12px; border-radius:6px; color:#fff; border:none; cursor:pointer;">🔗 Bagikan</button>`;
+      resultEl.querySelector(".shareBtn").onclick = () => sharePostLink(postUrl);
+      resetFieldsOnly();
     }
-  };
+  } catch (err) {
+    formMsg.className = "msg error";
+    formMsg.textContent = "Gagal: " + err.message;
+    console.error(err);
+  } finally {
+    submitBtn.disabled = false;
+  }
+};
+
+function resetFieldsOnly() {
+  document.getElementById("photos").value = "";
+  document.getElementById("preview").innerHTML = "";
+  selectedFiles = [];
+  if (!editingId) {
+    linksContainer.innerHTML = "";
+    addLinkRow();
+    document.getElementById("tags").value = "";
+    document.getElementById("caption").value = "";
+  }
 }
 
-const postsEl = document.getElementById("posts");
-const postId = new URLSearchParams(window.location.search).get("post");
-const tagParam = new URLSearchParams(window.location.search).get("tag");
-const paidReturnParam = new URLSearchParams(window.location.search).get("paid");
+async function startEdit(id, data) {
+  editingId = id;
+  editingExistingPhotos = data.photoUrls || [];
+  formTitle.textContent = "✏️ Edit konten";
+  submitBtn.textContent = "Simpan Perubahan";
+  cancelEditBtn.style.display = "block";
 
-if (paidReturnParam === "1") {
-  const notice = document.createElement("div");
-  notice.style.cssText = "background:#fff3cd; color:#856404; text-align:center; padding:10px 15px; font-size:13px; margin:10px 15px; border-radius:8px;";
-  notice.textContent = "Kalau kamu baru saja menyelesaikan pembayaran, tunggu beberapa detik lalu tekan lagi tombol link yang tadi dibayar untuk membukanya.";
-  document.body.insertBefore(notice, postsEl);
+  linksContainer.innerHTML = "";
+  const existingLinks = data.links || (data.taskLink ? [{ label: "Buka video", url: data.taskLink }] : []);
+
+  // Link berbayar tidak bawa "url" di dokumen posts (biar tidak bocor ke publik),
+  // jadi ambil URL aslinya dari linkSecrets khusus buat ditampilkan di form edit.
+  let secretMap = {};
+  const hasPaidLink = existingLinks.some(l => l.price > 0);
+  if (hasPaidLink) {
+    try {
+      const secretSnap = await getDoc(doc(db, "linkSecrets", id));
+      if (secretSnap.exists()) secretMap = secretSnap.data();
+    } catch (err) {
+      console.error("Gagal ambil linkSecrets:", err);
+    }
+  }
+
+  if (existingLinks.length === 0) {
+    addLinkRow();
+  } else {
+    existingLinks.forEach((l, idx) => {
+      const url = l.price > 0 ? (secretMap[String(idx)] || "") : l.url;
+      addLinkRow(l.label, url, l.price || "", l.category || "auto");
+    });
+  }
+
+  document.getElementById("tags").value = (data.tags || []).join(", ");
+  document.getElementById("caption").value = data.caption || "";
+  document.getElementById("resultLink").style.display = "none";
+
+  existingPreview.innerHTML = "";
+  renderExistingPreview();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-let allDocsCache = [];
-let searchActive = false;
-let postChipBarHtml = "";
-const MAIN_FEED_LIMIT = 50;
-
-loadContactBar();
-loadCustomChipBar();
-loadCategoryBar();
-setupSearch();
-
-try {
-  loadBannerAd("adsBannerHeader", "headerBanner", () => {
-    loadStickyBanner("adsStickyBottom");
-    watchStickyBannerResize("adsStickyBottom");
+function renderExistingPreview() {
+  existingPreview.innerHTML = "";
+  editingExistingPhotos.forEach((url) => {
+    const wrap = document.createElement("div");
+    wrap.className = "preview-item";
+    wrap.innerHTML = `
+      <img src="${url}" title="Foto lama">
+      <button type="button" class="removeBtn">✕</button>
+    `;
+    wrap.querySelector(".removeBtn").onclick = () => {
+      editingExistingPhotos = editingExistingPhotos.filter(u => u !== url);
+      renderExistingPreview();
+    };
+    existingPreview.appendChild(wrap);
   });
-  loadSocialBar();
-  hardenAdIframes(["#adsBannerHeader", "#adsStickyBottom"]);
-} catch (err) {
-  console.error("Gagal memuat iklan (ads.js mungkin tidak termuat):", err);
 }
 
-const stickyAdCloseBtn = document.getElementById("stickyAdClose");
-if (stickyAdCloseBtn) {
-  stickyAdCloseBtn.addEventListener("click", () => {
-    document.getElementById("stickyAdBar").style.display = "none";
-    document.body.classList.add("ad-closed");
+async function removePost(id) {
+  if (!confirm("Yakin hapus materi ini? Tidak bisa dikembalikan.")) return;
+  try {
+    // Hapus dokumen postingan DAN link rahasia yang nyambung ke situ —
+    // biar nggak ada data nyangkut di Firestore setelah postingan dihapus.
+    await deleteDoc(doc(db, "posts", id));
+    await deleteDoc(doc(db, "linkSecrets", id)).catch(() => {});
+    // linkSecrets kadang emang nggak ada (kalau semua link postingan itu gratis),
+    // makanya di-catch biar nggak nge-block proses walau dokumennya nggak ketemu.
+  } catch (err) {
+    alert("Gagal menghapus: " + err.message);
+  }
+}
+
+let allPostsCache = []; // [{ id, data }]
+
+function normalizeSearchText(str) {
+  return (str || "")
+    .toString()
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // buang diakritik biar lebih akurat
+    .trim();
+}
+
+function getPostSearchBlob(data) {
+  const tagsList = data.tags || [];
+  const linksList = data.links || (data.taskLink ? [{ label: "Buka Link", url: data.taskLink }] : []);
+  const parts = [
+    data.caption || "",
+    tagsList.join(" "),
+    linksList.map(l => `${l.label || ""} ${l.url || ""}`).join(" ")
+  ];
+  return normalizeSearchText(parts.join(" "));
+}
+
+function highlightMatch(text, terms) {
+  if (!text) return "";
+  let escaped = escapeHtml(text);
+  if (!terms.length) return escaped;
+  terms.forEach(term => {
+    if (!term) return;
+    const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp("(" + safeTerm + ")", "gi");
+    escaped = escaped.replace(re, "<mark>$1</mark>");
+  });
+  return escaped;
+}
+
+function listenPosts() {
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  onSnapshot(q, (snapshot) => {
+    allPostsCache = [];
+    snapshot.forEach((docSnap) => {
+      allPostsCache.push({ id: docSnap.id, data: docSnap.data() });
+    });
+    applyAdminSearch();
   });
 }
 
-async function loadContactBar() {
+function applyAdminSearch() {
+  const listEl = document.getElementById("postList");
+  const countEl = document.getElementById("adminSearchCount");
+  const clearBtn = document.getElementById("adminSearchClear");
+  const rawQuery = document.getElementById("adminSearchInput").value;
+  const normalizedQuery = normalizeSearchText(rawQuery);
+  const terms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+  clearBtn.style.display = rawQuery ? "block" : "none";
+
+  const filtered = terms.length
+    ? allPostsCache.filter(({ data }) => {
+        const blob = getPostSearchBlob(data);
+        return terms.every(term => blob.includes(term));
+      })
+    : allPostsCache;
+
+  if (terms.length) {
+    countEl.textContent = `${filtered.length} dari ${allPostsCache.length} postingan cocok`;
+  } else {
+    countEl.textContent = "";
+  }
+
+  if (allPostsCache.length === 0) {
+    listEl.innerHTML = '<p class="empty">Belum ada materi.</p>';
+    return;
+  }
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<p class="empty">Tidak ada postingan yang cocok dengan pencarian.</p>';
+    return;
+  }
+
+  listEl.innerHTML = "";
+  filtered.forEach(({ id, data }) => {
+    const date = data.createdAt?.toDate
+      ? data.createdAt.toDate().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
+      : "";
+
+    const thumbs = (data.photoUrls || [])
+      .map(url => `<img src="${url}">`)
+      .join("");
+
+    const linksList = data.links || (data.taskLink ? [{ label: "Buka Link", url: data.taskLink }] : []);
+    const linksHtml = linksList
+      .map(l => {
+        const priceLabel = l.price ? ` <strong style="color:#c0392b;">(Rp ${Number(l.price).toLocaleString("id-ID")})</strong>` : ' <span style="color:#4caf50;">(Gratis)</span>';
+        return `<div class="link">🔗 ${highlightMatch(l.label, terms)}${priceLabel}: ${highlightMatch(l.url, terms)}</div>`;
+      })
+      .join("");
+
+    const tagsList = data.tags || [];
+    const tagsHtml = tagsList.length
+      ? `<div class="link">🏷️ ${tagsList.map(t => highlightMatch(t, terms)).join(", ")}</div>`
+      : "";
+
+    const item = document.createElement("div");
+    item.className = "post-item";
+    item.innerHTML = `
+      <div class="date">${date}</div>
+      ${data.caption ? `<div class="caption">${highlightMatch(data.caption, terms)}</div>` : ""}
+      <div class="thumbs">${thumbs}</div>
+      ${linksHtml}
+      ${tagsHtml}
+      <div class="actions">
+        <button class="editBtn">Edit</button>
+        <button class="shareBtn">🔗 Bagikan</button>
+        <button class="deleteBtn">Hapus</button>
+      </div>
+    `;
+    const postUrl = `${window.location.origin}/?post=${id}`;
+    item.querySelector(".editBtn").onclick = () => startEdit(id, data);
+    item.querySelector(".shareBtn").onclick = () => sharePostLink(postUrl);
+    item.querySelector(".deleteBtn").onclick = () => removePost(id);
+    listEl.appendChild(item);
+  });
+}
+
+async function loadContactSettings() {
   try {
     const snap = await getDoc(doc(db, "settings", "contact"));
-    if (!snap.exists()) return;
-    const data = snap.data();
-    const bar = document.getElementById("contactBar");
-    let html = "";
-    if (data.telegram) {
-      html += `<a href="redirect.html?to=telegram" target="_blank" rel="noopener noreferrer">📢 Telegram</a>`;
+    if (snap.exists()) {
+      const data = snap.data();
+      document.getElementById("contactTelegram").value = data.telegram || "";
+      document.getElementById("contactFacebook").value = data.facebook || "";
+      document.getElementById("contactWhatsapp").value = data.whatsapp || "";
     }
-    if (data.facebook) {
-      html += `<a href="redirect.html?to=tutorial" target="_blank" rel="noopener noreferrer">👀 Vipku</a>`;
-    }
-    if (data.whatsapp) {
-      html += `<a href="redirect.html?to=whatsapp" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>`;
-    }
-    bar.innerHTML = html;
   } catch (err) {
     console.error("Gagal memuat pengaturan kontak:", err);
   }
 }
 
-async function loadCustomChipBar() {
+document.getElementById("saveContactBtn").onclick = async () => {
+  const msgEl = document.getElementById("contactMsg");
+  msgEl.className = "msg";
+  msgEl.textContent = "Menyimpan...";
   try {
-    const snap = await getDoc(doc(db, "settings", "chipbar"));
-    if (!snap.exists()) return;
-    const data = snap.data();
-    const slots = [
-      { name: data.chip1Name, link: data.chip1Link, active: data.chip1Active !== false },
-      { name: data.chip2Name, link: data.chip2Link, active: data.chip2Active !== false },
-      { name: data.chip3Name, link: data.chip3Link, active: data.chip3Active !== false }
-    ];
-    let html = "";
-    slots.forEach(({ name, link, active }) => {
-      if (name && link && active) {
-        html += `<a href="${escapeHtmlAttr(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`;
-      }
+    await setDoc(doc(db, "settings", "contact"), {
+      telegram: document.getElementById("contactTelegram").value.trim() || null,
+      facebook: document.getElementById("contactFacebook").value.trim() || null,
+      whatsapp: document.getElementById("contactWhatsapp").value.trim() || null
     });
-    postChipBarHtml = html ? `<div class="post-chip-bar">${html}</div>` : "";
+    msgEl.className = "msg success";
+    msgEl.textContent = "Pengaturan link sosmed berhasil disimpan!";
   } catch (err) {
-    console.error("Gagal memuat chip bar custom:", err);
+    msgEl.className = "msg error";
+    msgEl.textContent = "Gagal: " + err.message;
   }
-}
-
-function escapeHtmlAttr(str) {
-  return String(str).replace(/"/g, "&quot;");
-}
-
-function loadCategoryBar() {
-  const bar = document.getElementById("categoryBar");
-  const qAll = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(200));
-  onSnapshot(qAll, (snapshot) => {
-    allDocsCache = snapshot.docs;
-    renderOldPostsRotation();
-
-    const allTags = new Set();
-    snapshot.forEach((docSnap) => {
-      (docSnap.data().tags || []).forEach((t) => allTags.add(t));
-    });
-    if (allTags.size === 0) {
-      bar.innerHTML = "";
-      return;
-    }
-    let html = `<a class="category-chip${!tagParam ? " active" : ""}" href="${window.location.origin}/">Semua</a>`;
-    allTags.forEach((t) => {
-      const isActive = tagParam === t;
-      html += `<a class="category-chip${isActive ? " active" : ""}" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`;
-    });
-    bar.innerHTML = html;
-  });
-}
-
-function renderOldPostsRotation() {
-  const wrap = document.getElementById("oldRotationWrap");
-  if (!wrap) return;
-
-  // Rotasi cuma tampil di halaman utama, bukan di mode post/tag
-  if (postId || tagParam) {
-    wrap.innerHTML = "";
-    return;
-  }
-
-  const pool = allDocsCache.slice(MAIN_FEED_LIMIT);
-  if (pool.length === 0) {
-    wrap.innerHTML = "";
-    return;
-  }
-
-  const today = new Date().toISOString().slice(0, 10);
-  let saved = null;
-  try {
-    saved = JSON.parse(localStorage.getItem("oldPostsRotation") || "null");
-  } catch (err) {
-    saved = null;
-  }
-
-  let chosenIds;
-  if (saved && saved.date === today && Array.isArray(saved.ids) && saved.ids.length > 0) {
-    chosenIds = saved.ids;
-  } else {
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    chosenIds = shuffled.slice(0, 3).map((d) => d.id);
-    try {
-      localStorage.setItem("oldPostsRotation", JSON.stringify({ date: today, ids: chosenIds }));
-    } catch (err) {
-      // localStorage tidak tersedia, lewati saja
-    }
-  }
-
-  const chosenDocs = chosenIds
-    .map((id) => pool.find((d) => d.id === id))
-    .filter(Boolean);
-
-  wrap.innerHTML = "";
-  if (chosenDocs.length === 0) return;
-
-  const header = document.createElement("div");
-  header.className = "section-title";
-  header.textContent = "🎲 Konten Pilihan";
-  wrap.appendChild(header);
-  chosenDocs.forEach((d) => wrap.appendChild(renderPost(d)));
-}
-
-function setupSearch() {
-  const input = document.getElementById("searchInput");
-  const btn = document.getElementById("searchBtn");
-  const clearBtn = document.getElementById("clearBtn");
-  const suggestBox = document.getElementById("searchSuggestions");
-
-  input.addEventListener("input", (e) => {
-    const qText = e.target.value.trim().toLowerCase();
-    clearBtn.style.display = e.target.value ? "block" : "none";
-
-    if (!qText) {
-      suggestBox.classList.remove("show");
-      suggestBox.innerHTML = "";
-      if (searchActive) {
-        searchActive = false;
-        location.reload();
-      }
-      return;
-    }
-
-    renderSuggestions(qText);
-  });
-
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      runFullSearch(input.value.trim());
-    }
-  });
-
-  btn.addEventListener("click", () => {
-    runFullSearch(input.value.trim());
-  });
-
-  clearBtn.addEventListener("click", () => {
-    input.value = "";
-    clearBtn.style.display = "none";
-    suggestBox.classList.remove("show");
-    suggestBox.innerHTML = "";
-    if (searchActive) {
-      searchActive = false;
-      location.reload();
-    }
-    input.focus();
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!suggestBox.contains(e.target) && e.target !== input) {
-      suggestBox.classList.remove("show");
-    }
-  });
-}
-
-function renderSuggestions(qText) {
-  const suggestBox = document.getElementById("searchSuggestions");
-  const matchedTags = new Set();
-  const matchedPosts = [];
-
-  allDocsCache.forEach((docSnap) => {
-    const data = docSnap.data();
-    (data.tags || []).forEach((t) => {
-      if (t.toLowerCase().includes(qText)) matchedTags.add(t);
-    });
-    if (data.caption && data.caption.toLowerCase().includes(qText)) {
-      matchedPosts.push({ id: docSnap.id, caption: data.caption });
-    }
-  });
-
-  let html = "";
-  Array.from(matchedTags).slice(0, 5).forEach((t) => {
-    html += `<a class="search-suggestion-item" href="?tag=${encodeURIComponent(t)}">🏷️ <span class="tag-label">#${escapeHtml(t)}</span></a>`;
-  });
-  matchedPosts.slice(0, 5).forEach((p) => {
-    html += `<a class="search-suggestion-item" href="?post=${p.id}">📄 ${escapeHtml(p.caption)}</a>`;
-  });
-
-  if (!html) {
-    html = `<div class="search-suggestion-item" style="color:#999;">Tidak ada saran</div>`;
-  }
-
-  suggestBox.innerHTML = html;
-  suggestBox.classList.add("show");
-}
-
-function runFullSearch(qTextRaw) {
-  const suggestBox = document.getElementById("searchSuggestions");
-  suggestBox.classList.remove("show");
-  const qText = qTextRaw.toLowerCase();
-
-  if (!qText) {
-    searchActive = false;
-    location.reload();
-    return;
-  }
-
-  searchActive = true;
-  const filtered = allDocsCache.filter((docSnap) => {
-    const data = docSnap.data();
-    const tags = data.tags || [];
-    const matchTag = tags.some((t) => t.toLowerCase().includes(qText));
-    const matchCaption = (data.caption || "").toLowerCase().includes(qText);
-    return matchTag || matchCaption;
-  });
-
-  postsEl.innerHTML = "";
-  const header = document.createElement("div");
-  header.className = "section-title";
-  header.textContent = "Hasil Pencarian";
-  postsEl.appendChild(header);
-
-  if (filtered.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "empty";
-    empty.textContent = "Tidak ada konten yang cocok.";
-    postsEl.appendChild(empty);
-  } else {
-    filtered.forEach((d) => postsEl.appendChild(renderPost(d)));
-  }
-}
-
-function renderPost(docSnap) {
-  const data = docSnap.data();
-  const date = data.createdAt?.toDate
-    ? data.createdAt.toDate().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-    : "";
-
-  const photoUrls = data.photoUrls || [];
-  const photos = photoUrls
-    .map(url => `<img src="${url}" onclick="openLightbox('${url}')">`)
-    .join("");
-  const photosClass = photoUrls.length > 1 ? "post-photos multi" : "post-photos single";
-
-  const linksList = data.links || (data.taskLink ? [{ label: "Buka video", url: data.taskLink }] : []);
-  const linkBtns = linksList
-    .map((l, idx) => {
-      if (l.price > 0) {
-        const priceLabel = Number(l.price).toLocaleString("id-ID");
-        const category = l.category === "manual" ? "manual" : "auto";
-        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">🔒 ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
-      }
-      return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">▶️ ${escapeHtml(l.label)}</a>`;
-    })
-    .join("");
-
-  const caption = data.caption
-    ? `<div class="post-caption">${escapeHtml(data.caption)}</div>`
-    : "";
-
-  const tagsList = data.tags || [];
-  const tagsHtml = tagsList.length
-    ? `<div class="post-tags">${tagsList.map(t => `<a class="tag-chip" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`).join("")}</div>`
-    : "";
-
-  const shareUrl = `${window.location.origin}/?post=${docSnap.id}`;
-
-  const post = document.createElement("div");
-  post.className = "post";
-  post.innerHTML = `
-    <div class="post-date">${date}</div>
-    ${caption}
-    ${tagsHtml}
-    <div class="${photosClass}">${photos}</div>
-    ${linkBtns}
-    ${postChipBarHtml}
-    <button class="post-share" onclick="sharePost('${shareUrl}')">🔗 Bagikan Konten</button>
-  `;
-
-  post.querySelectorAll(".post-link-paid").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (btn.dataset.category === "manual") {
-        openManualPaymentModal(
-          btn.dataset.postId,
-          Number(btn.dataset.linkIndex),
-          Number(btn.dataset.price),
-          btn.dataset.label,
-          btn
-        );
-      } else {
-        handlePaidLinkClick(
-          btn.dataset.postId,
-          Number(btn.dataset.linkIndex),
-          Number(btn.dataset.price),
-          btn.dataset.label,
-          btn
-        );
-      }
-    });
-  });
-
-  return post;
-}
-
-if (postId) {
-  getDoc(doc(db, "posts", postId)).then((docSnap) => {
-    if (!docSnap.exists()) {
-      postsEl.innerHTML = '<p class="empty">Materi tidak ditemukan.</p>';
-      return;
-    }
-    postsEl.innerHTML = "";
-    postsEl.appendChild(renderPost(docSnap));
-
-    // Bar konten lainnya, live update, di bawah post yang dibagikan
-    const otherWrap = document.createElement("div");
-    otherWrap.id = "otherPosts";
-    postsEl.appendChild(otherWrap);
-
-    const qOthers = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(10));
-    onSnapshot(qOthers, (snapshot) => {
-      const others = snapshot.docs.filter(d => d.id !== postId);
-      if (others.length === 0) {
-        otherWrap.innerHTML = "";
-        return;
-      }
-      otherWrap.innerHTML = "";
-      const title = document.createElement("div");
-      title.className = "section-title";
-      title.textContent = "Konten Lainnya";
-      otherWrap.appendChild(title);
-      others.forEach((d) => otherWrap.appendChild(renderPost(d)));
-
-      const seeAll = document.createElement("a");
-      seeAll.className = "post-link";
-      seeAll.href = window.location.origin + "/";
-      seeAll.textContent = "📂 Lihat Semua Konten";
-      otherWrap.appendChild(seeAll);
-    });
-  }).catch(() => {
-    postsEl.innerHTML = '<p class="empty">Gagal memuat materi.</p>';
-  });
-} else if (tagParam) {
-  const qTag = query(collection(db, "posts"), where("tags", "array-contains", tagParam), orderBy("createdAt", "desc"));
-  onSnapshot(qTag, (snapshot) => {
-    if (searchActive) return;
-    postsEl.innerHTML = "";
-    const header = document.createElement("div");
-    header.className = "section-title";
-    header.textContent = `Tag: ${tagParam}`;
-    postsEl.appendChild(header);
-
-    if (snapshot.empty) {
-      const empty = document.createElement("p");
-      empty.className = "empty";
-      empty.textContent = "Belum ada konten dengan tag ini.";
-      postsEl.appendChild(empty);
-    } else {
-      snapshot.forEach((d) => postsEl.appendChild(renderPost(d)));
-    }
-
-    const seeAll = document.createElement("a");
-    seeAll.className = "post-link";
-    seeAll.href = window.location.origin + "/";
-    seeAll.textContent = "📂 Lihat Semua Konten";
-    postsEl.appendChild(seeAll);
-  });
-} else {
- 
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(MAIN_FEED_LIMIT));
-  onSnapshot(q, (snapshot) => {
-    if (searchActive) return;
-    if (snapshot.empty) {
-      postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
-      return;
-    }
-
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const sevenDaysAgo = new Date(startOfToday.getTime() - 6 * 24 * 60 * 60 * 1000);
-
-    const groups = { hariIni: [], mingguIni: [], lebihLama: [] };
-
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const created = data.createdAt?.toDate ? data.createdAt.toDate() : null;
-      if (created && created >= startOfToday) {
-        groups.hariIni.push(docSnap);
-      } else if (created && created >= sevenDaysAgo) {
-        groups.mingguIni.push(docSnap);
-      } else {
-        groups.lebihLama.push(docSnap);
-      }
-    });
-
-    postsEl.innerHTML = "";
-    let feedPostCounter = 0;
-    const sections = [
-      { key: "hariIni", label: "Hari Ini" },
-      { key: "mingguIni", label: "Minggu Ini" },
-      { key: "lebihLama", label: "Lebih Lama" }
-    ];
-
-    sections.forEach(({ key, label }) => {
-      if (groups[key].length === 0) return;
-      const title = document.createElement("div");
-      title.className = "section-title";
-      title.textContent = label;
-      postsEl.appendChild(title);
-      groups[key].forEach((docSnap) => {
-        postsEl.appendChild(renderPost(docSnap));
-        feedPostCounter++;
-        if (feedPostCounter % 3 === 0) {
-          try {
-            postsEl.appendChild(createNativeAdSlot());
-          } catch (err) {
-            console.error("Gagal memuat native ad slot:", err);
-          }
-        }
-      });
-    });
-  });
-}
-
-function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-window.openLightbox = function(url) {
-  document.getElementById("lightbox-img").src = url;
-  document.getElementById("lightbox").style.display = "flex";
 };
 
-window.sharePost = async function(url) {
-  const shareData = { url: url };
+async function loadChipBarSettings() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "chipbar"));
+    if (snap.exists()) {
+      const data = snap.data();
+      document.getElementById("chip1Name").value = data.chip1Name || "";
+      document.getElementById("chip1Link").value = data.chip1Link || "";
+      document.getElementById("chip1Active").checked = data.chip1Active !== false;
+      document.getElementById("chip2Name").value = data.chip2Name || "";
+      document.getElementById("chip2Link").value = data.chip2Link || "";
+      document.getElementById("chip2Active").checked = data.chip2Active !== false;
+      document.getElementById("chip3Name").value = data.chip3Name || "";
+      document.getElementById("chip3Link").value = data.chip3Link || "";
+      document.getElementById("chip3Active").checked = data.chip3Active !== false;
+    }
+  } catch (err) {
+    console.error("Gagal memuat chip bar:", err);
+  }
+}
 
+document.getElementById("saveChipBarBtn").onclick = async () => {
+  const msgEl = document.getElementById("chipBarMsg");
+  msgEl.className = "msg";
+  msgEl.textContent = "Menyimpan...";
+  try {
+    await setDoc(doc(db, "settings", "chipbar"), {
+      chip1Name: document.getElementById("chip1Name").value.trim() || null,
+      chip1Link: document.getElementById("chip1Link").value.trim() || null,
+      chip1Active: document.getElementById("chip1Active").checked,
+      chip2Name: document.getElementById("chip2Name").value.trim() || null,
+      chip2Link: document.getElementById("chip2Link").value.trim() || null,
+      chip2Active: document.getElementById("chip2Active").checked,
+      chip3Name: document.getElementById("chip3Name").value.trim() || null,
+      chip3Link: document.getElementById("chip3Link").value.trim() || null,
+      chip3Active: document.getElementById("chip3Active").checked
+    });
+    msgEl.className = "msg success";
+    msgEl.textContent = "Chip bar berhasil disimpan!";
+  } catch (err) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Gagal: " + err.message;
+  }
+};
+
+/* ================== FAVICON WEBSITE (+ CACHE localStorage) ================== */
+
+const FAVICON_CACHE_KEY = "vipku_favicon_cache";
+
+document.getElementById("faviconFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById("faviconPreview");
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "inline-block";
+});
+
+async function loadFaviconSettings() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "favicon"));
+    if (snap.exists() && snap.data().url) {
+      const url = snap.data().url;
+      const preview = document.getElementById("faviconPreview");
+      preview.src = url;
+      preview.style.display = "inline-block";
+      applyFaviconTag(url);
+    }
+  } catch (err) {
+    console.error("Gagal memuat favicon:", err);
+  }
+}
+
+function applyFaviconTag(url) {
+  if (!url) return;
+  let link = document.querySelector("link[rel~='icon']");
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "icon";
+    document.head.appendChild(link);
+  }
+  link.href = url;
+}
+
+document.getElementById("saveFaviconBtn").onclick = async () => {
+  const msgEl = document.getElementById("faviconMsg");
+  const file = document.getElementById("faviconFile").files[0];
+  if (!file) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Pilih file favicon dulu.";
+    return;
+  }
+  msgEl.className = "msg";
+  msgEl.textContent = "Mengupload & menyimpan...";
+  try {
+    const url = await uploadToImgbb(file);
+    await setDoc(doc(db, "settings", "favicon"), {
+      url,
+      updatedAt: new Date().toISOString()
+    });
+    // Update cache di localStorage biar index.html langsung pakai versi baru
+    // tanpa nunggu TTL cache-nya habis (lihat FAVICON_CACHE_TTL di index.html).
+    localStorage.setItem(FAVICON_CACHE_KEY, JSON.stringify({ url, cachedAt: Date.now() }));
+    applyFaviconTag(url);
+    msgEl.className = "msg success";
+    msgEl.textContent = "Favicon berhasil disimpan! Perubahan bakal muncul di situs utama (cache otomatis refresh, maks 6 jam).";
+  } catch (err) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Gagal: " + err.message;
+  }
+};
+
+/* ================== DURASI AKSES SETELAH BAYAR ================== */
+
+async function loadDurationSettings() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "accessDuration"));
+    if (snap.exists()) {
+      document.getElementById("accessDurationHours").value = snap.data().hours || "";
+    }
+  } catch (err) {
+    console.error("Gagal memuat durasi akses:", err);
+  }
+}
+
+document.getElementById("saveDurationBtn").onclick = async () => {
+  const msgEl = document.getElementById("durationMsg");
+  const raw = document.getElementById("accessDurationHours").value;
+  const hours = Math.max(0, parseInt(raw, 10) || 0);
+  msgEl.className = "msg";
+  msgEl.textContent = "Menyimpan...";
+  try {
+    await setDoc(doc(db, "settings", "accessDuration"), { hours });
+    msgEl.className = "msg success";
+    msgEl.textContent =
+      hours > 0
+        ? `Disimpan! Akses berlaku ${hours} jam setelah bayar (berlaku buat pembayaran baru, bukan yang sudah lunas sebelumnya).`
+        : "Disimpan! Akses sekarang permanen (tidak kadaluarsa).";
+  } catch (err) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Gagal: " + err.message;
+  }
+};
+
+/* ================== METODE PEMBAYARAN MANUAL ================== */
+
+const manualMethodsContainer = document.getElementById("manualMethodsContainer");
+
+function addManualMethodRow(name = "", detail = "", qrImageUrl = "") {
+  const row = document.createElement("div");
+  row.className = "manual-method-row";
+  row.innerHTML = `
+    <input type="text" class="mm-name" placeholder="Nama metode (mis. QRIS / BCA / DANA)" value="${escapeAttr(name)}">
+    <input type="text" class="mm-detail" placeholder="Nomor rekening / e-wallet / catatan" value="${escapeAttr(detail)}">
+    <input type="file" class="mm-qr-file" accept="image/*">
+    <button type="button" class="mm-remove">✕</button>
+    <div class="mm-qr-preview"></div>
+  `;
+  row.dataset.qrImageUrl = qrImageUrl || "";
+
+  const preview = row.querySelector(".mm-qr-preview");
+  function renderPreview() {
+    preview.innerHTML = row.dataset.qrImageUrl
+      ? `<img src="${row.dataset.qrImageUrl}" title="Gambar QR tersimpan">`
+      : "";
+  }
+  renderPreview();
+
+  row.querySelector(".mm-remove").onclick = () => row.remove();
+  row.querySelector(".mm-qr-file").onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    preview.innerHTML = `<span style="font-size:11px; color:#888;">Mengunggah QR...</span>`;
+    try {
+      const url = await uploadToImgbb(file);
+      row.dataset.qrImageUrl = url;
+      renderPreview();
+    } catch (err) {
+      preview.innerHTML = `<span style="font-size:11px; color:#c0392b;">Gagal upload QR</span>`;
+      console.error(err);
+    }
+  };
+
+  manualMethodsContainer.appendChild(row);
+}
+
+function getManualMethodsFromForm() {
+  const rows = manualMethodsContainer.querySelectorAll(".manual-method-row");
+  const methods = [];
+  rows.forEach((row) => {
+    const name = row.querySelector(".mm-name").value.trim();
+    const detail = row.querySelector(".mm-detail").value.trim();
+    const qrImageUrl = row.dataset.qrImageUrl || "";
+    if (name && (detail || qrImageUrl)) {
+      methods.push({ name, detail, qrImageUrl });
+    }
+  });
+  return methods;
+}
+
+document.getElementById("addManualMethodBtn").onclick = () => addManualMethodRow();
+
+async function loadManualPaymentSettings() {
+  try {
+    manualMethodsContainer.innerHTML = "";
+    const snap = await getDoc(doc(db, "settings", "manualPayment"));
+    const methods = snap.exists() ? (snap.data().methods || []) : [];
+    if (methods.length === 0) {
+      addManualMethodRow();
+    } else {
+      methods.forEach(m => addManualMethodRow(m.name, m.detail, m.qrImageUrl));
+    }
+  } catch (err) {
+    console.error("Gagal memuat metode pembayaran manual:", err);
+  }
+}
+
+document.getElementById("saveManualPaymentBtn").onclick = async () => {
+  const msgEl = document.getElementById("manualPaymentMsg");
+  msgEl.className = "msg";
+  msgEl.textContent = "Menyimpan...";
+  try {
+    const methods = getManualMethodsFromForm();
+    await setDoc(doc(db, "settings", "manualPayment"), { methods });
+    msgEl.className = "msg success";
+    msgEl.textContent = "Metode pembayaran berhasil disimpan!";
+  } catch (err) {
+    msgEl.className = "msg error";
+    msgEl.textContent = "Gagal: " + err.message;
+  }
+};
+
+/* ================== VERIFIKASI KLAIM PEMBAYARAN MANUAL ================== */
+
+function listenManualOrders() {
+  const q = query(collection(db, "manualOrders"), orderBy("createdAt", "desc"));
+  onSnapshot(q, (snapshot) => {
+    const listEl = document.getElementById("manualOrdersList");
+    const pendingDocs = snapshot.docs.filter(d => d.data().status === "pending");
+
+    if (pendingDocs.length === 0) {
+      listEl.innerHTML = '<p class="empty">Tidak ada klaim pembayaran yang menunggu verifikasi.</p>';
+      return;
+    }
+
+    listEl.innerHTML = "";
+    pendingDocs.forEach((docSnap) => {
+      const data = docSnap.data();
+      const createdAt = data.createdAt?.toDate
+        ? data.createdAt.toDate().toLocaleString("id-ID")
+        : "";
+      const item = document.createElement("div");
+      item.className = "manual-order-item";
+      item.innerHTML = `
+        <div><strong>${escapeHtml(data.label || "Link")}</strong> — <span class="mo-price">Rp ${Number(data.price || 0).toLocaleString("id-ID")}</span></div>
+        <div style="color:#888; font-size:12px;">Post ID: ${escapeHtml(data.postId)} • ${createdAt}</div>
+        ${data.contact ? `<div>📞 Kontak: ${escapeHtml(data.contact)}</div>` : ""}
+        ${data.note ? `<div>📝 Catatan: ${escapeHtml(data.note)}</div>` : ""}
+        <div class="mo-actions">
+          <button type="button" class="verifyBtn">✅ Verifikasi (Buka Akses)</button>
+          <button type="button" class="rejectBtn">❌ Tolak</button>
+        </div>
+      `;
+      item.querySelector(".verifyBtn").onclick = () => updateManualOrderStatus(docSnap.id, "verified");
+      item.querySelector(".rejectBtn").onclick = () => updateManualOrderStatus(docSnap.id, "rejected");
+      listEl.appendChild(item);
+    });
+  });
+}
+
+async function updateManualOrderStatus(orderId, status) {
+  try {
+    const updateData = { status, verifiedAt: serverTimestamp() };
+
+    // Kalau di-approve (verified), snapshot durasi akses yang lagi aktif
+    // sekarang jadi expiresAt tetap — biar konsisten sama jalur QRIS otomatis
+    // (durasinya "dikunci" pas disetujui, gak berubah kalau setting diganti belakangan).
+    if (status === "verified") {
+      try {
+        const durationSnap = await getDoc(doc(db, "settings", "accessDuration"));
+        const hours = durationSnap.exists() ? Number(durationSnap.data().hours) || 0 : 0;
+        updateData.expiresAt =
+          hours > 0 ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString() : null;
+      } catch (err) {
+        console.error("Gagal ambil setting durasi akses, fallback ke permanen:", err);
+        updateData.expiresAt = null;
+      }
+    }
+
+    await updateDoc(doc(db, "manualOrders", orderId), updateData);
+  } catch (err) {
+    alert("Gagal update status: " + err.message);
+    console.error(err);
+  }
+}
+
+async function sharePostLink(url) {
+  const shareData = { url: url };
   if (navigator.share) {
     try {
       await navigator.share(shareData);
@@ -1414,7 +1374,14 @@ window.sharePost = async function(url) {
   } else {
     prompt("Salin link ini secara manual:", url);
   }
-};
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
 </script>
+
 </body>
 </html>
