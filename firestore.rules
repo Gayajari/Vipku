@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Koleksi "posts" — dibaca siapa saja (index.html publik),
+    // hanya boleh ditulis/diubah/dihapus oleh user yang sudah login (admin.html)
+    // CATATAN: field "url" pada link BERBAYAR jangan pernah disimpan di sini —
+    // simpan di "linkSecrets" supaya tidak bocor sebelum dibayar.
+    match /posts/{postId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    // Dokumen "settings/contact" & "settings/chipbar" — dibaca siapa saja,
+    // hanya boleh diubah oleh user yang sudah login
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // URL ASLI dari link berbayar. Publik TIDAK BOLEH baca sama sekali —
+    // cuma boleh dibaca lewat backend (Admin SDK, bypass rule ini) ATAU oleh
+    // admin yang sudah login (perlu ini biar bisa lihat lagi URL-nya saat edit).
+    match /linkSecrets/{postId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Status transaksi/akses berbayar (jalur OTOMATIS via Pakasir). Boleh dibaca
+    // siapa saja (buat cek status "sudah bayar" dari browser), tapi HANYA
+    // backend (Admin SDK) yang boleh nulis — write di sini sengaja false,
+    // backend bypass rule ini juga.
+    match /paidAccess/{accessId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Klaim pembayaran MANUAL (konten dewasa, transfer langsung ke admin).
+    // Siapa saja boleh BIKIN klaim baru (status wajib "pending" — tidak bisa
+    // langsung klaim "verified" sendiri). Cuma admin yang login yang boleh
+    // ubah status jadi "verified"/"rejected" lewat panel admin.
+    match /manualOrders/{orderId} {
+      allow read: if true;
+      allow create: if request.resource.data.status == "pending";
+      allow update, delete: if request.auth != null;
+    }
+
+    // Daftar metode pembayaran manual (QRIS/rekening/e-wallet) disimpan di
+    // settings/manualPayment — sudah otomatis tercakup rule settings/{docId} di atas.
+
+    // Default: tolak semua koleksi lain yang tidak didefinisikan di atas
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
