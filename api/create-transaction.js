@@ -34,7 +34,13 @@ module.exports = async (req, res) => {
     const existing = await accessRef.get();
 
     if (existing.exists && existing.data().status === "paid") {
-      return res.status(200).json({ alreadyPaid: true });
+      const d = existing.data();
+      const stillValid = !d.expiresAt || new Date(d.expiresAt) > new Date();
+      if (stillValid) {
+        return res.status(200).json({ alreadyPaid: true });
+      }
+      // expiresAt sudah lewat -> jangan anggap lunas, lanjut ke bawah biar
+      // dibikinin invoice QRIS baru (user diminta bayar ulang).
     }
 
     // Kalau masih ada invoice QRIS pending & belum kadaluarsa, pakai lagi
