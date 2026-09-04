@@ -64,8 +64,7 @@ module.exports = async (req, res) => {
 
     // Simpan transaksi berstatus "pending" — nanti diupdate jadi "paid" oleh
     // webhook (lihat api/dongtube-callback.js), lalu frontend memantau
-    // dokumen ini secara realtime lewat onSnapshot (+ jalur cadangan polling
-    // lewat api/check-invoice-status.js kalau webhook-nya telat/gagal).
+    // dokumen ini secara realtime lewat onSnapshot.
     await accessRef.set({
       buyerId,
       postId,
