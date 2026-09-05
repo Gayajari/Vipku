@@ -141,104 +141,25 @@
     0%, 100% { transform: rotate(0deg); }
     50% { transform: rotate(-6deg); }
   }
-  /* Status "sudah dibuka" — sengaja beda total dari status "terkunci":
-     warna diam (bukan gradient mengkilap), gembok kebuka + centang, tanpa
-     animasi denyut, biar keliatan jelas ini beda state, bukan sekadar ganti teks. */
-  .post-link-paid.unlocked {
+  .post-link-unlocked {
+    width: calc(100% - 36px);
+    margin: 0 18px 18px 18px;
     background: var(--teal);
-    background-size: auto;
-    animation: none;
-    box-shadow: none;
-  }
-  .post-link-paid.unlocked:active { background: #1f5555; }
-  .post-link-paid .lock-icon.just-unlocked {
-    animation: unlockPop 0.55s cubic-bezier(.34,1.56,.64,1);
-  }
-  @keyframes unlockPop {
-    0% { transform: scale(0.4) rotate(-20deg); opacity: 0; }
-    55% { transform: scale(1.25) rotate(8deg); opacity: 1; }
-    100% { transform: scale(1) rotate(0deg); }
-  }
-
-  /* ===== Modal QRIS: instruksi langkah & badge metode bayar ===== */
-  .qris-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 14px 0;
-    text-align: left;
-  }
-  .qris-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 12.5px;
-    line-height: 1.4;
-    color: rgba(43,36,32,0.75);
-  }
-  .qris-step-num {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: var(--cream);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .qris-step b { color: var(--ink); }
-  .qris-warning {
-    font-size: 11.5px;
-    color: #8a6a10;
-    background: rgba(244,201,93,0.22);
-    border-radius: 10px;
-    padding: 8px 10px;
-    margin-top: 4px;
+    color: white;
+    border: none;
     text-align: center;
-  }
-  .qris-methods-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: rgba(43,36,32,0.4);
-    margin: 12px 0 6px;
-    text-align: center;
-  }
-  .qris-methods-chips {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 5px;
-  }
-  .qris-methods-chips span {
-    font-size: 10.5px;
-    font-weight: 600;
-    background: var(--cream);
-    border: 1px solid var(--line);
-    color: rgba(43,36,32,0.65);
-    padding: 3px 9px;
+    padding: 11px;
     border-radius: 999px;
-  }
-  .qris-timer-badge {
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--ink);
-    background: var(--cream);
-    border: 1px solid var(--line);
-    padding: 5px 12px;
-    border-radius: 999px;
-    margin-top: 12px;
+    justify-content: center;
+    gap: 6px;
   }
-  .qris-timer-badge.urgent { color: var(--raspberry); border-color: var(--raspberry); }
+  .post-link-unlocked:active { background: #1f5252; }
   .post-share {
     display: table;
     margin: 0 auto 18px auto;
@@ -611,6 +532,61 @@
   .manual-modal-status.verified { background: rgba(42,111,111,0.14); color: var(--teal); }
   .manual-modal-status.rejected { background: rgba(232,93,117,0.14); color: var(--raspberry); }
 
+  .qris-qr-frame {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+  .qris-qr-frame img {
+    width: 220px;
+    max-width: 100%;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    display: block;
+  }
+  .qris-timer-badge {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 13px;
+    border-radius: 999px;
+    white-space: nowrap;
+    box-shadow: 0 3px 8px rgba(43,36,32,0.25);
+  }
+  .qris-methods {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 6px;
+  }
+  .qris-method-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    color: rgba(43,36,32,0.7);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .qris-auto-note {
+    font-size: 11.5px;
+    color: var(--teal);
+    background: rgba(42,111,111,0.10);
+    border-radius: 10px;
+    padding: 9px 11px;
+    margin-top: 12px;
+    line-height: 1.5;
+    text-align: left;
+  }
+
   /* animasi sukses pembayaran QRIS */
   .qris-success-anim {
     display: none;
@@ -737,23 +713,19 @@
     <h3 id="qrisModalTitle">Bayar QRIS</h3>
     <div id="qrisModalPrice" class="manual-modal-price"></div>
     <div id="qrisModalQrWrap" style="text-align:center;">
-      <img id="qrisModalImg" src="" alt="QRIS" style="width:200px; max-width:100%; border-radius:12px; border:1px solid var(--line); padding:8px; background:#fff;">
-
-      <div style="display:flex; justify-content:center;">
-        <span class="qris-timer-badge" id="qrisTimerBadge" style="display:none;">⏱ <span id="qrisTimerText"></span></span>
+      <div class="qris-qr-frame">
+        <img id="qrisModalImg" src="" alt="QRIS">
+        <div class="qris-timer-badge" id="qrisModalExpiry"></div>
       </div>
-
-      <div class="qris-steps">
-        <div class="qris-step"><span class="qris-step-num">1</span> Buka app <b>DANA / OVO / GoPay / ShopeePay / m-banking</b> apa aja</div>
-        <div class="qris-step"><span class="qris-step-num">2</span> Pilih menu <b>Scan QR</b>, arahkan ke kode QRIS di atas</div>
-        <div class="qris-step"><span class="qris-step-num">3</span> Cek nominalnya sudah pas, lalu selesaikan pembayaran</div>
+      <div class="qris-methods">
+        <span class="qris-method-chip">DANA</span>
+        <span class="qris-method-chip">OVO</span>
+        <span class="qris-method-chip">GoPay</span>
+        <span class="qris-method-chip">ShopeePay</span>
+        <span class="qris-method-chip">LinkAja</span>
+        <span class="qris-method-chip">m-Banking</span>
       </div>
-      <div class="qris-warning">⚠️ Jangan tutup halaman ini — otomatis lanjut sendiri begitu pembayaran diterima.</div>
-
-      <div class="qris-methods-label">Bisa pakai semua e-wallet & m-banking QRIS</div>
-      <div class="qris-methods-chips">
-        <span>DANA</span><span>OVO</span><span>GoPay</span><span>ShopeePay</span><span>LinkAja</span><span>BCA</span><span>BRI</span><span>Mandiri</span><span>BNI</span>
-      </div>
+      <div class="qris-auto-note">⚡ Link otomatis kebuka begitu pembayaran terverifikasi — nggak perlu refresh atau klik ulang.</div>
     </div>
     <div id="qrisSuccessAnim" class="qris-success-anim">
       <svg viewBox="0 0 100 100" width="88" height="88">
@@ -854,34 +826,43 @@ function getBuyerId() {
   return id;
 }
 
-/* ================== IKON GEMBOK (SVG, bukan emoji statis) ================== */
-// Satu sumber kebenaran buat tampilan tombol link berbayar, dipakai di semua
-// tempat (render awal, abis bayar QRIS, abis diverifikasi manual) — biar
-// state "terkunci" vs "sudah dibuka" KONSISTEN dan jelas beda secara visual,
-// bukan cuma ganti teks doang.
-function lockIconMarkup(locked, justChanged) {
-  const cls = "lock-icon" + (justChanged ? " just-unlocked" : "");
-  if (locked) {
-    return `<svg class="${cls}" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path class="lock-shackle" d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>`;
-  }
-  // Gembok TERBUKA: shackle kegeser ke atas-samping + centang kecil di badan
-  // gembok — biar jelas beda bentuk dari versi terkunci, bukan cuma ganti warna.
-  return `<svg class="${cls}" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 7.4-2.1"/><path d="M9.2 15.3l1.7 1.7L14.6 13.2" stroke-width="2"/></svg>`;
-}
+// Ikon dipakai bareng di renderPost() (render awal) dan di titik-titik sukses
+// pembayaran (biar tombol yang sudah dibayar langsung ganti tampilan, bukan
+// cuma ganti teks doang).
+const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path class="lock-shackle" d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>`;
+const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16 9.3"/></svg>`;
 
-function setPaidButtonState(btnEl, { locked, label, price, justChanged = false }) {
-  btnEl.classList.toggle("unlocked", !locked);
-  if (locked) {
-    const priceLabel = Number(price || 0).toLocaleString("id-ID");
-    btnEl.innerHTML = `${lockIconMarkup(true)} ${escapeHtml(label)} — Rp ${priceLabel}`;
-  } else {
-    btnEl.innerHTML = `${lockIconMarkup(false, justChanged)} ${escapeHtml(label)} — Buka Lagi`;
+// Cache lokal "sudah kebeli" per link (per accessId), supaya begitu halaman
+// di-reload, tombol yang sudah dibayar LANGSUNG kelihatan beda dari yang
+// belum — nggak perlu klik dulu buat tahu statusnya. Ini murni penanda
+// tampilan; keamanan tetap 100% dicek ulang di server (get-link.js) tiap
+// kali link mau dibuka, jadi walau cache ini dihapus/dipalsukan dari
+// DevTools, tetap nggak bisa buka link tanpa lolos verifikasi server.
+function getUnlockedSet() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem("unlockedLinks") || "[]"));
+  } catch (err) {
+    return new Set();
   }
+}
+function markUnlocked(accessId) {
+  const set = getUnlockedSet();
+  set.add(accessId);
+  localStorage.setItem("unlockedLinks", JSON.stringify([...set]));
+}
+function isUnlockedLocally(accessId) {
+  return getUnlockedSet().has(accessId);
+}
+function setButtonUnlockedStyle(btnEl, label) {
+  btnEl.classList.remove("post-link-paid");
+  btnEl.classList.add("post-link-unlocked");
+  btnEl.innerHTML = `${unlockIconSvg} ${label} — Sudah Dibeli`;
 }
 
 async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
   const buyerId = getBuyerId();
   const accessId = `${buyerId}_${postId}_${linkIndex}`;
+  const originalText = btnEl.textContent;
   btnEl.disabled = true;
 
   try {
@@ -902,12 +883,13 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
       });
       const resData = await res.json();
       if (resData.url) {
+        markUnlocked(accessId);
         window.open(resData.url, "_blank", "noopener,noreferrer");
-        setPaidButtonState(btnEl, { locked: false, label });
+        setButtonUnlockedStyle(btnEl, label);
         return;
       }
       alert(resData.error || "Gagal membuka link.");
-      setPaidButtonState(btnEl, { locked: true, label, price });
+      btnEl.textContent = originalText;
       return;
     }
 
@@ -924,17 +906,17 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
       return handlePaidLinkClick(postId, linkIndex, price, label, btnEl);
     }
     if (resData.qrisImage) {
-      setPaidButtonState(btnEl, { locked: true, label, price });
+      btnEl.textContent = originalText;
       btnEl.disabled = false;
       openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData: resData });
       return;
     }
     alert(resData.error || "Gagal membuat transaksi pembayaran.");
-    setPaidButtonState(btnEl, { locked: true, label, price });
+    btnEl.textContent = originalText;
   } catch (err) {
     console.error(err);
     alert("Terjadi kesalahan koneksi ke server pembayaran. Coba lagi.");
-    setPaidButtonState(btnEl, { locked: true, label, price });
+    btnEl.textContent = originalText;
   } finally {
     btnEl.disabled = false;
   }
@@ -980,24 +962,20 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
   document.getElementById("qrisModalImg").src = invoiceData.qrisImage;
   document.getElementById("qrisModalQrWrap").style.display = "block";
   document.getElementById("qrisSuccessAnim").classList.remove("show");
-  setQrisModalStatus("⏳ Menunggu pembayaran... scan QRIS di atas pakai e-wallet/m-banking. Halaman ini otomatis update begitu lunas.", "pending");
+  setQrisModalStatus("⏳ Menunggu pembayaran... scan QRIS di atas pakai e-wallet/m-banking kamu.", "pending");
   overlay.classList.add("open");
 
   if (qrisUnsub) { qrisUnsub(); qrisUnsub = null; }
   if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
 
-  const timerBadge = document.getElementById("qrisTimerBadge");
-  const timerText = document.getElementById("qrisTimerText");
-  timerBadge.style.display = "none";
-  timerBadge.classList.remove("urgent");
+  const expiryEl = document.getElementById("qrisModalExpiry");
+  expiryEl.textContent = "";
   if (invoiceData.expiredAt) {
     const expiryDate = new Date(invoiceData.expiredAt);
-    timerBadge.style.display = "inline-flex";
     qrisCountdownTimer = setInterval(() => {
       const diff = expiryDate - new Date();
       if (diff <= 0) {
-        timerText.textContent = "Kadaluarsa";
-        timerBadge.classList.add("urgent");
+        expiryEl.textContent = "Kadaluarsa";
         setQrisModalStatus("❌ QRIS kadaluarsa. Tutup modal ini lalu klik tombol bayar lagi buat bikin QRIS baru.", "rejected");
         clearInterval(qrisCountdownTimer);
         qrisCountdownTimer = null;
@@ -1005,8 +983,7 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
       }
       const mins = Math.floor(diff / 60000);
       const secs = Math.floor((diff % 60000) / 1000);
-      if (diff < 60000) timerBadge.classList.add("urgent");
-      timerText.textContent = `Berlaku ${mins}:${String(secs).padStart(2, "0")} lagi`;
+      expiryEl.textContent = `⏱ ${mins}:${String(secs).padStart(2, "0")}`;
     }, 1000);
   }
 
@@ -1028,16 +1005,17 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
         });
         const resData = await res.json();
         if (resData.url) {
+          markUnlocked(accessId);
           window.open(resData.url, "_blank", "noopener,noreferrer");
-          setPaidButtonState(btnEl, { locked: false, label, justChanged: true });
+          setButtonUnlockedStyle(btnEl, label);
         } else {
           alert(resData.error || "Gagal membuka link.");
-          setPaidButtonState(btnEl, { locked: false, label });
+          btnEl.textContent = label;
         }
       } catch (err) {
         console.error(err);
         alert("Gagal terhubung ke server. Coba lagi.");
-        setPaidButtonState(btnEl, { locked: false, label });
+        btnEl.textContent = label;
       } finally {
         btnEl.disabled = false;
       }
@@ -1120,7 +1098,7 @@ function setManualModalStatus(text, kind) {
   el.textContent = text;
 }
 
-async function openManualBuyLink(postId, linkIndex, buyerId, btnEl) {
+async function openManualBuyLink(postId, linkIndex, buyerId, btnEl, label) {
   try {
     const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
       method: "POST",
@@ -1129,11 +1107,9 @@ async function openManualBuyLink(postId, linkIndex, buyerId, btnEl) {
     });
     const resData = await res.json();
     if (resData.url) {
+      markUnlocked(`${buyerId}_${postId}_${linkIndex}`);
       window.open(resData.url, "_blank", "noopener,noreferrer");
-      if (btnEl) {
-        const label = btnEl.dataset.label || "Link";
-        setPaidButtonState(btnEl, { locked: false, label, justChanged: true });
-      }
+      if (btnEl) setButtonUnlockedStyle(btnEl, label || "Link");
     } else {
       alert(resData.error || "Gagal membuka link.");
     }
@@ -1194,7 +1170,7 @@ async function openManualPaymentModal(postId, linkIndex, price, label, btnEl) {
     } else if (orderData.status === "verified") {
       formEl.style.display = "none";
       setManualModalStatus("✅ Pembayaran terverifikasi! Membuka link...", "verified");
-      openManualBuyLink(postId, linkIndex, buyerId, btnEl);
+      openManualBuyLink(postId, linkIndex, buyerId, btnEl, label);
     } else if (orderData.status === "rejected") {
       formEl.style.display = "block";
       setManualModalStatus("❌ Klaim sebelumnya ditolak admin (mungkin bukti tidak sesuai). Kamu bisa kirim klaim baru di bawah.", "rejected");
@@ -1532,12 +1508,17 @@ function renderPost(docSnap) {
   const photosClass = photoUrls.length > 1 ? "post-photos multi" : "post-photos single";
 
   const linksList = data.links || (data.taskLink ? [{ label: "Buka video", url: data.taskLink }] : []);
+  const buyerIdForRender = getBuyerId();
   const linkBtns = linksList
     .map((l, idx) => {
       if (l.price > 0) {
-        const priceLabel = Number(l.price).toLocaleString("id-ID");
         const category = l.category === "manual" ? "manual" : "auto";
-        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconMarkup(true)} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
+        const accessId = `${buyerIdForRender}_${docSnap.id}_${idx}`;
+        if (isUnlockedLocally(accessId)) {
+          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg} ${escapeHtml(l.label)} — Sudah Dibeli</button>`;
+        }
+        const priceLabel = Number(l.price).toLocaleString("id-ID");
+        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
       }
       return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">▶️ ${escapeHtml(l.label)}</a>`;
     })
@@ -1566,7 +1547,7 @@ function renderPost(docSnap) {
     <button class="post-share" onclick="sharePost('${shareUrl}')">🔗 Bagikan Konten</button>
   `;
 
-  post.querySelectorAll(".post-link-paid").forEach((btn) => {
+  post.querySelectorAll(".post-link-paid, .post-link-unlocked").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (btn.dataset.category === "manual") {
         openManualPaymentModal(
