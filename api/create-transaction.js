@@ -43,11 +43,20 @@ module.exports = async (req, res) => {
       // dibikinin invoice QRIS baru (user diminta bayar ulang).
     }
 
-    // Kalau masih ada invoice QRIS pending & belum kadaluarsa, pakai lagi
-    // (biar user gak numpuk banyak invoice tiap kali klik ulang / reload).
+    // Kalau masih ada invoice QRIS pending & belum kadaluarsa DAN harganya
+    // masih sama persis, pakai lagi (biar user gak numpuk banyak invoice
+    // tiap kali klik ulang / reload). Kalau harga di link udah diubah admin
+    // (mis. 2000 -> 1000), invoice lama otomatis dianggap basi dan dibikin
+    // yang baru sesuai harga terbaru — jangan sampai user masih disodorin
+    // QRIS dengan nominal lama.
     if (existing.exists) {
       const d = existing.data();
-      if (d.status === "pending" && d.expiredAt && new Date(d.expiredAt) > new Date()) {
+      if (
+        d.status === "pending" &&
+        d.expiredAt &&
+        new Date(d.expiredAt) > new Date() &&
+        Number(d.price) === amount
+      ) {
         return res.status(200).json({
           accessId,
           invoiceId: d.invoiceId,
