@@ -249,24 +249,13 @@
   }
   .category-bar::-webkit-scrollbar { display: none; }
 
-  .home-btn {
-    position: absolute;
-    left: 15px;
-    top: 18px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  .logo-home-link {
     text-decoration: none;
-    background: var(--card);
-    border: 1.5px solid var(--line);
-    color: var(--ink);
-    padding: 6px 11px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 500;
-    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    display: inline-block;
+    transition: opacity 0.2s ease;
   }
-  .home-btn:active { border-color: var(--raspberry); color: var(--raspberry); background: rgba(232,93,117,0.06); }
+  .logo-home-link:active { opacity: 0.65; }
+  .logo-home-link h1 { margin: 0; }
 
   .site-footer {
     max-width: 640px;
@@ -278,15 +267,15 @@
   .home-btn-footer {
     display: inline-block;
     text-decoration: none;
-    background: var(--ink);
-    color: var(--cream);
-    padding: 10px 22px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: background 0.2s ease;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+    padding: 6px 0;
+    transition: opacity 0.2s ease;
   }
-  .home-btn-footer:active { background: var(--raspberry); }
+  .home-btn-footer em { font-style: italic; font-weight: 400; color: var(--raspberry); }
+  .home-btn-footer:active { opacity: 0.65; }
 
   .sticky-ad-bar {
     position: fixed;
@@ -458,35 +447,6 @@
     background: var(--ink);
     color: var(--cream);
     border-color: var(--ink);
-  }
-  .tabs {
-    display: flex;
-    gap: 4px;
-    padding: 3px;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    width: fit-content;
-    margin: 12px 15px;
-    overflow-x: auto;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    padding: 7px 13px;
-    border-radius: 999px;
-    border: none;
-    background: transparent;
-    color: rgba(43,36,32,0.55);
-    font-size: 11.5px;
-    font-weight: 500;
-    font-family: inherit;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .tab.active {
-    background: var(--ink);
-    color: var(--cream);
   }
   .empty {
     text-align: center;
@@ -728,12 +688,11 @@
 <body>
 
 <header>
-  <a href="./" class="home-btn" aria-label="Kembali ke Beranda">🏠 Beranda</a>
-  <h1>Vip<em>ku</em>🥵</h1>
+  <a href="./" class="logo-home-link" aria-label="Kembali ke Beranda">
+    <h1>Vip<em>ku</em>🥵</h1>
+  </a>
   <p>Konten update tiap hari</p>
 </header>
-
-<div class="ads-banner" id="adsBannerHeader"></div>
 
 <div class="contact-bar" id="contactBar"></div>
 
@@ -750,12 +709,7 @@
 
 <div class="category-bar" id="categoryBar"></div>
 
-<div class="tabs" id="feedTabs">
-  <button class="tab active" data-tab="untukKamu">Untuk Kamu</button>
-  <button class="tab" data-tab="terbaru">Terbaru</button>
-  <button class="tab" data-tab="terlama">Terlama</button>
-  <button class="tab" data-tab="terpopuler">Terpopuler</button>
-</div>
+<div class="ads-banner" id="adsFeedTopBanner"></div>
 
 <div class="container" id="posts">
   <p class="empty">Memuat konten...</p>
@@ -822,7 +776,7 @@
 </div>
 
 <footer class="site-footer">
-  <a href="./" class="home-btn-footer">🏠 Kembali ke Beranda</a>
+  <a href="./" class="home-btn-footer">Vip<em>ku</em></a>
 </footer>
 
 <div class="sticky-ad-bar" id="stickyAdBar">
@@ -1352,7 +1306,6 @@ let allDocsCache = [];
 let searchActive = false;
 let postChipBarHtml = "";
 let mainFeedDocsCache = [];
-let currentFeedTab = "untukKamu";
 const MAIN_FEED_LIMIT = 50;
 
 loadContactBar();
@@ -1361,12 +1314,13 @@ loadCategoryBar();
 setupSearch();
 
 try {
-  loadBannerAd("adsBannerHeader", "headerBanner", () => {
-    loadStickyBanner("adsStickyBottom");
-    watchStickyBannerResize("adsStickyBottom");
+  loadResponsiveBanner("adsFeedTopBanner", "feedTop", () => {
+    loadResponsiveBanner("adsStickyBottom", "sticky");
+    watchResponsiveBannerResize("adsStickyBottom", "sticky");
   });
+  watchResponsiveBannerResize("adsFeedTopBanner", "feedTop");
   loadSocialBar();
-  hardenAdIframes(["#adsBannerHeader", "#adsStickyBottom"]);
+  hardenAdIframes(["#adsFeedTopBanner", "#adsStickyBottom"]);
 } catch (err) {
   console.error("Gagal memuat iklan (ads.js mungkin tidak termuat):", err);
 }
@@ -1754,9 +1708,7 @@ if (postId) {
   }).catch(() => {
     postsEl.innerHTML = '<p class="empty">Gagal memuat materi.</p>';
   });
-  document.getElementById("feedTabs").style.display = "none";
 } else if (tagParam) {
-  document.getElementById("feedTabs").style.display = "none";
   const qTag = query(collection(db, "posts"), where("tags", "array-contains", tagParam), orderBy("createdAt", "desc"));
   onSnapshot(qTag, (snapshot) => {
     if (searchActive) return;
@@ -1803,55 +1755,6 @@ if (postId) {
     });
   }
 
-  function renderPostsSectioned(docsArray) {
-    postsEl.innerHTML = "";
-    if (docsArray.length === 0) {
-      postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
-      return;
-    }
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const sevenDaysAgo = new Date(startOfToday.getTime() - 6 * 24 * 60 * 60 * 1000);
-    const groups = { hariIni: [], mingguIni: [], lebihLama: [] };
-
-    docsArray.forEach((docSnap) => {
-      const data = docSnap.data();
-      const created = data.createdAt?.toDate ? data.createdAt.toDate() : null;
-      if (created && created >= startOfToday) {
-        groups.hariIni.push(docSnap);
-      } else if (created && created >= sevenDaysAgo) {
-        groups.mingguIni.push(docSnap);
-      } else {
-        groups.lebihLama.push(docSnap);
-      }
-    });
-
-    let counter = 0;
-    const sections = [
-      { key: "hariIni", label: "Hari Ini" },
-      { key: "mingguIni", label: "Minggu Ini" },
-      { key: "lebihLama", label: "Lebih Lama" }
-    ];
-    sections.forEach(({ key, label }) => {
-      if (groups[key].length === 0) return;
-      const title = document.createElement("div");
-      title.className = "section-title";
-      title.textContent = label;
-      postsEl.appendChild(title);
-      groups[key].forEach((docSnap) => {
-        postsEl.appendChild(renderPost(docSnap));
-        counter++;
-        if (counter % 3 === 0) {
-          try {
-            postsEl.appendChild(createNativeAdSlot());
-          } catch (err) {
-            console.error("Gagal memuat native ad slot:", err);
-          }
-        }
-      });
-    });
-  }
-
   // "Untuk Kamu": skor gabungan baru + populer, dikasih sedikit acak supaya
   // urutannya nggak monoton kaku tiap dibuka (post lama yang lumayan populer
   // tetap dapat kesempatan nongol di atas, bukan selalu ketutup post baru).
@@ -1872,31 +1775,11 @@ if (postId) {
   }
 
   function renderFeedForTab() {
-    if (currentFeedTab === "terbaru") {
-      renderPostsSectioned(mainFeedDocsCache); // urutan asli dari query (terbaru dulu)
-    } else if (currentFeedTab === "terlama") {
-      renderPostsFlat([...mainFeedDocsCache].reverse());
-    } else if (currentFeedTab === "terpopuler") {
-      const sorted = [...mainFeedDocsCache].sort((a, b) => {
-        const va = (a.data().views || 0) + Math.random() * 0.5;
-        const vb = (b.data().views || 0) + Math.random() * 0.5;
-        return vb - va;
-      });
-      renderPostsFlat(sorted);
-    } else {
-      renderPostsBlended(mainFeedDocsCache); // default: "untukKamu"
-    }
+    // Tab pemilih (Untuk Kamu/Terbaru/Terlama/Terpopuler) sudah dihapus dari
+    // tampilan, tapi algoritma blend-nya tetap jalan sebagai satu-satunya
+    // mode urutan feed (baru + populer + sedikit acak).
+    renderPostsBlended(mainFeedDocsCache);
   }
-
-  document.querySelectorAll("#feedTabs .tab").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (searchActive) return;
-      document.querySelectorAll("#feedTabs .tab").forEach((t) => t.classList.remove("active"));
-      btn.classList.add("active");
-      currentFeedTab = btn.dataset.tab;
-      renderFeedForTab();
-    });
-  });
 
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(MAIN_FEED_LIMIT));
   onSnapshot(q, (snapshot) => {
