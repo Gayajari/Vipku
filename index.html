@@ -438,6 +438,35 @@
     color: var(--cream);
     border-color: var(--ink);
   }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    width: fit-content;
+    margin: 12px 15px;
+    overflow-x: auto;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: rgba(43,36,32,0.55);
+    font-size: 11.5px;
+    font-weight: 500;
+    font-family: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .tab.active {
+    background: var(--ink);
+    color: var(--cream);
+  }
   .empty {
     text-align: center;
     color: rgba(43,36,32,0.5);
@@ -563,18 +592,24 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 5px;
+    gap: 4px;
     margin-top: 6px;
   }
   .qris-method-chip {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 500;
     background: var(--cream);
     border: 1px solid var(--line);
     color: rgba(43,36,32,0.7);
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: 999px;
+  }
+  .qris-scan-note {
+    font-size: 10.5px;
+    color: rgba(43,36,32,0.5);
+    margin-top: 8px;
+    line-height: 1.4;
   }
   .qris-auto-note {
     font-size: 11.5px;
@@ -583,6 +618,16 @@
     border-radius: 10px;
     padding: 9px 11px;
     margin-top: 12px;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .qris-vip-note {
+    font-size: 11px;
+    color: #8a6a10;
+    background: rgba(244,201,93,0.18);
+    border-radius: 10px;
+    padding: 8px 11px;
+    margin-top: 8px;
     line-height: 1.5;
     text-align: left;
   }
@@ -684,6 +729,13 @@
 
 <div class="category-bar" id="categoryBar"></div>
 
+<div class="tabs" id="feedTabs">
+  <button class="tab active" data-tab="untukKamu">Untuk Kamu</button>
+  <button class="tab" data-tab="terbaru">Terbaru</button>
+  <button class="tab" data-tab="terlama">Terlama</button>
+  <button class="tab" data-tab="terpopuler">Terpopuler</button>
+</div>
+
 <div class="container" id="posts">
   <p class="empty">Memuat konten...</p>
 </div>
@@ -723,9 +775,15 @@
         <span class="qris-method-chip">GoPay</span>
         <span class="qris-method-chip">ShopeePay</span>
         <span class="qris-method-chip">LinkAja</span>
-        <span class="qris-method-chip">m-Banking</span>
+        <span class="qris-method-chip">BCA</span>
+        <span class="qris-method-chip">BRI</span>
+        <span class="qris-method-chip">Mandiri</span>
+        <span class="qris-method-chip">BNI</span>
+        <span class="qris-method-chip">m-Banking lain</span>
       </div>
+      <div class="qris-scan-note">Tinggal scan pakai app apa aja, nggak perlu app khusus.</div>
       <div class="qris-auto-note">⚡ Link otomatis kebuka begitu pembayaran terverifikasi — nggak perlu refresh atau klik ulang.</div>
+      <div class="qris-vip-note" id="qrisVipDurationNote" style="display:none;"></div>
     </div>
     <div id="qrisSuccessAnim" class="qris-success-anim">
       <svg viewBox="0 0 100 100" width="88" height="88">
@@ -859,6 +917,26 @@ function setButtonUnlockedStyle(btnEl, label) {
   btnEl.innerHTML = `${unlockIconSvg} ${label} — Sudah Dibeli`;
 }
 
+// Hitung 1 view tiap post cuma sekali per sesi browser (biar refresh berkali-kali
+// nggak nge-gembungin angka). Dikirim ke server (bukan tulis Firestore langsung
+// dari sini) supaya nggak perlu buka akses tulis publik ke koleksi "posts".
+function trackPostView(postId) {
+  try {
+    const seenKey = "viewedPosts";
+    const seen = new Set(JSON.parse(sessionStorage.getItem(seenKey) || "[]"));
+    if (seen.has(postId)) return;
+    seen.add(postId);
+    sessionStorage.setItem(seenKey, JSON.stringify([...seen]));
+  } catch (err) {
+    // sessionStorage tidak tersedia (mode private ekstrem dsb) — tetap kirim saja
+  }
+  fetch(`${PAYWALL_BACKEND_URL}/api/track-view`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ postId })
+  }).catch((err) => console.error("Gagal mencatat view:", err));
+}
+
 async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
   const buyerId = getBuyerId();
   const accessId = `${buyerId}_${postId}_${linkIndex}`;
@@ -965,6 +1043,13 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
   setQrisModalStatus("⏳ Menunggu pembayaran... scan QRIS di atas pakai e-wallet/m-banking kamu.", "pending");
   overlay.classList.add("open");
 
+  const vipNoteEl = document.getElementById("qrisVipDurationNote");
+  vipNoteEl.style.display = "none";
+  getAccessDurationHours().then((hours) => {
+    vipNoteEl.textContent = formatAccessDurationText(hours);
+    vipNoteEl.style.display = "block";
+  });
+
   if (qrisUnsub) { qrisUnsub(); qrisUnsub = null; }
   if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
 
@@ -1070,6 +1155,30 @@ async function getManualPaymentMethods() {
     manualPaymentMethodsCache = [];
   }
   return manualPaymentMethodsCache;
+}
+
+// Durasi akses VIP (jam) — ikut pengaturan admin (settings/accessDuration.hours,
+// 0/kosong = permanen). Dipakai buat kasih tahu pembeli di modal QRIS berapa
+// lama linknya bisa diakses setelah bayar.
+let accessDurationHoursCache = null;
+async function getAccessDurationHours() {
+  if (accessDurationHoursCache !== null) return accessDurationHoursCache;
+  try {
+    const snap = await getDoc(doc(db, "settings", "accessDuration"));
+    accessDurationHoursCache = snap.exists() ? (Number(snap.data().hours) || 0) : 0;
+  } catch (err) {
+    console.error(err);
+    accessDurationHoursCache = 0;
+  }
+  return accessDurationHoursCache;
+}
+function formatAccessDurationText(hours) {
+  if (!hours || hours <= 0) return "🔓 Akses VIP berlaku permanen setelah bayar.";
+  if (hours % 24 === 0) {
+    const days = hours / 24;
+    return `🔓 Akses VIP berlaku ${days} hari (${hours} jam) setelah bayar.`;
+  }
+  return `🔓 Akses VIP berlaku ${hours} jam setelah bayar.`;
 }
 
 let manualOrderUnsub = null; // buat lepas listener status order lama saat modal dibuka ulang
@@ -1221,6 +1330,8 @@ if (paidReturnParam === "1") {
 let allDocsCache = [];
 let searchActive = false;
 let postChipBarHtml = "";
+let mainFeedDocsCache = [];
+let currentFeedTab = "untukKamu";
 const MAIN_FEED_LIMIT = 50;
 
 loadContactBar();
@@ -1301,6 +1412,7 @@ function loadCategoryBar() {
   onSnapshot(qAll, (snapshot) => {
     allDocsCache = snapshot.docs;
     renderOldPostsRotation();
+    renderMainFeedTabs();
 
     const allTags = new Set();
     snapshot.forEach((docSnap) => {
@@ -1580,6 +1692,7 @@ if (postId) {
     }
     postsEl.innerHTML = "";
     postsEl.appendChild(renderPost(docSnap));
+    trackPostView(postId);
 
     // Bar konten lainnya, live update, di bawah post yang dibagikan
     const otherWrap = document.createElement("div");
@@ -1609,7 +1722,9 @@ if (postId) {
   }).catch(() => {
     postsEl.innerHTML = '<p class="empty">Gagal memuat materi.</p>';
   });
+  document.getElementById("feedTabs").style.display = "none";
 } else if (tagParam) {
+  document.getElementById("feedTabs").style.display = "none";
   const qTag = query(collection(db, "posts"), where("tags", "array-contains", tagParam), orderBy("createdAt", "desc"));
   onSnapshot(qTag, (snapshot) => {
     if (searchActive) return;
@@ -1635,22 +1750,39 @@ if (postId) {
     postsEl.appendChild(seeAll);
   });
 } else {
- 
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(MAIN_FEED_LIMIT));
-  onSnapshot(q, (snapshot) => {
-    if (searchActive) return;
-    if (snapshot.empty) {
+
+  function renderPostsFlat(docsArray) {
+    postsEl.innerHTML = "";
+    if (docsArray.length === 0) {
       postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
       return;
     }
+    let counter = 0;
+    docsArray.forEach((docSnap) => {
+      postsEl.appendChild(renderPost(docSnap));
+      counter++;
+      if (counter % 3 === 0) {
+        try {
+          postsEl.appendChild(createNativeAdSlot());
+        } catch (err) {
+          console.error("Gagal memuat native ad slot:", err);
+        }
+      }
+    });
+  }
 
+  function renderPostsSectioned(docsArray) {
+    postsEl.innerHTML = "";
+    if (docsArray.length === 0) {
+      postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
+      return;
+    }
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const sevenDaysAgo = new Date(startOfToday.getTime() - 6 * 24 * 60 * 60 * 1000);
-
     const groups = { hariIni: [], mingguIni: [], lebihLama: [] };
 
-    snapshot.forEach((docSnap) => {
+    docsArray.forEach((docSnap) => {
       const data = docSnap.data();
       const created = data.createdAt?.toDate ? data.createdAt.toDate() : null;
       if (created && created >= startOfToday) {
@@ -1662,14 +1794,12 @@ if (postId) {
       }
     });
 
-    postsEl.innerHTML = "";
-    let feedPostCounter = 0;
+    let counter = 0;
     const sections = [
       { key: "hariIni", label: "Hari Ini" },
       { key: "mingguIni", label: "Minggu Ini" },
       { key: "lebihLama", label: "Lebih Lama" }
     ];
-
     sections.forEach(({ key, label }) => {
       if (groups[key].length === 0) return;
       const title = document.createElement("div");
@@ -1678,8 +1808,8 @@ if (postId) {
       postsEl.appendChild(title);
       groups[key].forEach((docSnap) => {
         postsEl.appendChild(renderPost(docSnap));
-        feedPostCounter++;
-        if (feedPostCounter % 3 === 0) {
+        counter++;
+        if (counter % 3 === 0) {
           try {
             postsEl.appendChild(createNativeAdSlot());
           } catch (err) {
@@ -1688,6 +1818,59 @@ if (postId) {
         }
       });
     });
+  }
+
+  // "Untuk Kamu": skor gabungan baru + populer, dikasih sedikit acak supaya
+  // urutannya nggak monoton kaku tiap dibuka (post lama yang lumayan populer
+  // tetap dapat kesempatan nongol di atas, bukan selalu ketutup post baru).
+  function renderPostsBlended(docsArray) {
+    const maxViews = Math.max(1, ...docsArray.map((d) => d.data().views || 0));
+    const scored = docsArray.map((docSnap) => {
+      const data = docSnap.data();
+      const created = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+      const ageDays = Math.max(0, (Date.now() - created.getTime()) / 86400000);
+      const recencyScore = 1 / (ageDays + 2);
+      const popScore = (data.views || 0) / maxViews;
+      const combined = recencyScore * 0.65 + popScore * 0.35;
+      const jittered = combined * (0.85 + Math.random() * 0.3);
+      return { docSnap, jittered };
+    });
+    scored.sort((a, b) => b.jittered - a.jittered);
+    renderPostsFlat(scored.map((s) => s.docSnap));
+  }
+
+  function renderFeedForTab() {
+    if (currentFeedTab === "terbaru") {
+      renderPostsSectioned(mainFeedDocsCache); // urutan asli dari query (terbaru dulu)
+    } else if (currentFeedTab === "terlama") {
+      renderPostsFlat([...mainFeedDocsCache].reverse());
+    } else if (currentFeedTab === "terpopuler") {
+      const sorted = [...mainFeedDocsCache].sort((a, b) => {
+        const va = (a.data().views || 0) + Math.random() * 0.5;
+        const vb = (b.data().views || 0) + Math.random() * 0.5;
+        return vb - va;
+      });
+      renderPostsFlat(sorted);
+    } else {
+      renderPostsBlended(mainFeedDocsCache); // default: "untukKamu"
+    }
+  }
+
+  document.querySelectorAll("#feedTabs .tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (searchActive) return;
+      document.querySelectorAll("#feedTabs .tab").forEach((t) => t.classList.remove("active"));
+      btn.classList.add("active");
+      currentFeedTab = btn.dataset.tab;
+      renderFeedForTab();
+    });
+  });
+
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(MAIN_FEED_LIMIT));
+  onSnapshot(q, (snapshot) => {
+    if (searchActive) return;
+    mainFeedDocsCache = snapshot.docs;
+    renderFeedForTab();
   });
 }
 
