@@ -3,14 +3,9 @@
    Dipakai bareng di index.html & redirect.html
    ========================================================= */
 
-// Unit iklan banner kotak biasa (Adsterra atOptions)
+// Unit iklan banner kotak biasa (Adsterra atOptions) — non-responsif,
+// dipakai apa adanya di redirect.html.
 const AD_UNITS = {
-  headerBanner: {
-    key: 'c815dc8b1442b1b2e98cf2ac0376024c',
-    format: 'iframe',
-    height: 50,
-    width: 320
-  },
   redirectBanner: {
     key: 'e601e978833d27fdd075154804a18e49',
     format: 'iframe',
@@ -19,19 +14,21 @@ const AD_UNITS = {
   }
 };
 
-// Unit iklan sticky banner bawah — responsif: HP pakai 320x50, desktop pakai 728x90
-const STICKY_UNITS = {
-  mobile: {
-    key: 'c815dc8b1442b1b2e98cf2ac0376024c',
-    format: 'iframe',
-    height: 50,
-    width: 320
+// Unit-unit iklan RESPONSIF (ukuran beda di HP vs desktop), dikelompokkan
+// per penempatan. "feedTop" = banner di atas feed (bawah chip kategori),
+// "sticky" = banner nempel di bawah layar.
+// CATATAN: key 728x90 dipakai bareng di 2 penempatan (feedTop & sticky)
+// karena Adsterra cuma kasih 1 zona per ukuran per situs — makanya
+// pemuatannya WAJIB berurutan (lihat onDone di pemanggilnya di index.html),
+// bukan bersamaan, supaya atOptions (variabel global) nggak rebutan.
+const RESPONSIVE_UNITS = {
+  feedTop: {
+    mobile:  { key: 'e601e978833d27fdd075154804a18e49', format: 'iframe', height: 250, width: 300 },
+    desktop: { key: '8dfb0ea0129a656e54c9837bb86386e3', format: 'iframe', height: 90,  width: 728 }
   },
-  desktop: {
-    key: '8dfb0ea0129a656e54c9837bb86386e3',
-    format: 'iframe',
-    height: 90,
-    width: 728
+  sticky: {
+    mobile:  { key: 'c815dc8b1442b1b2e98cf2ac0376024c', format: 'iframe', height: 50,  width: 320 },
+    desktop: { key: '8dfb0ea0129a656e54c9837bb86386e3', format: 'iframe', height: 90,  width: 728 }
   }
 };
 
@@ -43,10 +40,10 @@ const SOCIAL_BAR_SRC = 'https://inputoppose.com/dc/36/31/dc3631cbbf8e7e7cd864408
 
 /**
  * Menyuntikkan iklan banner kotak Adsterra (atOptions) ke dalam sebuah container.
+ * Non-responsif — dipakai di redirect.html.
  * @param {string} containerId - id elemen tempat iklan dipasang
  * @param {string} unitName - key di AD_UNITS
- * @param {Function} [onDone] - dipanggil setelah invoke.js selesai load/gagal,
- *   dipakai supaya iklan atOptions lain tidak menimpa variabel global sebelum ini selesai
+ * @param {Function} [onDone] - dipanggil setelah invoke.js selesai load/gagal
  */
 function loadBannerAd(containerId, unitName, onDone) {
   const unit = AD_UNITS[unitName];
@@ -71,16 +68,19 @@ function loadBannerAd(containerId, unitName, onDone) {
 }
 
 /**
- * Memuat sticky banner sesuai lebar layar saat ini (HP = 320x50, desktop = 728x90).
- * Mengosongkan container dulu sebelum menyuntik ulang.
+ * Menyuntikkan iklan RESPONSIF (ukuran beda di HP vs desktop) sesuai lebar
+ * layar saat ini. Mengosongkan container dulu sebelum menyuntik ulang.
  * @param {string} containerId
+ * @param {string} placementName - key di RESPONSIVE_UNITS ("feedTop"/"sticky")
+ * @param {Function} [onDone] - dipanggil setelah invoke.js selesai load/gagal
  */
-function loadStickyBanner(containerId) {
+function loadResponsiveBanner(containerId, placementName, onDone) {
   const container = document.getElementById(containerId);
-  if (!container) return;
+  const units = RESPONSIVE_UNITS[placementName];
+  if (!container || !units) { if (onDone) onDone(); return; }
 
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  const unit = isMobile ? STICKY_UNITS.mobile : STICKY_UNITS.desktop;
+  const unit = isMobile ? units.mobile : units.desktop;
 
   container.innerHTML = '';
 
@@ -95,19 +95,22 @@ function loadStickyBanner(containerId) {
   container.appendChild(configScript);
 
   const invokeScript = document.createElement('script');
+  invokeScript.onload = () => { if (onDone) onDone(); };
+  invokeScript.onerror = () => { if (onDone) onDone(); };
   invokeScript.src = 'https://inputoppose.com/' + unit.key + '/invoke.js';
   container.appendChild(invokeScript);
 }
 
-// Melacak status HP/desktop supaya sticky banner otomatis ganti ukuran saat resize
-let _stickyIsMobile = null;
-function watchStickyBannerResize(containerId) {
-  _stickyIsMobile = window.matchMedia('(max-width: 768px)').matches;
+// Melacak status HP/desktop per container supaya banner responsif otomatis
+// ganti ukuran saat layar di-resize/rotate.
+const _responsiveWatchState = {};
+function watchResponsiveBannerResize(containerId, placementName) {
+  _responsiveWatchState[containerId] = window.matchMedia('(max-width: 768px)').matches;
   window.addEventListener('resize', () => {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    if (isMobile !== _stickyIsMobile) {
-      _stickyIsMobile = isMobile;
-      loadStickyBanner(containerId);
+    if (isMobile !== _responsiveWatchState[containerId]) {
+      _responsiveWatchState[containerId] = isMobile;
+      loadResponsiveBanner(containerId, placementName);
     }
   });
 }
