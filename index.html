@@ -73,12 +73,32 @@
     font-size: 15px;
     line-height: 1.55;
     white-space: pre-wrap;
+    max-height: 74px;
+    overflow: hidden;
+    position: relative;
+  }
+  .post-caption.expanded {
+    max-height: none;
+  }
+  .post-caption-toggle {
+    display: inline-block;
+    margin: 2px 18px 0 18px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--raspberry);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
   }
   .post-photos {
     padding: 10px 15px;
   }
   .post-photos.single img {
     width: 100%;
+    max-height: 420px;
+    object-fit: cover;
     border-radius: 14px;
     display: block;
     cursor: pointer;
@@ -310,6 +330,7 @@
     justify-content: center;
     margin: 14px 0;
     max-width: 100%;
+    max-height: 100px;
     overflow: hidden;
   }
   @media (max-width: 768px) {
@@ -930,10 +951,10 @@ function trackPostView(postId) {
   } catch (err) {
     // sessionStorage tidak tersedia (mode private ekstrem dsb) — tetap kirim saja
   }
-  fetch(`${PAYWALL_BACKEND_URL}/api/track-view`, {
+  fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ postId })
+    body: JSON.stringify({ postId, action: "trackView" })
   }).catch((err) => console.error("Gagal mencatat view:", err));
 }
 
@@ -1124,10 +1145,10 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
   // ngapa-ngapain selain nunggu.
   qrisPollTimer = setInterval(async () => {
     try {
-      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/check-invoice-status`, {
+      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, linkIndex, buyerId })
+        body: JSON.stringify({ postId, linkIndex, buyerId, action: "checkStatus" })
       });
       const resData = await res.json();
       if (resData.status === "paid") {
@@ -1636,8 +1657,10 @@ function renderPost(docSnap) {
     })
     .join("");
 
+  const captionId = `caption-${docSnap.id}`;
+  const isLongCaption = (data.caption || "").length > 130;
   const caption = data.caption
-    ? `<div class="post-caption">${escapeHtml(data.caption)}</div>`
+    ? `<div class="post-caption" id="${captionId}">${escapeHtml(data.caption)}</div>${isLongCaption ? `<button type="button" class="post-caption-toggle" data-target="${captionId}">Lihat selengkapnya</button>` : ""}`
     : "";
 
   const tagsList = data.tags || [];
@@ -1658,6 +1681,15 @@ function renderPost(docSnap) {
     ${postChipBarHtml}
     <button class="post-share" onclick="sharePost('${shareUrl}')">🔗 Bagikan Konten</button>
   `;
+
+  const captionToggleBtn = post.querySelector(".post-caption-toggle");
+  if (captionToggleBtn) {
+    captionToggleBtn.addEventListener("click", () => {
+      const target = document.getElementById(captionToggleBtn.dataset.target);
+      const expanded = target.classList.toggle("expanded");
+      captionToggleBtn.textContent = expanded ? "Sembunyikan" : "Lihat selengkapnya";
+    });
+  }
 
   post.querySelectorAll(".post-link-paid, .post-link-unlocked").forEach((btn) => {
     btn.addEventListener("click", () => {
