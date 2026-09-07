@@ -16,7 +16,7 @@
     --yolk:#F4C95D;
     --card:#FFFFFF;
     --line: rgba(43,36,32,0.10);
-    --radius: 20px;
+    --radius: 16px;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -74,8 +74,8 @@
 
   .container {
     max-width: 640px;
-    margin: 20px auto;
-    padding: 0 15px;
+    margin: 16px auto;
+    padding: 0 12px;
   }
 
   .post {
@@ -83,7 +83,7 @@
     border: 1px solid var(--line);
     border-radius: var(--radius);
     box-shadow: 0 2px 10px rgba(43,36,32,0.05);
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     overflow: hidden;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
@@ -92,14 +92,14 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: rgba(43,36,32,0.45);
-    padding: 14px 18px 0 18px;
+    padding: 10px 14px 0 14px;
   }
   .post-caption {
-    padding: 8px 18px 0 18px;
-    font-size: 15px;
-    line-height: 1.55;
+    padding: 6px 14px 0 14px;
+    font-size: 14px;
+    line-height: 1.5;
     white-space: pre-wrap;
-    max-height: 74px;
+    max-height: 68px;
     overflow: hidden;
     position: relative;
   }
@@ -108,7 +108,7 @@
   }
   .post-caption-toggle {
     display: inline-block;
-    margin: 2px 18px 0 18px;
+    margin: 2px 14px 0 14px;
     padding: 0;
     background: none;
     border: none;
@@ -119,13 +119,13 @@
     font-family: inherit;
   }
   .post-photos {
-    padding: 10px 15px;
+    padding: 8px 12px;
   }
   .post-photos.single img {
     width: 100%;
-    max-height: 420px;
+    max-height: 300px;
     object-fit: cover;
-    border-radius: 14px;
+    border-radius: 12px;
     display: block;
     cursor: pointer;
   }
@@ -135,18 +135,21 @@
   }
   .post-photos.multi img {
     width: 100%;
-    border-radius: 12px;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
     display: block;
     cursor: pointer;
     margin-bottom: 4px;
     break-inside: avoid;
   }
   .post-link {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    margin: 0 18px 18px 18px;
+    width: calc(100% - 28px);
+    margin: 0 14px 14px 14px;
     background: var(--ink);
     color: var(--cream);
     text-align: center;
@@ -156,6 +159,9 @@
     font-weight: 600;
     font-size: 14px;
     transition: background 0.2s ease;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
   }
   .play-icon-ring {
     transform-origin: center;
@@ -168,8 +174,8 @@
   }
   .post-link:active { background: var(--raspberry); }
   .post-link-paid {
-    width: calc(100% - 36px);
-    margin: 0 18px 18px 18px;
+    width: calc(100% - 28px);
+    margin: 0 14px 14px 14px;
     background: linear-gradient(135deg, var(--raspberry), var(--yolk));
     background-size: 200% 200%;
     color: white;
@@ -190,7 +196,7 @@
   .post-link-paid:active { background: var(--raspberry); animation: none; }
   .post-link-paid:disabled { opacity: 0.6; cursor: default; animation: none; }
   .post-link-paid .lock-icon { flex-shrink: 0; }
-  .post-link-paid .lock-shackle { transform-origin: 8px 10.5px; animation: lockShackleSwing 2.4s ease-in-out infinite; }
+  .post-link-paid .lock-shackle { transform-origin: 12px 9.5px; animation: lockShackleSwing 2.4s ease-in-out infinite; }
   @keyframes paidBtnGlow {
     0%, 100% { background-position: 0% 50%; box-shadow: 0 0 0 rgba(232,93,117,0); }
     50% { background-position: 100% 50%; box-shadow: 0 0 12px rgba(232,93,117,0.5); }
@@ -200,8 +206,8 @@
     50% { transform: rotate(-6deg); }
   }
   .post-link-unlocked {
-    width: calc(100% - 36px);
-    margin: 0 18px 18px 18px;
+    width: calc(100% - 28px);
+    margin: 0 14px 14px 14px;
     background: var(--teal);
     color: white;
     border: none;
@@ -220,7 +226,7 @@
   .post-link-unlocked:active { background: #1f5252; }
   .post-share {
     display: table;
-    margin: 0 auto 18px auto;
+    margin: 0 auto 14px auto;
     background: transparent;
     color: var(--ink);
     text-align: center;
@@ -239,7 +245,7 @@
     justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
-    margin: 0 18px 12px 18px;
+    margin: 0 14px 10px 14px;
   }
   .post-chip-bar a {
     text-decoration: none;
@@ -255,7 +261,7 @@
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    padding: 10px 18px 0 18px;
+    padding: 8px 14px 0 14px;
   }
   .tag-chip {
     text-decoration: none;
@@ -917,10 +923,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* ================== FAVICON (dari dasbor admin, di-cache di localStorage) ================== */
-// Cache biar tab icon langsung muncul tanpa nunggu round-trip ke Firestore
-// tiap kali situs dibuka, dan biar gak boros baca Firestore tiap page load.
 const FAVICON_CACHE_KEY = "vipku_favicon_cache";
-const FAVICON_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 jam — cukup cepat kalau admin ganti favicon, gak boros baca
+const FAVICON_CACHE_TTL = 6 * 60 * 60 * 1000;
 
 function applyFaviconTag(url) {
   if (!url) return;
@@ -955,13 +959,11 @@ async function refreshFaviconFromServer() {
 }
 
 (function initFavicon() {
-  const cached = loadCachedFavicon(); // pasang versi cache dulu — instan, tanpa flicker
+  const cached = loadCachedFavicon();
   const isStale = !cached || (Date.now() - cached.cachedAt > FAVICON_CACHE_TTL);
-  if (isStale) refreshFaviconFromServer(); // baru cek ke server kalau cache kosong/basi
+  if (isStale) refreshFaviconFromServer();
 })();
 
-
-// GANTI dengan URL backend Vercel kamu setelah deploy folder paywall-backend
 const PAYWALL_BACKEND_URL = "https://vipkuu.vercel.app";
 
 function getBuyerId() {
@@ -973,19 +975,18 @@ function getBuyerId() {
   return id;
 }
 
-// Ikon dipakai bareng di renderPost() (render awal) dan di titik-titik sukses
-// pembayaran (biar tombol yang sudah dibayar langsung ganti tampilan, bukan
-// cuma ganti teks doang).
-const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path class="lock-shackle" d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>`;
+const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="16" height="16" fill="none">
+  <rect x="5" y="11" width="14" height="9" rx="3" fill="currentColor" opacity="0.15"/>
+  <rect x="5" y="11" width="14" height="9" rx="3" stroke="currentColor" stroke-width="2"/>
+  <path class="lock-shackle" d="M8 11V7.5a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="12" cy="15.3" r="1.4" fill="currentColor"/>
+</svg>`;
 const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16 9.3"/></svg>`;
-const playIconSvg = `<svg class="play-icon" viewBox="0 0 24 24" width="16" height="16" fill="none"><circle class="play-icon-ring" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6" opacity="0.35"/><path class="play-icon-tri" d="M9.5 8l7 4-7 4V8z" fill="currentColor"/></svg>`;
+const playIconSvg = `<svg class="play-icon" viewBox="0 0 24 24" width="17" height="17" fill="none">
+  <circle class="play-icon-ring" cx="12" cy="12" r="10" fill="currentColor" opacity="0.18"/>
+  <path class="play-icon-tri" d="M10 8.3v7.4c0 .6.65 1 1.2.68l6.1-3.7c.55-.33.55-1.1 0-1.44l-6.1-3.7c-.55-.34-1.2.06-1.2.66z" fill="currentColor"/>
+</svg>`;
 
-// Cache lokal "sudah kebeli" per link (per accessId), supaya begitu halaman
-// di-reload, tombol yang sudah dibayar LANGSUNG kelihatan beda dari yang
-// belum — nggak perlu klik dulu buat tahu statusnya. Ini murni penanda
-// tampilan; keamanan tetap 100% dicek ulang di server (get-link.js) tiap
-// kali link mau dibuka, jadi walau cache ini dihapus/dipalsukan dari
-// DevTools, tetap nggak bisa buka link tanpa lolos verifikasi server.
 function getUnlockedSet() {
   try {
     return new Set(JSON.parse(localStorage.getItem("unlockedLinks") || "[]"));
@@ -1007,9 +1008,6 @@ function setButtonUnlockedStyle(btnEl, label) {
   btnEl.innerHTML = `${unlockIconSvg} ${label} — Sudah Dibeli`;
 }
 
-// Hitung 1 view tiap post cuma sekali per sesi browser (biar refresh berkali-kali
-// nggak nge-gembungin angka). Dikirim ke server (bukan tulis Firestore langsung
-// dari sini) supaya nggak perlu buka akses tulis publik ke koleksi "posts".
 function trackPostView(postId) {
   try {
     const seenKey = "viewedPosts";
@@ -1018,7 +1016,7 @@ function trackPostView(postId) {
     seen.add(postId);
     sessionStorage.setItem(seenKey, JSON.stringify([...seen]));
   } catch (err) {
-    // sessionStorage tidak tersedia (mode private ekstrem dsb) — tetap kirim saja
+    // sessionStorage tidak tersedia — tetap kirim saja
   }
   fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
     method: "POST",
@@ -1092,10 +1090,9 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
 
 /* ================== MODAL QRIS (DONGTUBE PAYMENT) ================== */
 
-let qrisUnsub = null; // listener status pembayaran realtime
-let qrisCountdownTimer = null; // countdown kadaluarsa QRIS
-let qrisPollTimer = null; // jalur cadangan: nanya status aktif tiap beberapa detik,
-                           // jaga-jaga webhook Dongtube telat/gagal sampai
+let qrisUnsub = null;
+let qrisCountdownTimer = null;
+let qrisPollTimer = null;
 
 function closeQrisModal() {
   document.getElementById("qrisModalOverlay").classList.remove("open");
@@ -1197,8 +1194,6 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
     }, 1400);
   }
 
-  // Jalur 1 (utama, instan): dengar perubahan Firestore realtime — biasanya
-  // ini yang lebih dulu triggered kalau webhook Dongtube jalan normal.
   qrisUnsub = onSnapshot(doc(db, "paidAccess", accessId), (snap) => {
     if (!snap.exists()) return;
     const data = snap.data();
@@ -1207,11 +1202,6 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
     console.error("Gagal memantau status pembayaran QRIS:", err);
   });
 
-  // Jalur 2 (cadangan): tiap 5 detik, AKTIF nanya ke backend "sudah lunas
-  // belum?" — backend-nya sendiri yang nanya langsung ke Dongtube kalau
-  // Firestore masih bilang pending. Ini jaga-jaga kalau webhook Dongtube
-  // gagal/telat sampai, sistem tetap "sembuh sendiri" tanpa user harus
-  // ngapa-ngapain selain nunggu.
   qrisPollTimer = setInterval(async () => {
     try {
       const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
@@ -1247,9 +1237,6 @@ async function getManualPaymentMethods() {
   return manualPaymentMethodsCache;
 }
 
-// Durasi akses VIP (jam) — ikut pengaturan admin (settings/accessDuration.hours,
-// 0/kosong = permanen). Dipakai buat kasih tahu pembeli di modal QRIS berapa
-// lama linknya bisa diakses setelah bayar.
 let accessDurationHoursCache = null;
 async function getAccessDurationHours() {
   if (accessDurationHoursCache !== null) return accessDurationHoursCache;
@@ -1271,7 +1258,7 @@ function formatAccessDurationText(hours) {
   return `🔓 Akses VIP berlaku ${hours} jam setelah bayar.`;
 }
 
-let manualOrderUnsub = null; // buat lepas listener status order lama saat modal dibuka ulang
+let manualOrderUnsub = null;
 
 function closeManualModal() {
   document.getElementById("manualModalOverlay").classList.remove("open");
@@ -1345,8 +1332,6 @@ async function openManualPaymentModal(postId, linkIndex, price, label, btnEl) {
       `).join("")
     : '<p style="font-size:12px; color:#c0392b;">Metode pembayaran belum diatur admin. Hubungi admin dulu.</p>';
 
-  // Cek klaim TERBARU untuk kombinasi buyer+post+link ini, dan pantau live
-  // (kalau admin verifikasi SAAT modal masih terbuka, otomatis update).
   const q = query(
     collection(db, "manualOrders"),
     where("buyerId", "==", buyerId),
@@ -1529,7 +1514,6 @@ function renderOldPostsRotation() {
   const wrap = document.getElementById("oldRotationWrap");
   if (!wrap) return;
 
-  // Rotasi cuma tampil di halaman utama, bukan di mode post/tag
   if (postId || tagParam) {
     wrap.innerHTML = "";
     return;
@@ -1799,7 +1783,6 @@ if (postId) {
     postsEl.appendChild(renderPost(docSnap));
     trackPostView(postId);
 
-    // Bar konten lainnya, live update, di bawah post yang dibagikan
     const otherWrap = document.createElement("div");
     otherWrap.id = "otherPosts";
     postsEl.appendChild(otherWrap);
@@ -1874,9 +1857,6 @@ if (postId) {
     });
   }
 
-  // "Untuk Kamu": skor gabungan baru + populer, dikasih sedikit acak supaya
-  // urutannya nggak monoton kaku tiap dibuka (post lama yang lumayan populer
-  // tetap dapat kesempatan nongol di atas, bukan selalu ketutup post baru).
   function renderPostsBlended(docsArray) {
     const maxViews = Math.max(1, ...docsArray.map((d) => d.data().views || 0));
     const scored = docsArray.map((docSnap) => {
@@ -1895,7 +1875,7 @@ if (postId) {
 
   function renderFeedForTab() {
     if (currentFeedTab === "terbaru") {
-      renderPostsFlat(mainFeedDocsCache); // urutan asli dari query (terbaru dulu)
+      renderPostsFlat(mainFeedDocsCache);
     } else if (currentFeedTab === "terlama") {
       renderPostsFlat([...mainFeedDocsCache].reverse());
     } else if (currentFeedTab === "terpopuler") {
@@ -1906,7 +1886,7 @@ if (postId) {
       });
       renderPostsFlat(sorted);
     } else {
-      renderPostsBlended(mainFeedDocsCache); // default: "untukKamu"
+      renderPostsBlended(mainFeedDocsCache);
     }
   }
 
@@ -1932,9 +1912,6 @@ if (postId) {
   });
 }
 
-// Hitung tinggi category-bar secara dinamis buat offset sticky sort-chip-bar
-// di bawahnya (category-bar bisa 1-2 baris tergantung jumlah tag). Dipanggil
-// dari loadCategoryBar() tiap kali kontennya berubah.
 function renderMainFeedTabs() {
   const categoryBarEl = document.getElementById("categoryBar");
   if (!categoryBarEl) return;
