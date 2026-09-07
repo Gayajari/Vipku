@@ -5,12 +5,6 @@
 
 // Unit iklan banner kotak biasa (Adsterra atOptions) — non-responsif.
 const AD_UNITS = {
-  headerBanner: {
-    key: 'c815dc8b1442b1b2e98cf2ac0376024c',
-    format: 'iframe',
-    height: 50,
-    width: 320
-  },
   redirectBanner: {
     key: 'e601e978833d27fdd075154804a18e49',
     format: 'iframe',
@@ -19,11 +13,10 @@ const AD_UNITS = {
   }
 };
 
-// Unit iklan sticky banner bawah — responsif: HP pakai 320x50, desktop pakai 728x90.
-// CATATAN: key 320x50 dipakai bareng dengan headerBanner di atas, dan key 728x90
-// dipakai bareng untuk mode desktop — makanya pemuatannya WAJIB berurutan
-// (lihat onDone di pemanggilnya di index.html), bukan bersamaan, supaya
-// atOptions (variabel global) nggak rebutan.
+// Unit iklan responsif: HP pakai 320x50, desktop pakai 728x90. Dipakai bareng
+// untuk 2 penempatan (banner atas feed & sticky bawah) — makanya pemuatannya
+// WAJIB berurutan (lihat onDone di pemanggilnya di index.html), bukan
+// bersamaan, supaya atOptions (variabel global) nggak rebutan.
 const RESPONSIVE_UNITS = {
   sticky: {
     mobile:  { key: 'c815dc8b1442b1b2e98cf2ac0376024c', format: 'iframe', height: 50,  width: 320 },
