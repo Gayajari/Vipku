@@ -142,7 +142,10 @@
     break-inside: avoid;
   }
   .post-link {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     margin: 0 18px 18px 18px;
     background: var(--ink);
     color: var(--cream);
@@ -154,6 +157,15 @@
     font-size: 14px;
     transition: background 0.2s ease;
   }
+  .play-icon-ring {
+    transform-origin: center;
+    animation: playRingPulse 1.8s ease-in-out infinite;
+  }
+  .post-link:active .play-icon-tri { transform: scale(0.85); }
+  @keyframes playRingPulse {
+    0%, 100% { r: 10; opacity: 0.35; }
+    50% { r: 8.5; opacity: 0.7; }
+  }
   .post-link:active { background: var(--raspberry); }
   .post-link-paid {
     width: calc(100% - 36px);
@@ -162,7 +174,7 @@
     background-size: 200% 200%;
     color: white;
     border: none;
-    text-align: left;
+    text-align: center;
     padding: 11px 16px;
     border-radius: 999px;
     font-weight: 600;
@@ -171,7 +183,7 @@
     font-family: inherit;
     display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 6px;
     animation: paidBtnGlow 3s ease-in-out infinite;
   }
@@ -193,7 +205,7 @@
     background: var(--teal);
     color: white;
     border: none;
-    text-align: left;
+    text-align: center;
     padding: 11px 16px;
     border-radius: 999px;
     font-weight: 600;
@@ -202,7 +214,7 @@
     font-family: inherit;
     display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 6px;
   }
   .post-link-unlocked:active { background: #1f5252; }
@@ -294,7 +306,8 @@
 
   .logo-home-link {
     text-decoration: none;
-    display: inline-block;
+    display: block;
+    text-align: center;
     transition: opacity 0.2s ease;
   }
   .logo-home-link:active { opacity: 0.65; }
@@ -965,6 +978,7 @@ function getBuyerId() {
 // cuma ganti teks doang).
 const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path class="lock-shackle" d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>`;
 const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16 9.3"/></svg>`;
+const playIconSvg = `<svg class="play-icon" viewBox="0 0 24 24" width="16" height="16" fill="none"><circle class="play-icon-ring" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6" opacity="0.35"/><path class="play-icon-tri" d="M9.5 8l7 4-7 4V8z" fill="currentColor"/></svg>`;
 
 // Cache lokal "sudah kebeli" per link (per accessId), supaya begitu halaman
 // di-reload, tombol yang sudah dibayar LANGSUNG kelihatan beda dari yang
@@ -1489,7 +1503,6 @@ function loadCategoryBar() {
   onSnapshot(qAll, (snapshot) => {
     allDocsCache = snapshot.docs;
     renderOldPostsRotation();
-    renderMainFeedTabs();
 
     const allTags = new Set();
     snapshot.forEach((docSnap) => {
@@ -1497,14 +1510,18 @@ function loadCategoryBar() {
     });
     if (allTags.size === 0) {
       bar.innerHTML = "";
+      bar.style.display = "none";
+      renderMainFeedTabs();
       return;
     }
+    bar.style.display = "flex";
     let html = `<a class="category-chip${!tagParam ? " active" : ""}" href="${window.location.origin}/">Semua</a>`;
     allTags.forEach((t) => {
       const isActive = tagParam === t;
       html += `<a class="category-chip${isActive ? " active" : ""}" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`;
     });
     bar.innerHTML = html;
+    renderMainFeedTabs();
   });
 }
 
@@ -1709,7 +1726,7 @@ function renderPost(docSnap) {
         const priceLabel = Number(l.price).toLocaleString("id-ID");
         return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
       }
-      return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">▶️ ${escapeHtml(l.label)}</a>`;
+      return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">${playIconSvg} ${escapeHtml(l.label)}</a>`;
     })
     .join("");
 
@@ -1730,9 +1747,9 @@ function renderPost(docSnap) {
   post.className = "post";
   post.innerHTML = `
     <div class="post-date">${date}</div>
+    <div class="${photosClass}">${photos}</div>
     ${caption}
     ${tagsHtml}
-    <div class="${photosClass}">${photos}</div>
     ${linkBtns}
     ${postChipBarHtml}
     <button class="post-share" onclick="sharePost('${shareUrl}')">🔗 Bagikan Konten</button>
