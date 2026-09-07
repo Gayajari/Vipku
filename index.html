@@ -31,8 +31,8 @@
   header {
     background: var(--cream);
     color: var(--ink);
-    padding: 20px 20px 16px;
-    text-align: center;
+    padding: 16px 15px 10px;
+    text-align: left;
     position: relative;
     border-bottom: 1px solid var(--line);
   }
@@ -40,11 +40,37 @@
     margin: 0;
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 24px;
+    font-size: 22px;
     letter-spacing: -0.2px;
   }
   header h1 em { font-style: italic; font-weight: 400; color: var(--raspberry); }
-  header p { margin: 6px 0 0; font-size: 12.5px; color: rgba(43,36,32,0.55); font-family: 'JetBrains Mono', monospace; }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .home-icon-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+  .home-icon-btn:active { border-color: var(--raspberry); color: var(--raspberry); background: rgba(232,93,117,0.06); }
+  .header-row .search-bar {
+    flex: 1;
+    padding: 0;
+    min-width: 0;
+  }
 
   .container {
     max-width: 640px;
@@ -136,8 +162,8 @@
     background-size: 200% 200%;
     color: white;
     border: none;
-    text-align: center;
-    padding: 11px;
+    text-align: left;
+    padding: 11px 16px;
     border-radius: 999px;
     font-weight: 600;
     font-size: 14px;
@@ -145,7 +171,7 @@
     font-family: inherit;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 6px;
     animation: paidBtnGlow 3s ease-in-out infinite;
   }
@@ -167,8 +193,8 @@
     background: var(--teal);
     color: white;
     border: none;
-    text-align: center;
-    padding: 11px;
+    text-align: left;
+    padding: 11px 16px;
     border-radius: 999px;
     font-weight: 600;
     font-size: 14px;
@@ -176,7 +202,7 @@
     font-family: inherit;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 6px;
   }
   .post-link-unlocked:active { background: #1f5252; }
@@ -276,9 +302,9 @@
 
   .sort-chip-bar {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
-    padding: 10px 15px;
+    padding: 0 15px;
     -webkit-overflow-scrolling: touch;
     position: sticky;
     top: var(--category-bar-h, 52px);
@@ -294,9 +320,10 @@
     background: var(--card);
     border: 1.5px solid var(--line);
     color: var(--ink);
-    padding: 6px 14px;
+    padding: 3px 10px;
+    margin: 0;
     border-radius: 999px;
-    font-size: 12px;
+    font-size: 10.5px;
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
@@ -431,6 +458,20 @@
     0%, 100% { transform: translateY(-50%) scale(1); }
     40% { transform: translateY(-50%) scale(1.18) rotate(-12deg); }
     70% { transform: translateY(-50%) scale(0.95) rotate(4deg); }
+  }
+  .header-row .search-input-wrap input {
+    padding: 8px 30px 8px 36px;
+    font-size: 12px;
+  }
+  .header-row .search-input-wrap #searchBtn {
+    width: 26px;
+    height: 26px;
+  }
+  .header-row .search-input-wrap #searchBtn svg { width: 12px; height: 12px; }
+  .header-row .search-input-wrap #clearBtn {
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
   }
   .search-input-wrap #clearBtn {
     display: none;
@@ -739,34 +780,32 @@
 <body>
 
 <header>
-  <a href="./" class="home-btn" aria-label="Kembali ke Beranda">
-    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
-    Home
-  </a>
   <a href="./" class="logo-home-link" aria-label="Kembali ke Beranda">
     <h1>Vip<em>ku</em>🥵</h1>
   </a>
-  <p>Konten update tiap hari</p>
+  <div class="header-row">
+    <a href="./" class="home-icon-btn" aria-label="Kembali ke Beranda">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+    </a>
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <button type="button" id="searchBtn" aria-label="Cari">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+        </button>
+        <input type="text" id="searchInput" placeholder="Cari">
+        <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
+      </div>
+      <div class="search-suggestions" id="searchSuggestions"></div>
+    </div>
+  </div>
 </header>
 
 <div class="contact-bar" id="contactBar"></div>
 
-<div class="search-bar">
-  <div class="search-input-wrap">
-    <button type="button" id="searchBtn" aria-label="Cari">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
-    </button>
-    <input type="text" id="searchInput" placeholder="Cari">
-    <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
-  </div>
-  <div class="search-suggestions" id="searchSuggestions"></div>
-</div>
-
 <div class="category-bar" id="categoryBar"></div>
 
 <div class="sort-chip-bar" id="sortChipBar">
-  <button type="button" class="sort-chip active" data-sort="untukKamu">Untuk Kamu</button>
-  <button type="button" class="sort-chip" data-sort="terbaru">Terbaru</button>
+  <button type="button" class="sort-chip active" data-sort="terbaru">Terbaru</button>
   <button type="button" class="sort-chip" data-sort="terlama">Terlama</button>
   <button type="button" class="sort-chip" data-sort="terpopuler">Terpopuler</button>
 </div>
@@ -1368,7 +1407,7 @@ let allDocsCache = [];
 let searchActive = false;
 let postChipBarHtml = "";
 let mainFeedDocsCache = [];
-let currentFeedTab = "untukKamu";
+let currentFeedTab = "terbaru";
 const MAIN_FEED_LIMIT = 50;
 
 loadContactBar();
@@ -1377,10 +1416,11 @@ loadCategoryBar();
 setupSearch();
 
 try {
-  loadBannerAd("adsFeedTopBanner", "headerBanner", () => {
+  loadResponsiveBanner("adsFeedTopBanner", "sticky", () => {
     loadResponsiveBanner("adsStickyBottom", "sticky");
     watchResponsiveBannerResize("adsStickyBottom", "sticky");
   });
+  watchResponsiveBannerResize("adsFeedTopBanner", "sticky");
   loadSocialBar();
   hardenAdIframes(["#adsFeedTopBanner", "#adsStickyBottom"]);
 } catch (err) {
