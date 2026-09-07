@@ -249,6 +249,23 @@
   }
   .category-bar::-webkit-scrollbar { display: none; }
 
+  .home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+  .home-btn:active { border-color: var(--raspberry); color: var(--raspberry); background: rgba(232,93,117,0.06); }
+
   .logo-home-link {
     text-decoration: none;
     display: inline-block;
@@ -257,11 +274,45 @@
   .logo-home-link:active { opacity: 0.65; }
   .logo-home-link h1 { margin: 0; }
 
+  .sort-chip-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 10px 15px;
+    -webkit-overflow-scrolling: touch;
+    position: sticky;
+    top: var(--category-bar-h, 52px);
+    z-index: 39;
+    background: var(--cream);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 2px 6px rgba(43,36,32,0.04);
+  }
+  .sort-chip-bar::-webkit-scrollbar { display: none; }
+  .sort-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .sort-chip.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+
   .site-footer {
     max-width: 640px;
     margin: 24px auto 0;
     padding: 20px 15px 0;
-    text-align: center;
+    text-align: left;
     border-top: 1px solid var(--line);
   }
   .home-btn-footer {
@@ -688,6 +739,10 @@
 <body>
 
 <header>
+  <a href="./" class="home-btn" aria-label="Kembali ke Beranda">
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+    Home
+  </a>
   <a href="./" class="logo-home-link" aria-label="Kembali ke Beranda">
     <h1>Vip<em>ku</em>🥵</h1>
   </a>
@@ -708,6 +763,13 @@
 </div>
 
 <div class="category-bar" id="categoryBar"></div>
+
+<div class="sort-chip-bar" id="sortChipBar">
+  <button type="button" class="sort-chip active" data-sort="untukKamu">Untuk Kamu</button>
+  <button type="button" class="sort-chip" data-sort="terbaru">Terbaru</button>
+  <button type="button" class="sort-chip" data-sort="terlama">Terlama</button>
+  <button type="button" class="sort-chip" data-sort="terpopuler">Terpopuler</button>
+</div>
 
 <div class="ads-banner" id="adsFeedTopBanner"></div>
 
@@ -1306,6 +1368,7 @@ let allDocsCache = [];
 let searchActive = false;
 let postChipBarHtml = "";
 let mainFeedDocsCache = [];
+let currentFeedTab = "untukKamu";
 const MAIN_FEED_LIMIT = 50;
 
 loadContactBar();
@@ -1314,11 +1377,10 @@ loadCategoryBar();
 setupSearch();
 
 try {
-  loadResponsiveBanner("adsFeedTopBanner", "feedTop", () => {
+  loadBannerAd("adsFeedTopBanner", "headerBanner", () => {
     loadResponsiveBanner("adsStickyBottom", "sticky");
     watchResponsiveBannerResize("adsStickyBottom", "sticky");
   });
-  watchResponsiveBannerResize("adsFeedTopBanner", "feedTop");
   loadSocialBar();
   hardenAdIframes(["#adsFeedTopBanner", "#adsStickyBottom"]);
 } catch (err) {
@@ -1775,10 +1837,34 @@ if (postId) {
   }
 
   function renderFeedForTab() {
-    // Tab pemilih (Untuk Kamu/Terbaru/Terlama/Terpopuler) sudah dihapus dari
-    // tampilan, tapi algoritma blend-nya tetap jalan sebagai satu-satunya
-    // mode urutan feed (baru + populer + sedikit acak).
-    renderPostsBlended(mainFeedDocsCache);
+    if (currentFeedTab === "terbaru") {
+      renderPostsFlat(mainFeedDocsCache); // urutan asli dari query (terbaru dulu)
+    } else if (currentFeedTab === "terlama") {
+      renderPostsFlat([...mainFeedDocsCache].reverse());
+    } else if (currentFeedTab === "terpopuler") {
+      const sorted = [...mainFeedDocsCache].sort((a, b) => {
+        const va = (a.data().views || 0) + Math.random() * 0.5;
+        const vb = (b.data().views || 0) + Math.random() * 0.5;
+        return vb - va;
+      });
+      renderPostsFlat(sorted);
+    } else {
+      renderPostsBlended(mainFeedDocsCache); // default: "untukKamu"
+    }
+  }
+
+  const sortBarEl = document.getElementById("sortChipBar");
+  if (sortBarEl && !sortBarEl._wired) {
+    sortBarEl._wired = true;
+    sortBarEl.querySelectorAll(".sort-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (searchActive) return;
+        sortBarEl.querySelectorAll(".sort-chip").forEach((t) => t.classList.remove("active"));
+        btn.classList.add("active");
+        currentFeedTab = btn.dataset.sort;
+        renderFeedForTab();
+      });
+    });
   }
 
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(MAIN_FEED_LIMIT));
@@ -1787,6 +1873,23 @@ if (postId) {
     mainFeedDocsCache = snapshot.docs;
     renderFeedForTab();
   });
+}
+
+// Hitung tinggi category-bar secara dinamis buat offset sticky sort-chip-bar
+// di bawahnya (category-bar bisa 1-2 baris tergantung jumlah tag). Dipanggil
+// dari loadCategoryBar() tiap kali kontennya berubah.
+function renderMainFeedTabs() {
+  const categoryBarEl = document.getElementById("categoryBar");
+  if (!categoryBarEl) return;
+
+  function updateOffset() {
+    document.documentElement.style.setProperty("--category-bar-h", categoryBarEl.offsetHeight + "px");
+  }
+  updateOffset();
+  if (window.ResizeObserver && !categoryBarEl._roAttached) {
+    new ResizeObserver(updateOffset).observe(categoryBarEl);
+    categoryBarEl._roAttached = true;
+  }
 }
 
 function escapeHtml(str) {
