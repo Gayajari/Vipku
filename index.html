@@ -33,7 +33,9 @@
     color: var(--ink);
     padding: 16px 15px 10px;
     text-align: left;
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 41;
     border-bottom: 1px solid var(--line);
   }
   header h1 {
@@ -187,7 +189,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     animation: paidBtnGlow 3s ease-in-out infinite;
   }
   .post-link-paid:active { background: var(--raspberry); animation: none; }
@@ -201,6 +203,22 @@
   @keyframes lockShackleSwing {
     0%, 100% { transform: rotate(0deg); }
     50% { transform: rotate(-6deg); }
+  }
+  /* Isi teks tombol paid/unlocked: "label | harga" atau "label | Sudah Dibeli".
+     Pemisahnya garis tipis vertikal (pl-divider), bukan tanda "—" — lebih
+     ringkas dan warnanya otomatis ngikut warna teks tombol (currentColor). */
+  .pl-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .pl-divider {
+    width: 1px;
+    height: 11px;
+    background: currentColor;
+    opacity: 0.45;
+    border-radius: 1px;
+    flex-shrink: 0;
   }
   .post-link-unlocked {
     width: calc(100% - 28px);
@@ -218,7 +236,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
   }
   .post-link-unlocked:active { background: #1f5252; }
   .post-share {
@@ -283,7 +301,7 @@
     border-top: 1px solid var(--line);
     -webkit-overflow-scrolling: touch;
     position: sticky;
-    top: 0;
+    top: var(--header-h, 0px);
     z-index: 40;
     background: var(--cream);
     box-shadow: 0 2px 6px rgba(43,36,32,0.04);
@@ -323,7 +341,7 @@
     padding: 0 15px;
     -webkit-overflow-scrolling: touch;
     position: sticky;
-    top: var(--category-bar-h, 52px);
+    top: calc(var(--header-h, 0px) + var(--category-bar-h, 0px));
     z-index: 39;
     background: var(--cream);
     border-bottom: 1px solid var(--line);
@@ -1020,7 +1038,7 @@ function isUnlockedLocally(accessId) {
 function setButtonUnlockedStyle(btnEl, label) {
   btnEl.classList.remove("post-link-paid");
   btnEl.classList.add("post-link-unlocked");
-  btnEl.innerHTML = `${unlockIconSvg} ${label} — Sudah Dibeli`;
+  btnEl.innerHTML = `${unlockIconSvg}<span class="pl-text">${label}<span class="pl-divider"></span>Sudah Dibeli</span>`;
 }
 
 // Hitung 1 view tiap post cuma sekali per sesi browser (biar refresh berkali-kali
@@ -1444,6 +1462,7 @@ loadContactBar();
 loadCustomChipBar();
 loadCategoryBar();
 setupSearch();
+setupStickyHeaderOffset();
 
 try {
   loadResponsiveBanner("adsFeedTopBanner", "sticky", () => {
@@ -1511,6 +1530,29 @@ async function loadCustomChipBar() {
 
 function escapeHtmlAttr(str) {
   return String(str).replace(/"/g, "&quot;");
+}
+
+// Header (logo + tombol home + kolom cari) sekarang ikut sticky di paling
+// atas, jadi category-bar dan sort-chip-bar di bawahnya harus tahu berapa
+// tinggi header itu supaya nempelnya persis di bawah header, bukan
+// ketiban/numpuk. Dipanggil sekali di init; recalculate saat resize atau
+// webfont selesai dimuat (bisa mengubah tinggi teks di header).
+function setupStickyHeaderOffset() {
+  const headerEl = document.querySelector("header");
+  if (!headerEl) return;
+
+  function updateHeaderOffset() {
+    document.documentElement.style.setProperty("--header-h", headerEl.offsetHeight + "px");
+  }
+  updateHeaderOffset();
+
+  window.addEventListener("resize", updateHeaderOffset);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(updateHeaderOffset);
+  }
+  if (window.ResizeObserver) {
+    new ResizeObserver(updateHeaderOffset).observe(headerEl);
+  }
 }
 
 // Sumber data utama: query 200 post terbaru sekali di sini. Category bar,
@@ -1744,10 +1786,10 @@ function renderPost(docSnap) {
         const category = l.category === "manual" ? "manual" : "auto";
         const accessId = `${buyerIdForRender}_${docSnap.id}_${idx}`;
         if (isUnlockedLocally(accessId)) {
-          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg} ${escapeHtml(l.label)} — Sudah Dibeli</button>`;
+          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg}<span class="pl-text">${escapeHtml(l.label)}<span class="pl-divider"></span>Sudah Dibeli</span></button>`;
         }
         const priceLabel = Number(l.price).toLocaleString("id-ID");
-        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
+        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg}<span class="pl-text">${escapeHtml(l.label)}<span class="pl-divider"></span>Rp ${priceLabel}</span></button>`;
       }
       return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">${playIconSvg} ${escapeHtml(l.label)}</a>`;
     })
@@ -1964,10 +2006,14 @@ if (sortBarEl && !sortBarEl._wired && !postId && !tagParam) {
 }
 
 // Hitung tinggi category-bar secara dinamis buat offset sticky sort-chip-bar
-// di bawahnya (category-bar bisa 1-2 baris tergantung jumlah tag). Dipanggil
-// dari loadCategoryBar() tiap kali kontennya berubah. Ditambah listener
-// resize & fonts.ready supaya offset-nya tetap akurat kalau lebar layar
-// berubah atau webfont baru selesai dimuat (yang bisa mengubah tinggi bar).
+// di bawahnya (category-bar bisa 1-2 baris tergantung jumlah tag, dan bisa
+// 0px kalau lagi disembunyikan karena belum ada tag). Dipanggil dari
+// loadCategoryBar() tiap kali kontennya berubah. Header sendiri punya
+// offset terpisah lewat setupStickyHeaderOffset() — keduanya digabung di
+// CSS (.sort-chip-bar top: calc(header-h + category-bar-h)) supaya
+// header → category-bar → sort-chip-bar nempel berurutan tanpa celah/numpuk.
+// Ditambah listener resize & fonts.ready supaya offset-nya tetap akurat
+// kalau lebar layar berubah atau webfont baru selesai dimuat.
 function renderMainFeedTabs() {
   const categoryBarEl = document.getElementById("categoryBar");
   if (!categoryBarEl) return;
