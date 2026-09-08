@@ -107,14 +107,59 @@ function watchResponsiveBannerResize(containerId, placementName) {
   });
 }
 
+// Counter global supaya tiap slot Native Banner di feed punya ID unik.
+// Sebelumnya semua slot memakai ID yang SAMA ("container-<KEY>"), yang
+// menyebabkan network iklan salah menargetkan render (numpuk/salah ukuran)
+// begitu ada lebih dari satu slot di halaman yang sama.
+let _nativeAdSlotCounter = 0;
+
 /**
  * Membuat satu slot Native Banner (div container + script invoke) untuk disisipkan
  * di manapun lewat appendChild — dipakai untuk native banner di feed per-post.
+ *
+ * Kontennya (script + container) TIDAK langsung disuntik saat elemen ini dibuat.
+ * Slot hanya berupa placeholder kosong dulu; baru saat placeholder ini betulan
+ * mendekati area layar (di-scroll ke sana), script iklan diminta oleh
+ * IntersectionObserver. Ini mencegah semua slot iklan di sepanjang feed
+ * ikut memuat network request sekaligus di awal — lebih ringan terutama
+ * kalau feed berisi banyak post.
  * @returns {HTMLElement}
  */
 function createNativeAdSlot() {
   const wrap = document.createElement('div');
   wrap.className = 'feed-native-ad';
+  wrap.dataset.loaded = 'false';
+
+  const slotId = 'container-' + NATIVE_AD_KEY + '-' + (_nativeAdSlotCounter++);
+  wrap.dataset.slotId = slotId;
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && wrap.dataset.loaded === 'false') {
+          injectNativeAdContent(wrap, slotId);
+          observer.unobserve(wrap);
+        }
+      });
+    }, { rootMargin: '200px 0px' }); // mulai muat sedikit sebelum benar-benar kelihatan
+    observer.observe(wrap);
+  } else {
+    // Fallback untuk browser lama tanpa IntersectionObserver: muat langsung.
+    injectNativeAdContent(wrap, slotId);
+  }
+
+  return wrap;
+}
+
+/**
+ * Menyuntikkan script + container iklan Native Banner yang sesungguhnya ke
+ * dalam sebuah slot placeholder. Dipisah dari createNativeAdSlot() supaya
+ * bisa dipanggil belakangan (lazy) oleh IntersectionObserver.
+ * @param {HTMLElement} wrap - elemen placeholder dari createNativeAdSlot()
+ * @param {string} slotId - id unik container untuk slot ini
+ */
+function injectNativeAdContent(wrap, slotId) {
+  wrap.dataset.loaded = 'true';
 
   // PENTING: urutan HARUS script dulu baru div (persis snippet asli vendor).
   // Banyak jaringan native ad merender relatif ke posisi <script> itu sendiri
@@ -128,10 +173,8 @@ function createNativeAdSlot() {
   wrap.appendChild(script);
 
   const container = document.createElement('div');
-  container.id = 'container-' + NATIVE_AD_KEY;
+  container.id = slotId;
   wrap.appendChild(container);
-
-  return wrap;
 }
 
 /**
