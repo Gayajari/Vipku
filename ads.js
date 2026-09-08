@@ -24,8 +24,12 @@ const RESPONSIVE_UNITS = {
   }
 };
 
-// Native Banner yang disisipkan di feed (tiap 3 post), hanya tampil mode HP
+// Native Banner yang disisipkan di feed. Sekarang tampil di HP & desktop.
 const NATIVE_AD_KEY = 'a34e353b3f1f0806d6dd98636848d1e3';
+
+// Native ad disisipkan tiap N post di feed utama. Dijadikan konstanta biar
+// gampang diubah dari satu tempat saja (dipakai di index.html).
+const NATIVE_AD_INTERVAL = 3;
 
 // Script social bar / popunder (tanpa atOptions)
 const SOCIAL_BAR_SRC = 'https://inputoppose.com/dc/36/31/dc3631cbbf8e7e7cd864408473a542ac.js';
@@ -96,15 +100,28 @@ function loadResponsiveBanner(containerId, placementName, onDone) {
 // Melacak status HP/desktop per container supaya banner responsif otomatis
 // ganti ukuran saat layar di-resize/rotate.
 const _responsiveWatchState = {};
+
+// Debounce kecil biar matchMedia nggak dicek berkali-kali tiap event resize
+// nembak (misal pas drag ubah lebar jendela browser) — murni optimasi
+// performa, tidak mengubah kapan banner diganti ukurannya.
+function _debounce(fn, waitMs) {
+  let timer;
+  return function debounced(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), waitMs);
+  };
+}
+
 function watchResponsiveBannerResize(containerId, placementName) {
   _responsiveWatchState[containerId] = window.matchMedia('(max-width: 768px)').matches;
-  window.addEventListener('resize', () => {
+  const handleResize = _debounce(() => {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     if (isMobile !== _responsiveWatchState[containerId]) {
       _responsiveWatchState[containerId] = isMobile;
       loadResponsiveBanner(containerId, placementName);
     }
-  });
+  }, 150);
+  window.addEventListener('resize', handleResize);
 }
 
 /**
@@ -112,9 +129,10 @@ function watchResponsiveBannerResize(containerId, placementName) {
  * di manapun lewat appendChild — dipakai untuk native banner di feed per-post.
  *
  * Strukturnya sengaja 2 lapis:
- *   .feed-native-ad (wrap luar, cuma atur display mobile/desktop + margin)
+ *   .feed-native-ad (wrap luar, cuma atur margin & max-width)
  *     └─ .native-ad-crop (wrapper crop: overflow:hidden + max-height dibatasi
- *        manual lewat CSS — INI yang nentuin cuma 1 kartu iklan yang kelihatan)
+ *        manual lewat CSS, beda untuk HP vs desktop — INI yang nentuin cuma
+ *        1 kartu iklan yang kelihatan)
  *         └─ .native-ad-render-area (area render sesungguhnya, dikasih
  *            min-height LEGA — script Adsterra bebas render sebanyak apa pun
  *            kartu di sini tanpa sensor, biar kartu PERTAMA selalu utuh
