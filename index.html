@@ -408,27 +408,28 @@
     z-index: 101;
   }
 
+  /* Native banner feed: sekarang tampil di HP MAUPUN desktop. Crop height-nya
+     dibedakan per breakpoint karena kartu iklan Adsterra render lebih besar
+     di layar lebar — ini yang bikin cuma 1 kartu yang kelihatan (bukan
+     .native-ad-render-area, itu sengaja dikasih ruang lega biar kartu
+     PERTAMA render utuh gambar+judulnya sebelum dipotong oleh crop). */
   .feed-native-ad {
-    display: none;
+    display: flex;
     justify-content: center;
     margin: 14px 0;
     max-width: 100%;
   }
   .native-ad-crop {
     width: 100%;
+    max-height: 295px; /* titik awal crop mobile — sesuaikan lagi kalau masih kurang/lebih pas */
+    overflow: hidden;
   }
   .native-ad-render-area {
-    /* Ruang render LEGA — biarkan script Adsterra render kartu iklan
-       sepenuhnya (gambar + judul utuh) tanpa disensor di sini. Yang
-       motong tampilannya adalah .native-ad-crop (overflow:hidden) di
-       media query mobile di bawah, BUKAN elemen ini. */
     min-height: 500px;
   }
-  @media (max-width: 768px) {
-    .feed-native-ad { display: flex; }
+  @media (min-width: 769px) {
     .native-ad-crop {
-      max-height: 295px; /* titik awal crop — disesuaikan lagi kalau masih kurang/lebih pas */
-      overflow: hidden;
+      max-height: 380px; /* titik awal crop desktop — cek tampilan asli lalu sesuaikan lagi */
     }
   }
 
@@ -1512,12 +1513,19 @@ function escapeHtmlAttr(str) {
   return String(str).replace(/"/g, "&quot;");
 }
 
+// Sumber data utama: query 200 post terbaru sekali di sini. Category bar,
+// rotasi "konten pilihan", DAN feed beranda (Terbaru/Terlama/Terpopuler)
+// semuanya dibangun dari cache yang sama ini lewat updateHomeFeedFromCache() —
+// sebelumnya feed beranda punya listener Firestore terpisah lagi yang narik
+// data yang sebenarnya sudah ada di sini, jadi boros baca & bisa bikin
+// category bar dan feed sempat nggak sinkron. Sekarang cuma 1 listener.
 function loadCategoryBar() {
   const bar = document.getElementById("categoryBar");
   const qAll = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(200));
   onSnapshot(qAll, (snapshot) => {
     allDocsCache = snapshot.docs;
     renderOldPostsRotation();
+    updateHomeFeedFromCache();
 
     const allTags = new Set();
     snapshot.forEach((docSnap) => {
@@ -1867,89 +1875,99 @@ if (postId) {
     seeAll.textContent = "📂 Lihat Semua Konten";
     postsEl.appendChild(seeAll);
   });
-} else {
+}
 
-  function renderPostsFlat(docsArray) {
-    postsEl.innerHTML = "";
-    if (docsArray.length === 0) {
-      postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
-      return;
-    }
-    let counter = 0;
-    docsArray.forEach((docSnap) => {
-      postsEl.appendChild(renderPost(docSnap));
-      counter++;
-      if (counter % 3 === 0) {
-        try {
-          postsEl.appendChild(createNativeAdSlot());
-        } catch (err) {
-          console.error("Gagal memuat native ad slot:", err);
-        }
+// --- Feed beranda (Terbaru/Terlama/Terpopuler) ---
+// Datanya diambil dari allDocsCache milik loadCategoryBar() (query 200 post
+// yang sama), lewat updateHomeFeedFromCache() — BUKAN dari query Firestore
+// terpisah lagi. Fungsi-fungsi ini didefinisikan di scope atas (bukan di
+// dalam blok if/else) supaya tetap bisa dipanggil dari loadCategoryBar()
+// yang didefinisikan/dipanggil di tempat lain pada file ini.
+
+function renderPostsFlat(docsArray) {
+  postsEl.innerHTML = "";
+  if (docsArray.length === 0) {
+    postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
+    return;
+  }
+  let counter = 0;
+  docsArray.forEach((docSnap) => {
+    postsEl.appendChild(renderPost(docSnap));
+    counter++;
+    if (counter % NATIVE_AD_INTERVAL === 0) {
+      try {
+        postsEl.appendChild(createNativeAdSlot());
+      } catch (err) {
+        console.error("Gagal memuat native ad slot:", err);
       }
-    });
-  }
-
-  // "Untuk Kamu": skor gabungan baru + populer, dikasih sedikit acak supaya
-  // urutannya nggak monoton kaku tiap dibuka (post lama yang lumayan populer
-  // tetap dapat kesempatan nongol di atas, bukan selalu ketutup post baru).
-  function renderPostsBlended(docsArray) {
-    const maxViews = Math.max(1, ...docsArray.map((d) => d.data().views || 0));
-    const scored = docsArray.map((docSnap) => {
-      const data = docSnap.data();
-      const created = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
-      const ageDays = Math.max(0, (Date.now() - created.getTime()) / 86400000);
-      const recencyScore = 1 / (ageDays + 2);
-      const popScore = (data.views || 0) / maxViews;
-      const combined = recencyScore * 0.65 + popScore * 0.35;
-      const jittered = combined * (0.85 + Math.random() * 0.3);
-      return { docSnap, jittered };
-    });
-    scored.sort((a, b) => b.jittered - a.jittered);
-    renderPostsFlat(scored.map((s) => s.docSnap));
-  }
-
-  function renderFeedForTab() {
-    if (currentFeedTab === "terbaru") {
-      renderPostsFlat(mainFeedDocsCache); // urutan asli dari query (terbaru dulu)
-    } else if (currentFeedTab === "terlama") {
-      renderPostsFlat([...mainFeedDocsCache].reverse());
-    } else if (currentFeedTab === "terpopuler") {
-      const sorted = [...mainFeedDocsCache].sort((a, b) => {
-        const va = (a.data().views || 0) + Math.random() * 0.5;
-        const vb = (b.data().views || 0) + Math.random() * 0.5;
-        return vb - va;
-      });
-      renderPostsFlat(sorted);
-    } else {
-      renderPostsBlended(mainFeedDocsCache); // default: "untukKamu"
     }
-  }
+  });
+}
 
-  const sortBarEl = document.getElementById("sortChipBar");
-  if (sortBarEl && !sortBarEl._wired) {
-    sortBarEl._wired = true;
-    sortBarEl.querySelectorAll(".sort-chip").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (searchActive) return;
-        sortBarEl.querySelectorAll(".sort-chip").forEach((t) => t.classList.remove("active"));
-        btn.classList.add("active");
-        currentFeedTab = btn.dataset.sort;
-        renderFeedForTab();
-      });
+// "Untuk Kamu": skor gabungan baru + populer, dikasih sedikit acak supaya
+// urutannya nggak monoton kaku tiap dibuka (post lama yang lumayan populer
+// tetap dapat kesempatan nongol di atas, bukan selalu ketutup post baru).
+function renderPostsBlended(docsArray) {
+  const maxViews = Math.max(1, ...docsArray.map((d) => d.data().views || 0));
+  const scored = docsArray.map((docSnap) => {
+    const data = docSnap.data();
+    const created = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+    const ageDays = Math.max(0, (Date.now() - created.getTime()) / 86400000);
+    const recencyScore = 1 / (ageDays + 2);
+    const popScore = (data.views || 0) / maxViews;
+    const combined = recencyScore * 0.65 + popScore * 0.35;
+    const jittered = combined * (0.85 + Math.random() * 0.3);
+    return { docSnap, jittered };
+  });
+  scored.sort((a, b) => b.jittered - a.jittered);
+  renderPostsFlat(scored.map((s) => s.docSnap));
+}
+
+function renderFeedForTab() {
+  if (postId || tagParam) return; // feed beranda cuma berlaku di halaman utama
+  if (currentFeedTab === "terbaru") {
+    renderPostsFlat(mainFeedDocsCache); // urutan asli (terbaru dulu)
+  } else if (currentFeedTab === "terlama") {
+    renderPostsFlat([...mainFeedDocsCache].reverse());
+  } else if (currentFeedTab === "terpopuler") {
+    const sorted = [...mainFeedDocsCache].sort((a, b) => {
+      const va = (a.data().views || 0) + Math.random() * 0.5;
+      const vb = (b.data().views || 0) + Math.random() * 0.5;
+      return vb - va;
     });
+    renderPostsFlat(sorted);
+  } else {
+    renderPostsBlended(mainFeedDocsCache); // default: "untukKamu"
   }
+}
 
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(MAIN_FEED_LIMIT));
-  onSnapshot(q, (snapshot) => {
-    if (searchActive) return;
-    mainFeedDocsCache = snapshot.docs;
-    renderFeedForTab();
+// Dipanggil tiap kali allDocsCache (query 200 post) di loadCategoryBar()
+// berubah — mengambil 50 teratas buat feed beranda, tanpa listener baru.
+function updateHomeFeedFromCache() {
+  if (postId || tagParam) return;
+  mainFeedDocsCache = allDocsCache.slice(0, MAIN_FEED_LIMIT);
+  if (!searchActive) renderFeedForTab();
+}
+
+const sortBarEl = document.getElementById("sortChipBar");
+if (sortBarEl && !sortBarEl._wired && !postId && !tagParam) {
+  sortBarEl._wired = true;
+  sortBarEl.querySelectorAll(".sort-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (searchActive) return;
+      sortBarEl.querySelectorAll(".sort-chip").forEach((t) => t.classList.remove("active"));
+      btn.classList.add("active");
+      currentFeedTab = btn.dataset.sort;
+      renderFeedForTab();
+    });
   });
 }
 
 // Hitung tinggi category-bar secara dinamis buat offset sticky sort-chip-bar
 // di bawahnya (category-bar bisa 1-2 baris tergantung jumlah tag). Dipanggil
-// dari loadCategoryBar() tiap kali kontennya berubah.
+// dari loadCategoryBar() tiap kali kontennya berubah. Ditambah listener
+// resize & fonts.ready supaya offset-nya tetap akurat kalau lebar layar
+// berubah atau webfont baru selesai dimuat (yang bisa mengubah tinggi bar).
 function renderMainFeedTabs() {
   const categoryBarEl = document.getElementById("categoryBar");
   if (!categoryBarEl) return;
@@ -1958,9 +1976,16 @@ function renderMainFeedTabs() {
     document.documentElement.style.setProperty("--category-bar-h", categoryBarEl.offsetHeight + "px");
   }
   updateOffset();
-  if (window.ResizeObserver && !categoryBarEl._roAttached) {
-    new ResizeObserver(updateOffset).observe(categoryBarEl);
-    categoryBarEl._roAttached = true;
+
+  if (!categoryBarEl._stickyOffsetWired) {
+    categoryBarEl._stickyOffsetWired = true;
+    window.addEventListener("resize", updateOffset);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(updateOffset);
+    }
+    if (window.ResizeObserver) {
+      new ResizeObserver(updateOffset).observe(categoryBarEl);
+    }
   }
 }
 
