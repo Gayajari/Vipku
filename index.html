@@ -128,6 +128,7 @@
     border-radius: 12px;
     display: block;
     cursor: pointer;
+    background: rgba(43,36,32,0.04);
   }
   .post-photos.multi {
     column-count: 2;
@@ -142,6 +143,7 @@
     cursor: pointer;
     margin-bottom: 4px;
     break-inside: avoid;
+    background: rgba(43,36,32,0.04);
   }
   .post-link {
     display: flex;
@@ -411,16 +413,35 @@
     z-index: 101;
   }
 
+  /* Native banner di feed — dikunci rasio 1:1 supaya konsisten berapa pun
+     ukuran/aspect ratio konten yang disuntikkan oleh vendor iklan. */
   .feed-native-ad {
     display: none;
     justify-content: center;
-    margin: 14px 0;
-    max-width: 100%;
-    max-height: 100px;
+    align-items: center;
+    margin: 14px auto;
+    width: 100%;
+    max-width: 300px;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
+    border-radius: 12px;
+    position: relative;
+    background: rgba(43,36,32,0.03);
   }
   @media (max-width: 768px) {
     .feed-native-ad { display: flex; }
+  }
+  .feed-native-ad iframe,
+  .feed-native-ad img,
+  .feed-native-ad a,
+  .feed-native-ad > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    border: none;
   }
 
   .search-bar {
@@ -1327,7 +1348,7 @@ async function openManualPaymentModal(postId, linkIndex, price, label, btnEl) {
         <div class="manual-method-card">
           <div class="mm-name">${escapeHtml(m.name)}</div>
           ${m.detail ? `<div>${escapeHtml(m.detail)}</div>` : ""}
-          ${m.qrImageUrl ? `<img src="${m.qrImageUrl}" alt="QR ${escapeHtml(m.name)}">` : ""}
+          ${m.qrImageUrl ? `<img src="${m.qrImageUrl}" alt="QR ${escapeHtml(m.name)}" loading="lazy" decoding="async">` : ""}
         </div>
       `).join("")
     : '<p style="font-size:12px; color:#c0392b;">Metode pembayaran belum diatur admin. Hubungi admin dulu.</p>';
@@ -1566,36 +1587,47 @@ function setupSearch() {
   const clearBtn = document.getElementById("clearBtn");
   const suggestBox = document.getElementById("searchSuggestions");
 
+  // Debounce input pencarian: menunda pemindaian daftar post sampai
+  // pengguna berhenti mengetik sejenak (150ms), supaya nggak nge-scan
+  // seluruh cache pada TIAP huruf yang diketik — lebih ringan kalau
+  // jumlah post banyak.
+  let searchDebounceTimer = null;
+
   input.addEventListener("focus", () => {
     btn.classList.add("bounce");
     setTimeout(() => btn.classList.remove("bounce"), 500);
   });
 
   input.addEventListener("input", (e) => {
-    const qText = e.target.value.trim().toLowerCase();
-    clearBtn.style.display = e.target.value ? "block" : "none";
+    const rawValue = e.target.value;
+    clearBtn.style.display = rawValue ? "block" : "none";
 
-    if (!qText) {
-      suggestBox.classList.remove("show");
-      suggestBox.innerHTML = "";
-      if (searchActive) {
-        searchActive = false;
-        location.reload();
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      const qText = rawValue.trim().toLowerCase();
+      if (!qText) {
+        suggestBox.classList.remove("show");
+        suggestBox.innerHTML = "";
+        if (searchActive) {
+          searchActive = false;
+          location.reload();
+        }
+        return;
       }
-      return;
-    }
-
-    renderSuggestions(qText);
+      renderSuggestions(qText);
+    }, 150);
   });
 
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
       runFullSearch(input.value.trim());
     }
   });
 
   btn.addEventListener("click", () => {
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
     runFullSearch(input.value.trim());
   });
 
@@ -1693,7 +1725,7 @@ function renderPost(docSnap) {
 
   const photoUrls = data.photoUrls || [];
   const photos = photoUrls
-    .map(url => `<img src="${url}" onclick="openLightbox('${url}')">`)
+    .map(url => `<img src="${url}" loading="lazy" decoding="async" onclick="openLightbox('${url}')">`)
     .join("");
   const photosClass = photoUrls.length > 1 ? "post-photos multi" : "post-photos single";
 
