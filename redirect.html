@@ -8,6 +8,8 @@
   :root {
     --brand: #2b3a67;
     --brand-light: #eef1fb;
+    --logo-navy: #3730A3;
+    --logo-pink: #E85D75;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -30,17 +32,8 @@
     width: 100%;
     text-align: center;
   }
-  .home-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    text-decoration: none;
-    color: var(--brand);
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 10px;
-  }
-  .logo { font-size: 19px; font-weight: 700; color: var(--brand); margin-bottom: 6px; }
+  .logo { font-size: 19px; font-weight: 700; color: var(--logo-navy); margin-bottom: 6px; }
+  .logo em { font-style: italic; font-weight: 400; color: var(--logo-pink); }
   .subtitle { font-size: 13px; color: #888; margin-bottom: 22px; }
   .timer-circle {
     width: 80px; height: 80px; border-radius: 50%;
@@ -70,8 +63,7 @@
 <body>
 
   <div class="card">
-    <a href="index.html" class="home-link">🏠 Kembali ke Beranda</a>
-    <div class="logo">Vipku</div>
+    <div class="logo">Vip<em>ku</em></div>
     <div class="subtitle">Mempersiapkan tautan kamu...</div>
 
     <div class="timer-circle"><span id="countdown">8</span></div>
@@ -82,8 +74,6 @@
     <div class="ad-slot" id="adSlot"></div>
 
     <button class="skip-btn" id="skipBtn" onclick="goToTarget()">Lanjutkan</button>
-
-    <a href="index.html" class="home-link" style="margin-top:14px;">🏠 Kembali ke Beranda</a>
   </div>
 
   <script src="ads.js"></script>
