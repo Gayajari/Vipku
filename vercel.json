@@ -1,5 +1,7 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    { "source": "/p/:code", "destination": "/" }
+    { "source": "/p/:code", "destination": "/?post=:code" }
   ]
 }
