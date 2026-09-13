@@ -192,7 +192,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 5px;
     animation: paidBtnGlow 3s ease-in-out infinite;
   }
   .post-link-paid:active { background: var(--raspberry); animation: none; }
@@ -233,7 +233,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 5px;
   }
   .post-link-unlocked:active { background: #1f5252; }
   .post-share {
@@ -331,6 +331,7 @@
   .home-btn:active { border-color: var(--raspberry); color: var(--raspberry); background: rgba(232,93,117,0.06); }
 
   .logo-home-link {
+    color: inherit;
     text-decoration: none;
     display: block;
     text-align: center;
@@ -377,17 +378,24 @@
     border-top: 1px solid var(--line);
   }
   .home-btn-footer {
-    display: inline-block;
+    display: block;
+    margin: 0;
     text-decoration: none;
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 18px;
+    font-size: 22px;
+    letter-spacing: -0.2px;
     color: var(--ink);
-    padding: 6px 0;
+    padding: 6px 0 0;
     transition: opacity 0.2s ease;
   }
   .home-btn-footer em { font-style: italic; font-weight: 400; color: var(--raspberry); }
   .home-btn-footer:active { opacity: 0.65; }
+  .footer-copyright {
+    margin: 2px 0 4px;
+    font-size: 11px;
+    color: rgba(43,36,32,0.45);
+  }
 
   .sticky-ad-bar {
     position: fixed;
@@ -835,7 +843,7 @@
 <div class="sticky-header-wrap" id="stickyHeaderWrap">
   <header>
     <a href="./" class="logo-home-link" aria-label="Kembali ke Beranda">
-      <h1>Vip<em>ku</em>🥵</h1>
+      <h1>Vip<em>ku</em></h1>
     </a>
     <div class="header-row">
       <a href="./" class="home-icon-btn" aria-label="Kembali ke Beranda">
@@ -933,6 +941,7 @@
 
 <footer class="site-footer">
   <a href="./" class="home-btn-footer">Vip<em>ku</em></a>
+  <div class="footer-copyright">© 2026 Vipku. Semua hak dilindungi.</div>
 </footer>
 
 <div class="sticky-ad-bar" id="stickyAdBar">
