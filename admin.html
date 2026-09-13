@@ -569,7 +569,7 @@ iframe{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, runTransaction, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-7D1tKtRAtFu9aOneL8TfpInol7WFORc",
@@ -783,6 +783,65 @@ function splitLinksForSave(links) {
   return { publicLinks, secretMap };
 }
 
+/* ================== KODE LINK PENDEK (/p/kode) ==================
+   Dipakai sebagai ID dokumen "posts" langsung (bukan field terpisah) supaya
+   pengambilan data tetap 1x baca dokumen by-ID (paling irit bandwidth),
+   sama seperti sebelumnya — cuma ID-nya sekarang pendek & acak, bukan
+   ID otomatis Firestore yang panjang.
+
+   Panjang kode naik otomatis mengikuti jumlah post (dihitung dari
+   settings/postCounter) supaya peluang tabrakan kode tetap sangat kecil
+   dalam jangka panjang, tanpa perlu bikin kode panjang dari awal padahal
+   post masih sedikit:
+     < 10.000 post      → 6 karakter  (36^6 ≈ 2,1 miliar kemungkinan)
+     < 1.000.000 post    → 8 karakter
+     < 100.000.000 post  → 10 karakter
+     selebihnya           → 12 karakter
+   Post lama yang masih pakai ID panjang bawaan Firestore TIDAK diubah/
+   dimigrasikan — link lama tetap jalan apa adanya, cuma post BARU yang
+   dapat kode pendek ini. */
+const CODE_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+function randomCode(len) {
+  let out = "";
+  for (let i = 0; i < len; i++) out += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+  return out;
+}
+
+async function getNextCodeLength() {
+  const counterRef = doc(db, "settings", "postCounter");
+  try {
+    let total = 0;
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(counterRef);
+      total = snap.exists() ? (snap.data().total || 0) : 0;
+      tx.set(counterRef, { total: total + 1 }, { merge: true });
+    });
+    if (total < 10000) return 6;
+    if (total < 1000000) return 8;
+    if (total < 100000000) return 10;
+    return 12;
+  } catch (err) {
+    // Gagal baca/update counter (jarang terjadi) — tetap lanjut dengan kode
+    // terpendek supaya proses publikasi post tidak ikut gagal cuma gara-gara ini.
+    console.error("Gagal update counter post:", err);
+    return 6;
+  }
+}
+
+async function generateUniquePostCode() {
+  const len = await getNextCodeLength();
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const candidate = randomCode(len);
+    const snap = await getDoc(doc(db, "posts", candidate));
+    if (!snap.exists()) return candidate;
+  }
+  // Fallback ekstrem kalau 20x tabrakan berturut-turut (harusnya nyaris
+  // mustahil) — perpanjang kode 2 karakter khusus percobaan terakhir ini
+  // supaya proses publikasi tetap bisa selesai, bukan macet total.
+  return randomCode(len + 2);
+}
+
 submitBtn.onclick = async () => {
   formMsg.className = "msg";
   formMsg.textContent = "";
@@ -828,7 +887,7 @@ submitBtn.onclick = async () => {
       formMsg.className = "msg success";
       formMsg.textContent = "Materi berhasil diperbarui!";
 
-      const editedUrl = `${window.location.origin}/?post=${editingId}`;
+      const editedUrl = `${window.location.origin}/p/${editingId}`;
       const editedResultEl = document.getElementById("resultLink");
       editedResultEl.style.display = "block";
       editedResultEl.innerHTML = `Link konten ini:<br><b>${editedUrl}</b><br><button type="button" class="shareBtn" style="width:auto; margin-top:8px; padding:8px 14px; font-size:12px; border-radius:6px; color:#fff; border:none; cursor:pointer;">🔗 Bagikan</button>`;
@@ -836,7 +895,8 @@ submitBtn.onclick = async () => {
 
       resetFieldsOnly();
     } else {
-      const docRef = await addDoc(collection(db, "posts"), {
+      const newCode = await generateUniquePostCode();
+      await setDoc(doc(db, "posts", newCode), {
         photoUrls,
         links: publicLinks,
         tags,
@@ -844,13 +904,13 @@ submitBtn.onclick = async () => {
         createdAt: serverTimestamp()
       });
       if (Object.keys(secretMap).length > 0) {
-        await setDoc(doc(db, "linkSecrets", docRef.id), secretMap);
+        await setDoc(doc(db, "linkSecrets", newCode), secretMap);
       }
 
       formMsg.className = "msg success";
       formMsg.textContent = "Berhasil dibagikan konten!";
 
-      const postUrl = `${window.location.origin}/?post=${docRef.id}`;
+      const postUrl = `${window.location.origin}/p/${newCode}`;
       const resultEl = document.getElementById("resultLink");
       resultEl.style.display = "block";
       resultEl.innerHTML = `Link khusus konten ini:<br><b>${postUrl}</b><br><button type="button" class="shareBtn" style="width:auto; margin-top:8px; padding:8px 14px; font-size:12px; border-radius:6px; color:#fff; border:none; cursor:pointer;">🔗 Bagikan</button>`;
@@ -1065,7 +1125,7 @@ function applyAdminSearch() {
         <button class="deleteBtn">Hapus</button>
       </div>
     `;
-    const postUrl = `${window.location.origin}/?post=${id}`;
+    const postUrl = `${window.location.origin}/p/${id}`;
     item.querySelector(".editBtn").onclick = () => startEdit(id, data);
     item.querySelector(".shareBtn").onclick = () => sharePostLink(postUrl);
     item.querySelector(".deleteBtn").onclick = () => removePost(id);

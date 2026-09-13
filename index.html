@@ -31,48 +31,20 @@
   header {
     background: var(--cream);
     color: var(--ink);
-    padding: 16px 15px 10px;
-    text-align: left;
-    position: sticky;
-    top: 0;
-    z-index: 41;
+    padding: 20px 20px 16px;
+    text-align: center;
+    position: relative;
     border-bottom: 1px solid var(--line);
   }
   header h1 {
     margin: 0;
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 22px;
+    font-size: 24px;
     letter-spacing: -0.2px;
   }
   header h1 em { font-style: italic; font-weight: 400; color: var(--raspberry); }
-
-  .header-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .home-icon-btn {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--card);
-    border: 1.5px solid var(--line);
-    color: var(--ink);
-    text-decoration: none;
-    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
-  }
-  .home-icon-btn:active { border-color: var(--raspberry); color: var(--raspberry); background: rgba(232,93,117,0.06); }
-  .header-row .search-bar {
-    flex: 1;
-    padding: 0;
-    min-width: 0;
-  }
+  header p { margin: 6px 0 0; font-size: 12.5px; color: rgba(43,36,32,0.55); font-family: 'JetBrains Mono', monospace; }
 
   .container {
     max-width: 640px;
@@ -83,51 +55,31 @@
   .post {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius);
     box-shadow: 0 2px 10px rgba(43,36,32,0.05);
-    margin-bottom: 14px;
+    margin-bottom: 20px;
     overflow: hidden;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
   .post:active { transform: translateY(-1px); box-shadow: 0 10px 22px -14px rgba(43,36,32,0.28); }
   .post-date {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px;
+    font-size: 11px;
     color: rgba(43,36,32,0.45);
-    padding: 10px 14px 0 14px;
+    padding: 14px 18px 0 18px;
   }
   .post-caption {
-    padding: 6px 14px 0 14px;
-    font-size: 14px;
-    line-height: 1.5;
+    padding: 8px 18px 0 18px;
+    font-size: 15px;
+    line-height: 1.55;
     white-space: pre-wrap;
-    max-height: 68px;
-    overflow: hidden;
-    position: relative;
-  }
-  .post-caption.expanded {
-    max-height: none;
-  }
-  .post-caption-toggle {
-    display: inline-block;
-    margin: 2px 14px 0 14px;
-    padding: 0;
-    background: none;
-    border: none;
-    color: var(--raspberry);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
   }
   .post-photos {
-    padding: 8px 12px;
+    padding: 10px 15px;
   }
   .post-photos.single img {
     width: 100%;
-    max-height: 280px;
-    object-fit: cover;
-    border-radius: 12px;
+    border-radius: 14px;
     display: block;
     cursor: pointer;
   }
@@ -137,21 +89,15 @@
   }
   .post-photos.multi img {
     width: 100%;
-    max-height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
+    border-radius: 12px;
     display: block;
     cursor: pointer;
     margin-bottom: 4px;
     break-inside: avoid;
   }
   .post-link {
-    display: flex;
-    width: calc(100% - 28px);
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin: 0 14px 10px 14px;
+    display: block;
+    margin: 0 18px 18px 18px;
     background: var(--ink);
     color: var(--cream);
     text-align: center;
@@ -162,25 +108,16 @@
     font-size: 14px;
     transition: background 0.2s ease;
   }
-  .play-icon-ring {
-    transform-origin: 12px 12px;
-    animation: playRingPulse 1.8s ease-in-out infinite;
-  }
-  .post-link:active .play-icon-tri { transform: scale(0.85); }
-  @keyframes playRingPulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.9); opacity: 0.85; }
-  }
   .post-link:active { background: var(--raspberry); }
   .post-link-paid {
-    width: calc(100% - 28px);
-    margin: 0 14px 14px 14px;
+    width: calc(100% - 36px);
+    margin: 0 18px 18px 18px;
     background: linear-gradient(135deg, var(--raspberry), var(--yolk));
     background-size: 200% 200%;
     color: white;
     border: none;
     text-align: center;
-    padding: 11px 16px;
+    padding: 11px;
     border-radius: 999px;
     font-weight: 600;
     font-size: 14px;
@@ -189,7 +126,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 6px;
     animation: paidBtnGlow 3s ease-in-out infinite;
   }
   .post-link-paid:active { background: var(--raspberry); animation: none; }
@@ -204,30 +141,14 @@
     0%, 100% { transform: rotate(0deg); }
     50% { transform: rotate(-6deg); }
   }
-  /* Isi teks tombol paid/unlocked: "label | harga" atau "label | Sudah Dibeli".
-     Pemisahnya garis tipis vertikal (pl-divider), bukan tanda "—" — lebih
-     ringkas dan warnanya otomatis ngikut warna teks tombol (currentColor). */
-  .pl-text {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .pl-divider {
-    width: 1px;
-    height: 11px;
-    background: currentColor;
-    opacity: 0.45;
-    border-radius: 1px;
-    flex-shrink: 0;
-  }
   .post-link-unlocked {
-    width: calc(100% - 28px);
-    margin: 0 14px 14px 14px;
+    width: calc(100% - 36px);
+    margin: 0 18px 18px 18px;
     background: var(--teal);
     color: white;
     border: none;
     text-align: center;
-    padding: 11px 16px;
+    padding: 11px;
     border-radius: 999px;
     font-weight: 600;
     font-size: 14px;
@@ -236,7 +157,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 6px;
   }
   .post-link-unlocked:active { background: #1f5252; }
   .post-share {
@@ -260,7 +181,7 @@
     justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
-    margin: 0 14px 10px 14px;
+    margin: 0 18px 12px 18px;
   }
   .post-chip-bar a {
     text-decoration: none;
@@ -301,7 +222,7 @@
     border-top: 1px solid var(--line);
     -webkit-overflow-scrolling: touch;
     position: sticky;
-    top: var(--header-h, 0px);
+    top: 0;
     z-index: 40;
     background: var(--cream);
     box-shadow: 0 2px 6px rgba(43,36,32,0.04);
@@ -309,85 +230,43 @@
   .category-bar::-webkit-scrollbar { display: none; }
 
   .home-btn {
-    display: inline-flex;
+    position: absolute;
+    left: 15px;
+    top: 18px;
+    display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     text-decoration: none;
     background: var(--card);
     border: 1.5px solid var(--line);
     color: var(--ink);
-    padding: 6px 12px;
+    padding: 6px 11px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 500;
-    margin-bottom: 8px;
     transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
   }
   .home-btn:active { border-color: var(--raspberry); color: var(--raspberry); background: rgba(232,93,117,0.06); }
-
-  .logo-home-link {
-    text-decoration: none;
-    display: block;
-    text-align: center;
-    transition: opacity 0.2s ease;
-  }
-  .logo-home-link:active { opacity: 0.65; }
-  .logo-home-link h1 { margin: 0; }
-
-  .sort-chip-bar {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding: 0 15px;
-    -webkit-overflow-scrolling: touch;
-    position: sticky;
-    top: calc(var(--header-h, 0px) + var(--category-bar-h, 0px));
-    z-index: 39;
-    background: var(--cream);
-    border-bottom: 1px solid var(--line);
-    box-shadow: 0 2px 6px rgba(43,36,32,0.04);
-  }
-  .sort-chip-bar::-webkit-scrollbar { display: none; }
-  .sort-chip {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    background: var(--card);
-    border: 1.5px solid var(--line);
-    color: var(--ink);
-    padding: 3px 10px;
-    margin: 0;
-    border-radius: 999px;
-    font-size: 10.5px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .sort-chip.active {
-    background: var(--ink);
-    color: var(--cream);
-    border-color: var(--ink);
-  }
 
   .site-footer {
     max-width: 640px;
     margin: 24px auto 0;
     padding: 20px 15px 0;
-    text-align: left;
+    text-align: center;
     border-top: 1px solid var(--line);
   }
   .home-btn-footer {
     display: inline-block;
     text-decoration: none;
-    font-family: 'Fraunces', serif;
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--ink);
-    padding: 6px 0;
-    transition: opacity 0.2s ease;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.2s ease;
   }
-  .home-btn-footer em { font-style: italic; font-weight: 400; color: var(--raspberry); }
-  .home-btn-footer:active { opacity: 0.65; }
+  .home-btn-footer:active { background: var(--raspberry); }
 
   .sticky-ad-bar {
     position: fixed;
@@ -426,29 +305,15 @@
     z-index: 101;
   }
 
-  /* Native banner feed: sekarang tampil di HP MAUPUN desktop. Crop height-nya
-     dibedakan per breakpoint karena kartu iklan Adsterra render lebih besar
-     di layar lebar — ini yang bikin cuma 1 kartu yang kelihatan (bukan
-     .native-ad-render-area, itu sengaja dikasih ruang lega biar kartu
-     PERTAMA render utuh gambar+judulnya sebelum dipotong oleh crop). */
   .feed-native-ad {
-    display: flex;
+    display: none;
     justify-content: center;
     margin: 14px 0;
     max-width: 100%;
-  }
-  .native-ad-crop {
-    width: 100%;
-    max-height: 295px; /* titik awal crop mobile — sesuaikan lagi kalau masih kurang/lebih pas */
     overflow: hidden;
   }
-  .native-ad-render-area {
-    min-height: 500px;
-  }
-  @media (min-width: 769px) {
-    .native-ad-crop {
-      max-height: 380px; /* titik awal crop desktop — cek tampilan asli lalu sesuaikan lagi */
-    }
+  @media (max-width: 768px) {
+    .feed-native-ad { display: flex; }
   }
 
   .search-bar {
@@ -505,20 +370,6 @@
     0%, 100% { transform: translateY(-50%) scale(1); }
     40% { transform: translateY(-50%) scale(1.18) rotate(-12deg); }
     70% { transform: translateY(-50%) scale(0.95) rotate(4deg); }
-  }
-  .header-row .search-input-wrap input {
-    padding: 8px 30px 8px 36px;
-    font-size: 12px;
-  }
-  .header-row .search-input-wrap #searchBtn {
-    width: 26px;
-    height: 26px;
-  }
-  .header-row .search-input-wrap #searchBtn svg { width: 12px; height: 12px; }
-  .header-row .search-input-wrap #clearBtn {
-    width: 18px;
-    height: 18px;
-    line-height: 18px;
   }
   .search-input-wrap #clearBtn {
     display: none;
@@ -586,6 +437,35 @@
     background: var(--ink);
     color: var(--cream);
     border-color: var(--ink);
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    width: fit-content;
+    margin: 12px 15px;
+    overflow-x: auto;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: rgba(43,36,32,0.55);
+    font-size: 11.5px;
+    font-weight: 500;
+    font-family: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .tab.active {
+    background: var(--ink);
+    color: var(--cream);
   }
   .empty {
     text-align: center;
@@ -827,37 +707,34 @@
 <body>
 
 <header>
-  <a href="./" class="logo-home-link" aria-label="Kembali ke Beranda">
-    <h1>Vip<em>ku</em>🥵</h1>
-  </a>
-  <div class="header-row">
-    <a href="./" class="home-icon-btn" aria-label="Kembali ke Beranda">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
-    </a>
-    <div class="search-bar">
-      <div class="search-input-wrap">
-        <button type="button" id="searchBtn" aria-label="Cari">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
-        </button>
-        <input type="text" id="searchInput" placeholder="Cari">
-        <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
-      </div>
-      <div class="search-suggestions" id="searchSuggestions"></div>
-    </div>
-  </div>
+  <a href="./" class="home-btn" aria-label="Kembali ke Beranda">🏠 Beranda</a>
+  <h1>Vip<em>ku</em>🥵</h1>
+  <p>Konten update tiap hari</p>
 </header>
+
+<div class="ads-banner" id="adsBannerHeader"></div>
 
 <div class="contact-bar" id="contactBar"></div>
 
-<div class="category-bar" id="categoryBar"></div>
-
-<div class="sort-chip-bar" id="sortChipBar">
-  <button type="button" class="sort-chip active" data-sort="terbaru">Terbaru</button>
-  <button type="button" class="sort-chip" data-sort="terlama">Terlama</button>
-  <button type="button" class="sort-chip" data-sort="terpopuler">Terpopuler</button>
+<div class="search-bar">
+  <div class="search-input-wrap">
+    <button type="button" id="searchBtn" aria-label="Cari">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+    </button>
+    <input type="text" id="searchInput" placeholder="Cari">
+    <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
+  </div>
+  <div class="search-suggestions" id="searchSuggestions"></div>
 </div>
 
-<div class="ads-banner" id="adsFeedTopBanner"></div>
+<div class="category-bar" id="categoryBar"></div>
+
+<div class="tabs" id="feedTabs">
+  <button class="tab active" data-tab="untukKamu">Untuk Kamu</button>
+  <button class="tab" data-tab="terbaru">Terbaru</button>
+  <button class="tab" data-tab="terlama">Terlama</button>
+  <button class="tab" data-tab="terpopuler">Terpopuler</button>
+</div>
 
 <div class="container" id="posts">
   <p class="empty">Memuat konten...</p>
@@ -924,7 +801,7 @@
 </div>
 
 <footer class="site-footer">
-  <a href="./" class="home-btn-footer">Vip<em>ku</em></a>
+  <a href="./" class="home-btn-footer">🏠 Kembali ke Beranda</a>
 </footer>
 
 <div class="sticky-ad-bar" id="stickyAdBar">
@@ -1010,9 +887,8 @@ function getBuyerId() {
 // Ikon dipakai bareng di renderPost() (render awal) dan di titik-titik sukses
 // pembayaran (biar tombol yang sudah dibayar langsung ganti tampilan, bukan
 // cuma ganti teks doang).
-const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"><path class="lock-shackle" d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4.5" y="10" width="15" height="10" rx="3" fill="currentColor"/><circle cx="12" cy="14.3" r="1.3" fill="rgba(0,0,0,0.35)"/></svg>`;
-const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.18"/><path d="M8 12.3l2.6 2.6L16 9.3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const playIconSvg = `<svg class="play-icon" viewBox="0 0 24 24" width="16" height="16" fill="none"><circle class="play-icon-ring" cx="12" cy="12" r="10.5" fill="currentColor"/><path class="play-icon-tri" d="M10 8.3l6.2 3.7-6.2 3.7V8.3z" fill="var(--ink)"/></svg>`;
+const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path class="lock-shackle" d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>`;
+const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16 9.3"/></svg>`;
 
 // Cache lokal "sudah kebeli" per link (per accessId), supaya begitu halaman
 // di-reload, tombol yang sudah dibayar LANGSUNG kelihatan beda dari yang
@@ -1038,7 +914,7 @@ function isUnlockedLocally(accessId) {
 function setButtonUnlockedStyle(btnEl, label) {
   btnEl.classList.remove("post-link-paid");
   btnEl.classList.add("post-link-unlocked");
-  btnEl.innerHTML = `${unlockIconSvg}<span class="pl-text">${label}<span class="pl-divider"></span>Sudah Dibeli</span>`;
+  btnEl.innerHTML = `${unlockIconSvg} ${label} — Sudah Dibeli`;
 }
 
 // Hitung 1 view tiap post cuma sekali per sesi browser (biar refresh berkali-kali
@@ -1054,11 +930,58 @@ function trackPostView(postId) {
   } catch (err) {
     // sessionStorage tidak tersedia (mode private ekstrem dsb) — tetap kirim saja
   }
-  fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+  fetch(`${PAYWALL_BACKEND_URL}/api/track-view`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ postId, action: "trackView" })
+    body: JSON.stringify({ postId })
   }).catch((err) => console.error("Gagal mencatat view:", err));
+}
+
+/* ================== CACHE LOKAL untuk post yang dibuka via link /p/kode ==================
+   Cuma dipakai buat halaman detail satu post (link yang dibagikan), BUKAN buat feed utama —
+   supaya buka link yang sama berkali-kali (mis. post viral yang dibagikan ke banyak orang)
+   tidak selalu baca ulang Firestore. Data tetap divalidasi ulang ke server tiap kali
+   (stale-while-revalidate): cache cuma mempercepat tampilan awal, bukan pengganti sumber asli,
+   supaya harga/status link paywall yang mungkin baru diubah admin tetap akurat. */
+const POST_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 jam — konten post jarang berubah setelah dipublikasikan
+
+// Firestore Timestamp tidak bisa disimpan langsung ke localStorage (bukan JSON murni,
+// method toDate() akan hilang) — dikonversi dulu ke angka milidetik biasa.
+function serializePostData(data) {
+  const copy = { ...data };
+  if (copy.createdAt && typeof copy.createdAt.toMillis === "function") {
+    copy.createdAt = { __ts: copy.createdAt.toMillis() };
+  }
+  return copy;
+}
+function revivePostData(data) {
+  const copy = { ...data };
+  if (copy.createdAt && typeof copy.createdAt.__ts === "number") {
+    const millis = copy.createdAt.__ts;
+    copy.createdAt = { toDate: () => new Date(millis) };
+  }
+  return copy;
+}
+function getCachedPost(id) {
+  try {
+    const raw = localStorage.getItem("vp_post_" + id);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.data || !parsed.ts) return null;
+    if (Date.now() - parsed.ts > POST_CACHE_TTL) return null;
+    return parsed.data;
+  } catch (err) { return null; }
+}
+function setCachedPost(id, serializedData) {
+  try {
+    localStorage.setItem("vp_post_" + id, JSON.stringify({ data: serializedData, ts: Date.now() }));
+  } catch (err) { /* storage penuh/diblokir — cache bersifat opsional, abaikan */ }
+}
+// Bungkus data cache jadi bentuk mirip Firestore DocumentSnapshot supaya bisa
+// langsung dipakai renderPost() tanpa mengubah fungsi itu sama sekali.
+function wrapCachedDoc(id, serializedData) {
+  const revived = revivePostData(serializedData);
+  return { id, data: () => revived };
 }
 
 async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
@@ -1248,10 +1171,10 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
   // ngapa-ngapain selain nunggu.
   qrisPollTimer = setInterval(async () => {
     try {
-      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/check-invoice-status`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, linkIndex, buyerId, action: "checkStatus" })
+        body: JSON.stringify({ postId, linkIndex, buyerId })
       });
       const resData = await res.json();
       if (resData.status === "paid") {
@@ -1440,7 +1363,8 @@ async function openManualPaymentModal(postId, linkIndex, price, label, btnEl) {
 }
 
 const postsEl = document.getElementById("posts");
-const postId = new URLSearchParams(window.location.search).get("post");
+const pathCodeMatch = window.location.pathname.match(/^\/p\/([^\/?#]+)/i);
+const postId = (pathCodeMatch && decodeURIComponent(pathCodeMatch[1])) || new URLSearchParams(window.location.search).get("post");
 const tagParam = new URLSearchParams(window.location.search).get("tag");
 const paidReturnParam = new URLSearchParams(window.location.search).get("paid");
 
@@ -1455,23 +1379,21 @@ let allDocsCache = [];
 let searchActive = false;
 let postChipBarHtml = "";
 let mainFeedDocsCache = [];
-let currentFeedTab = "terbaru";
+let currentFeedTab = "untukKamu";
 const MAIN_FEED_LIMIT = 50;
 
 loadContactBar();
 loadCustomChipBar();
 loadCategoryBar();
 setupSearch();
-setupStickyHeaderOffset();
 
 try {
-  loadResponsiveBanner("adsFeedTopBanner", "sticky", () => {
-    loadResponsiveBanner("adsStickyBottom", "sticky");
-    watchResponsiveBannerResize("adsStickyBottom", "sticky");
+  loadBannerAd("adsBannerHeader", "headerBanner", () => {
+    loadStickyBanner("adsStickyBottom");
+    watchStickyBannerResize("adsStickyBottom");
   });
-  watchResponsiveBannerResize("adsFeedTopBanner", "sticky");
   loadSocialBar();
-  hardenAdIframes(["#adsFeedTopBanner", "#adsStickyBottom"]);
+  hardenAdIframes(["#adsBannerHeader", "#adsStickyBottom"]);
 } catch (err) {
   console.error("Gagal memuat iklan (ads.js mungkin tidak termuat):", err);
 }
@@ -1532,42 +1454,13 @@ function escapeHtmlAttr(str) {
   return String(str).replace(/"/g, "&quot;");
 }
 
-// Header (logo + tombol home + kolom cari) sekarang ikut sticky di paling
-// atas, jadi category-bar dan sort-chip-bar di bawahnya harus tahu berapa
-// tinggi header itu supaya nempelnya persis di bawah header, bukan
-// ketiban/numpuk. Dipanggil sekali di init; recalculate saat resize atau
-// webfont selesai dimuat (bisa mengubah tinggi teks di header).
-function setupStickyHeaderOffset() {
-  const headerEl = document.querySelector("header");
-  if (!headerEl) return;
-
-  function updateHeaderOffset() {
-    document.documentElement.style.setProperty("--header-h", headerEl.offsetHeight + "px");
-  }
-  updateHeaderOffset();
-
-  window.addEventListener("resize", updateHeaderOffset);
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(updateHeaderOffset);
-  }
-  if (window.ResizeObserver) {
-    new ResizeObserver(updateHeaderOffset).observe(headerEl);
-  }
-}
-
-// Sumber data utama: query 200 post terbaru sekali di sini. Category bar,
-// rotasi "konten pilihan", DAN feed beranda (Terbaru/Terlama/Terpopuler)
-// semuanya dibangun dari cache yang sama ini lewat updateHomeFeedFromCache() —
-// sebelumnya feed beranda punya listener Firestore terpisah lagi yang narik
-// data yang sebenarnya sudah ada di sini, jadi boros baca & bisa bikin
-// category bar dan feed sempat nggak sinkron. Sekarang cuma 1 listener.
 function loadCategoryBar() {
   const bar = document.getElementById("categoryBar");
   const qAll = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(200));
   onSnapshot(qAll, (snapshot) => {
     allDocsCache = snapshot.docs;
     renderOldPostsRotation();
-    updateHomeFeedFromCache();
+    renderMainFeedTabs();
 
     const allTags = new Set();
     snapshot.forEach((docSnap) => {
@@ -1575,18 +1468,14 @@ function loadCategoryBar() {
     });
     if (allTags.size === 0) {
       bar.innerHTML = "";
-      bar.style.display = "none";
-      renderMainFeedTabs();
       return;
     }
-    bar.style.display = "flex";
     let html = `<a class="category-chip${!tagParam ? " active" : ""}" href="${window.location.origin}/">Semua</a>`;
     allTags.forEach((t) => {
       const isActive = tagParam === t;
       html += `<a class="category-chip${isActive ? " active" : ""}" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`;
     });
     bar.innerHTML = html;
-    renderMainFeedTabs();
   });
 }
 
@@ -1719,7 +1608,7 @@ function renderSuggestions(qText) {
     html += `<a class="search-suggestion-item" href="?tag=${encodeURIComponent(t)}">🏷️ <span class="tag-label">#${escapeHtml(t)}</span></a>`;
   });
   matchedPosts.slice(0, 5).forEach((p) => {
-    html += `<a class="search-suggestion-item" href="?post=${p.id}">📄 ${escapeHtml(p.caption)}</a>`;
+    html += `<a class="search-suggestion-item" href="/p/${p.id}">📄 ${escapeHtml(p.caption)}</a>`;
   });
 
   if (!html) {
@@ -1786,19 +1675,17 @@ function renderPost(docSnap) {
         const category = l.category === "manual" ? "manual" : "auto";
         const accessId = `${buyerIdForRender}_${docSnap.id}_${idx}`;
         if (isUnlockedLocally(accessId)) {
-          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg}<span class="pl-text">${escapeHtml(l.label)}<span class="pl-divider"></span>Sudah Dibeli</span></button>`;
+          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg} ${escapeHtml(l.label)} — Sudah Dibeli</button>`;
         }
         const priceLabel = Number(l.price).toLocaleString("id-ID");
-        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg}<span class="pl-text">${escapeHtml(l.label)}<span class="pl-divider"></span>Rp ${priceLabel}</span></button>`;
+        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
       }
-      return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">${playIconSvg} ${escapeHtml(l.label)}</a>`;
+      return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">▶️ ${escapeHtml(l.label)}</a>`;
     })
     .join("");
 
-  const captionId = `caption-${docSnap.id}`;
-  const isLongCaption = (data.caption || "").length > 130;
   const caption = data.caption
-    ? `<div class="post-caption" id="${captionId}">${escapeHtml(data.caption)}</div>${isLongCaption ? `<button type="button" class="post-caption-toggle" data-target="${captionId}">Lihat selengkapnya</button>` : ""}`
+    ? `<div class="post-caption">${escapeHtml(data.caption)}</div>`
     : "";
 
   const tagsList = data.tags || [];
@@ -1806,28 +1693,19 @@ function renderPost(docSnap) {
     ? `<div class="post-tags">${tagsList.map(t => `<a class="tag-chip" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`).join("")}</div>`
     : "";
 
-  const shareUrl = `${window.location.origin}/?post=${docSnap.id}`;
+  const shareUrl = `${window.location.origin}/p/${docSnap.id}`;
 
   const post = document.createElement("div");
   post.className = "post";
   post.innerHTML = `
     <div class="post-date">${date}</div>
-    <div class="${photosClass}">${photos}</div>
     ${caption}
     ${tagsHtml}
+    <div class="${photosClass}">${photos}</div>
     ${linkBtns}
     ${postChipBarHtml}
     <button class="post-share" onclick="sharePost('${shareUrl}')">🔗 Bagikan Konten</button>
   `;
-
-  const captionToggleBtn = post.querySelector(".post-caption-toggle");
-  if (captionToggleBtn) {
-    captionToggleBtn.addEventListener("click", () => {
-      const target = document.getElementById(captionToggleBtn.dataset.target);
-      const expanded = target.classList.toggle("expanded");
-      captionToggleBtn.textContent = expanded ? "Sembunyikan" : "Lihat selengkapnya";
-    });
-  }
 
   post.querySelectorAll(".post-link-paid, .post-link-unlocked").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1855,13 +1733,31 @@ function renderPost(docSnap) {
 }
 
 if (postId) {
+  document.getElementById("feedTabs").style.display = "none";
+
+  const cachedSerialized = getCachedPost(postId);
+  let paintedFromCache = false;
+  if (cachedSerialized) {
+    postsEl.innerHTML = "";
+    postsEl.appendChild(renderPost(wrapCachedDoc(postId, cachedSerialized)));
+    trackPostView(postId);
+    paintedFromCache = true;
+  }
+
   getDoc(doc(db, "posts", postId)).then((docSnap) => {
     if (!docSnap.exists()) {
-      postsEl.innerHTML = '<p class="empty">Materi tidak ditemukan.</p>';
+      if (!paintedFromCache) postsEl.innerHTML = '<p class="empty">Materi tidak ditemukan.</p>';
       return;
     }
-    postsEl.innerHTML = "";
-    postsEl.appendChild(renderPost(docSnap));
+
+    const freshSerialized = serializePostData(docSnap.data());
+    const unchanged = paintedFromCache && JSON.stringify(freshSerialized) === JSON.stringify(cachedSerialized);
+    setCachedPost(postId, freshSerialized);
+
+    if (!unchanged) {
+      postsEl.innerHTML = "";
+      postsEl.appendChild(renderPost(docSnap));
+    }
     trackPostView(postId);
 
     // Bar konten lainnya, live update, di bawah post yang dibagikan
@@ -1890,9 +1786,10 @@ if (postId) {
       otherWrap.appendChild(seeAll);
     });
   }).catch(() => {
-    postsEl.innerHTML = '<p class="empty">Gagal memuat materi.</p>';
+    if (!paintedFromCache) postsEl.innerHTML = '<p class="empty">Gagal memuat materi.</p>';
   });
 } else if (tagParam) {
+  document.getElementById("feedTabs").style.display = "none";
   const qTag = query(collection(db, "posts"), where("tags", "array-contains", tagParam), orderBy("createdAt", "desc"));
   onSnapshot(qTag, (snapshot) => {
     if (searchActive) return;
@@ -1917,122 +1814,129 @@ if (postId) {
     seeAll.textContent = "📂 Lihat Semua Konten";
     postsEl.appendChild(seeAll);
   });
-}
+} else {
 
-// --- Feed beranda (Terbaru/Terlama/Terpopuler) ---
-// Datanya diambil dari allDocsCache milik loadCategoryBar() (query 200 post
-// yang sama), lewat updateHomeFeedFromCache() — BUKAN dari query Firestore
-// terpisah lagi. Fungsi-fungsi ini didefinisikan di scope atas (bukan di
-// dalam blok if/else) supaya tetap bisa dipanggil dari loadCategoryBar()
-// yang didefinisikan/dipanggil di tempat lain pada file ini.
-
-function renderPostsFlat(docsArray) {
-  postsEl.innerHTML = "";
-  if (docsArray.length === 0) {
-    postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
-    return;
-  }
-  let counter = 0;
-  docsArray.forEach((docSnap) => {
-    postsEl.appendChild(renderPost(docSnap));
-    counter++;
-    if (counter % NATIVE_AD_INTERVAL === 0) {
-      try {
-        postsEl.appendChild(createNativeAdSlot());
-      } catch (err) {
-        console.error("Gagal memuat native ad slot:", err);
-      }
+  function renderPostsFlat(docsArray) {
+    postsEl.innerHTML = "";
+    if (docsArray.length === 0) {
+      postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
+      return;
     }
-  });
-}
-
-// "Untuk Kamu": skor gabungan baru + populer, dikasih sedikit acak supaya
-// urutannya nggak monoton kaku tiap dibuka (post lama yang lumayan populer
-// tetap dapat kesempatan nongol di atas, bukan selalu ketutup post baru).
-function renderPostsBlended(docsArray) {
-  const maxViews = Math.max(1, ...docsArray.map((d) => d.data().views || 0));
-  const scored = docsArray.map((docSnap) => {
-    const data = docSnap.data();
-    const created = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
-    const ageDays = Math.max(0, (Date.now() - created.getTime()) / 86400000);
-    const recencyScore = 1 / (ageDays + 2);
-    const popScore = (data.views || 0) / maxViews;
-    const combined = recencyScore * 0.65 + popScore * 0.35;
-    const jittered = combined * (0.85 + Math.random() * 0.3);
-    return { docSnap, jittered };
-  });
-  scored.sort((a, b) => b.jittered - a.jittered);
-  renderPostsFlat(scored.map((s) => s.docSnap));
-}
-
-function renderFeedForTab() {
-  if (postId || tagParam) return; // feed beranda cuma berlaku di halaman utama
-  if (currentFeedTab === "terbaru") {
-    renderPostsFlat(mainFeedDocsCache); // urutan asli (terbaru dulu)
-  } else if (currentFeedTab === "terlama") {
-    renderPostsFlat([...mainFeedDocsCache].reverse());
-  } else if (currentFeedTab === "terpopuler") {
-    const sorted = [...mainFeedDocsCache].sort((a, b) => {
-      const va = (a.data().views || 0) + Math.random() * 0.5;
-      const vb = (b.data().views || 0) + Math.random() * 0.5;
-      return vb - va;
+    let counter = 0;
+    docsArray.forEach((docSnap) => {
+      postsEl.appendChild(renderPost(docSnap));
+      counter++;
+      if (counter % 3 === 0) {
+        try {
+          postsEl.appendChild(createNativeAdSlot());
+        } catch (err) {
+          console.error("Gagal memuat native ad slot:", err);
+        }
+      }
     });
-    renderPostsFlat(sorted);
-  } else {
-    renderPostsBlended(mainFeedDocsCache); // default: "untukKamu"
   }
-}
 
-// Dipanggil tiap kali allDocsCache (query 200 post) di loadCategoryBar()
-// berubah — mengambil 50 teratas buat feed beranda, tanpa listener baru.
-function updateHomeFeedFromCache() {
-  if (postId || tagParam) return;
-  mainFeedDocsCache = allDocsCache.slice(0, MAIN_FEED_LIMIT);
-  if (!searchActive) renderFeedForTab();
-}
+  function renderPostsSectioned(docsArray) {
+    postsEl.innerHTML = "";
+    if (docsArray.length === 0) {
+      postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
+      return;
+    }
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const sevenDaysAgo = new Date(startOfToday.getTime() - 6 * 24 * 60 * 60 * 1000);
+    const groups = { hariIni: [], mingguIni: [], lebihLama: [] };
 
-const sortBarEl = document.getElementById("sortChipBar");
-if (sortBarEl && !sortBarEl._wired && !postId && !tagParam) {
-  sortBarEl._wired = true;
-  sortBarEl.querySelectorAll(".sort-chip").forEach((btn) => {
+    docsArray.forEach((docSnap) => {
+      const data = docSnap.data();
+      const created = data.createdAt?.toDate ? data.createdAt.toDate() : null;
+      if (created && created >= startOfToday) {
+        groups.hariIni.push(docSnap);
+      } else if (created && created >= sevenDaysAgo) {
+        groups.mingguIni.push(docSnap);
+      } else {
+        groups.lebihLama.push(docSnap);
+      }
+    });
+
+    let counter = 0;
+    const sections = [
+      { key: "hariIni", label: "Hari Ini" },
+      { key: "mingguIni", label: "Minggu Ini" },
+      { key: "lebihLama", label: "Lebih Lama" }
+    ];
+    sections.forEach(({ key, label }) => {
+      if (groups[key].length === 0) return;
+      const title = document.createElement("div");
+      title.className = "section-title";
+      title.textContent = label;
+      postsEl.appendChild(title);
+      groups[key].forEach((docSnap) => {
+        postsEl.appendChild(renderPost(docSnap));
+        counter++;
+        if (counter % 3 === 0) {
+          try {
+            postsEl.appendChild(createNativeAdSlot());
+          } catch (err) {
+            console.error("Gagal memuat native ad slot:", err);
+          }
+        }
+      });
+    });
+  }
+
+  // "Untuk Kamu": skor gabungan baru + populer, dikasih sedikit acak supaya
+  // urutannya nggak monoton kaku tiap dibuka (post lama yang lumayan populer
+  // tetap dapat kesempatan nongol di atas, bukan selalu ketutup post baru).
+  function renderPostsBlended(docsArray) {
+    const maxViews = Math.max(1, ...docsArray.map((d) => d.data().views || 0));
+    const scored = docsArray.map((docSnap) => {
+      const data = docSnap.data();
+      const created = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+      const ageDays = Math.max(0, (Date.now() - created.getTime()) / 86400000);
+      const recencyScore = 1 / (ageDays + 2);
+      const popScore = (data.views || 0) / maxViews;
+      const combined = recencyScore * 0.65 + popScore * 0.35;
+      const jittered = combined * (0.85 + Math.random() * 0.3);
+      return { docSnap, jittered };
+    });
+    scored.sort((a, b) => b.jittered - a.jittered);
+    renderPostsFlat(scored.map((s) => s.docSnap));
+  }
+
+  function renderFeedForTab() {
+    if (currentFeedTab === "terbaru") {
+      renderPostsSectioned(mainFeedDocsCache); // urutan asli dari query (terbaru dulu)
+    } else if (currentFeedTab === "terlama") {
+      renderPostsFlat([...mainFeedDocsCache].reverse());
+    } else if (currentFeedTab === "terpopuler") {
+      const sorted = [...mainFeedDocsCache].sort((a, b) => {
+        const va = (a.data().views || 0) + Math.random() * 0.5;
+        const vb = (b.data().views || 0) + Math.random() * 0.5;
+        return vb - va;
+      });
+      renderPostsFlat(sorted);
+    } else {
+      renderPostsBlended(mainFeedDocsCache); // default: "untukKamu"
+    }
+  }
+
+  document.querySelectorAll("#feedTabs .tab").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (searchActive) return;
-      sortBarEl.querySelectorAll(".sort-chip").forEach((t) => t.classList.remove("active"));
+      document.querySelectorAll("#feedTabs .tab").forEach((t) => t.classList.remove("active"));
       btn.classList.add("active");
-      currentFeedTab = btn.dataset.sort;
+      currentFeedTab = btn.dataset.tab;
       renderFeedForTab();
     });
   });
-}
 
-// Hitung tinggi category-bar secara dinamis buat offset sticky sort-chip-bar
-// di bawahnya (category-bar bisa 1-2 baris tergantung jumlah tag, dan bisa
-// 0px kalau lagi disembunyikan karena belum ada tag). Dipanggil dari
-// loadCategoryBar() tiap kali kontennya berubah. Header sendiri punya
-// offset terpisah lewat setupStickyHeaderOffset() — keduanya digabung di
-// CSS (.sort-chip-bar top: calc(header-h + category-bar-h)) supaya
-// header → category-bar → sort-chip-bar nempel berurutan tanpa celah/numpuk.
-// Ditambah listener resize & fonts.ready supaya offset-nya tetap akurat
-// kalau lebar layar berubah atau webfont baru selesai dimuat.
-function renderMainFeedTabs() {
-  const categoryBarEl = document.getElementById("categoryBar");
-  if (!categoryBarEl) return;
-
-  function updateOffset() {
-    document.documentElement.style.setProperty("--category-bar-h", categoryBarEl.offsetHeight + "px");
-  }
-  updateOffset();
-
-  if (!categoryBarEl._stickyOffsetWired) {
-    categoryBarEl._stickyOffsetWired = true;
-    window.addEventListener("resize", updateOffset);
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(updateOffset);
-    }
-    if (window.ResizeObserver) {
-      new ResizeObserver(updateOffset).observe(categoryBarEl);
-    }
-  }
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(MAIN_FEED_LIMIT));
+  onSnapshot(q, (snapshot) => {
+    if (searchActive) return;
+    mainFeedDocsCache = snapshot.docs;
+    renderFeedForTab();
+  });
 }
 
 function escapeHtml(str) {
