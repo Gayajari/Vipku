@@ -24,8 +24,7 @@ const RESPONSIVE_UNITS = {
   }
 };
 
-// Native Banner yang disisipkan di feed. Sekarang tampil di MOBILE & DESKTOP
-// (sebelumnya cuma mobile) — lihat CSS .feed-native-ad di index.html.
+// Native Banner yang disisipkan di feed (tiap 3 post), hanya tampil mode HP
 const NATIVE_AD_KEY = 'a34e353b3f1f0806d6dd98636848d1e3';
 
 // Script social bar / popunder (tanpa atOptions)
@@ -109,35 +108,58 @@ function watchResponsiveBannerResize(containerId, placementName) {
 }
 
 // Counter global supaya tiap slot Native Banner di feed punya ID unik.
-// PENTING: sekarang native banner tampil di mobile MAUPUN desktop, artinya
-// jumlah slot yang berpotensi aktif sekaligus di satu halaman jadi lebih
-// banyak dari sebelumnya. Kalau semua slot memakai ID yang SAMA, network
-// iklan bisa salah menargetkan render (numpuk ke satu slot / ukuran kacau)
-// begitu ada lebih dari satu slot di halaman — makanya tiap slot WAJIB
-// dapat ID sendiri-sendiri.
+// Sebelumnya semua slot memakai ID yang SAMA ("container-<KEY>"), yang
+// menyebabkan network iklan salah menargetkan render (numpuk/salah ukuran)
+// begitu ada lebih dari satu slot di halaman yang sama.
 let _nativeAdSlotCounter = 0;
 
 /**
  * Membuat satu slot Native Banner (div container + script invoke) untuk disisipkan
  * di manapun lewat appendChild — dipakai untuk native banner di feed per-post.
  *
- * Strukturnya 2 lapis:
- *   .feed-native-ad (wrap luar, atur margin & tampil di mobile+desktop)
- *     └─ .native-ad-crop (wrapper crop: overflow:hidden + max-height dibatasi
- *        manual lewat CSS, beda nilai untuk mobile vs desktop)
- *         └─ .native-ad-render-area (area render sesungguhnya, id UNIK per
- *            slot, dikasih min-height lega — script Adsterra bebas render
- *            kartu utuh gambar+judul di sini, baru dipotong rapi oleh crop
- *            wrapper di atasnya)
- *
+ * Kontennya (script + container) TIDAK langsung disuntik saat elemen ini dibuat.
+ * Slot hanya berupa placeholder kosong dulu; baru saat placeholder ini betulan
+ * mendekati area layar (di-scroll ke sana), script iklan diminta oleh
+ * IntersectionObserver. Ini mencegah semua slot iklan di sepanjang feed
+ * ikut memuat network request sekaligus di awal — lebih ringan terutama
+ * kalau feed berisi banyak post.
  * @returns {HTMLElement}
  */
 function createNativeAdSlot() {
   const wrap = document.createElement('div');
   wrap.className = 'feed-native-ad';
+  wrap.dataset.loaded = 'false';
 
-  const crop = document.createElement('div');
-  crop.className = 'native-ad-crop';
+  const slotId = 'container-' + NATIVE_AD_KEY + '-' + (_nativeAdSlotCounter++);
+  wrap.dataset.slotId = slotId;
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && wrap.dataset.loaded === 'false') {
+          injectNativeAdContent(wrap, slotId);
+          observer.unobserve(wrap);
+        }
+      });
+    }, { rootMargin: '200px 0px' }); // mulai muat sedikit sebelum benar-benar kelihatan
+    observer.observe(wrap);
+  } else {
+    // Fallback untuk browser lama tanpa IntersectionObserver: muat langsung.
+    injectNativeAdContent(wrap, slotId);
+  }
+
+  return wrap;
+}
+
+/**
+ * Menyuntikkan script + container iklan Native Banner yang sesungguhnya ke
+ * dalam sebuah slot placeholder. Dipisah dari createNativeAdSlot() supaya
+ * bisa dipanggil belakangan (lazy) oleh IntersectionObserver.
+ * @param {HTMLElement} wrap - elemen placeholder dari createNativeAdSlot()
+ * @param {string} slotId - id unik container untuk slot ini
+ */
+function injectNativeAdContent(wrap, slotId) {
+  wrap.dataset.loaded = 'true';
 
   // PENTING: urutan HARUS script dulu baru div (persis snippet asli vendor).
   // Banyak jaringan native ad merender relatif ke posisi <script> itu sendiri
@@ -148,16 +170,11 @@ function createNativeAdSlot() {
   script.async = true;
   script.setAttribute('data-cfasync', 'false');
   script.src = 'https://inputoppose.com/' + NATIVE_AD_KEY + '/invoke.js';
-  crop.appendChild(script);
+  wrap.appendChild(script);
 
-  const slotId = 'container-' + NATIVE_AD_KEY + '-' + (_nativeAdSlotCounter++);
   const container = document.createElement('div');
   container.id = slotId;
-  container.className = 'native-ad-render-area';
-  crop.appendChild(container);
-
-  wrap.appendChild(crop);
-  return wrap;
+  wrap.appendChild(container);
 }
 
 /**
