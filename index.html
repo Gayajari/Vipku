@@ -177,23 +177,42 @@
     background-size: 200% 200%;
     color: white;
     border: none;
-    text-align: center;
-    padding: 11px 16px;
+    padding: 10px 10px 10px 16px;
     border-radius: 999px;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13.5px;
     cursor: pointer;
     font-family: inherit;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    justify-content: space-between;
+    gap: 10px;
     animation: paidBtnGlow 3s ease-in-out infinite;
   }
   .post-link-paid:active { background: var(--raspberry); animation: none; }
   .post-link-paid:disabled { opacity: 0.6; cursor: default; animation: none; }
+  .paid-btn-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+  }
+  .paid-btn-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .paid-btn-price {
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 13.5px;
+    letter-spacing: 0.2px;
+    background: rgba(255,255,255,0.24);
+    padding: 5px 12px;
+    border-radius: 999px;
+  }
   .post-link-paid .lock-icon { flex-shrink: 0; }
-  .post-link-paid .lock-shackle { transform-origin: 8px 10.5px; animation: lockShackleSwing 2.4s ease-in-out infinite; }
+  .post-link-paid .lock-shackle { transform-origin: 12px 10px; animation: lockShackleSwing 2.4s ease-in-out infinite; }
   @keyframes paidBtnGlow {
     0%, 100% { background-position: 0% 50%; box-shadow: 0 0 0 rgba(232,93,117,0); }
     50% { background-position: 100% 50%; box-shadow: 0 0 12px rgba(232,93,117,0.5); }
@@ -334,12 +353,12 @@
     flex: 0 0 auto;
     white-space: nowrap;
     background: var(--card);
-    border: 1.5px solid var(--line);
+    border: 1.3px solid var(--line);
     color: var(--ink);
-    padding: 3px 10px;
+    padding: 2px 9px;
     margin: 0;
     border-radius: 999px;
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
@@ -798,7 +817,7 @@
   display:flex;
   justify-content:center;
   align-items:center;
-  margin:12px auto;
+  margin:14px 0;
   max-width:100%;
   overflow:hidden;
  }
@@ -991,7 +1010,7 @@ function getBuyerId() {
 // Ikon dipakai bareng di renderPost() (render awal) dan di titik-titik sukses
 // pembayaran (biar tombol yang sudah dibayar langsung ganti tampilan, bukan
 // cuma ganti teks doang).
-const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"><path class="lock-shackle" d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4.5" y="10" width="15" height="10" rx="3" fill="currentColor"/><circle cx="12" cy="14.3" r="1.3" fill="rgba(0,0,0,0.35)"/></svg>`;
+const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="17" height="17" fill="none"><path class="lock-shackle" d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4.5" y="10" width="15" height="10" rx="3.5" fill="currentColor"/><circle cx="12" cy="14" r="1.5" fill="rgba(0,0,0,0.4)"/><rect x="11.2" y="14.6" width="1.6" height="2.6" rx="0.7" fill="rgba(0,0,0,0.4)"/></svg>`;
 const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.18"/><path d="M8 12.3l2.6 2.6L16 9.3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const playIconSvg = `<svg class="play-icon" viewBox="0 0 24 24" width="16" height="16" fill="none"><circle class="play-icon-ring" cx="12" cy="12" r="10.5" fill="currentColor"/><path class="play-icon-tri" d="M10 8.3l6.2 3.7-6.2 3.7V8.3z" fill="var(--ink)"/></svg>`;
 
@@ -1019,7 +1038,7 @@ function isUnlockedLocally(accessId) {
 function setButtonUnlockedStyle(btnEl, label) {
   btnEl.classList.remove("post-link-paid");
   btnEl.classList.add("post-link-unlocked");
-  btnEl.innerHTML = `${unlockIconSvg} ${label} — Sudah Dibeli`;
+  btnEl.innerHTML = `${unlockIconSvg} <span>${label} · Sudah Dibeli</span>`;
 }
 
 // Hitung 1 view tiap post cuma sekali per sesi browser (biar refresh berkali-kali
@@ -1736,10 +1755,10 @@ function renderPost(docSnap) {
         const category = l.category === "manual" ? "manual" : "auto";
         const accessId = `${buyerIdForRender}_${docSnap.id}_${idx}`;
         if (isUnlockedLocally(accessId)) {
-          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg} ${escapeHtml(l.label)} — Sudah Dibeli</button>`;
+          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg} <span>${escapeHtml(l.label)} · Sudah Dibeli</span></button>`;
         }
         const priceLabel = Number(l.price).toLocaleString("id-ID");
-        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
+        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}"><span class="paid-btn-left">${lockIconSvg}<span class="paid-btn-label">${escapeHtml(l.label)}</span></span><span class="paid-btn-price">Rp ${priceLabel}</span></button>`;
       }
       return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">${playIconSvg} ${escapeHtml(l.label)}</a>`;
     })
