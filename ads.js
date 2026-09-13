@@ -124,6 +124,18 @@ function watchResponsiveBannerResize(containerId, placementName) {
   window.addEventListener('resize', handleResize);
 }
 
+// Alias khusus untuk penempatan "sticky" (dipakai index.html untuk banner
+// sticky di bawah layar) — supaya pemanggilnya nggak perlu tahu/ketik nama
+// placement "sticky" berulang-ulang tiap dipanggil. Murni pembungkus tipis
+// di atas loadResponsiveBanner/watchResponsiveBannerResize yang generik,
+// tidak mengubah perilaku aslinya sama sekali.
+function loadStickyBanner(containerId, onDone) {
+  loadResponsiveBanner(containerId, 'sticky', onDone);
+}
+function watchStickyBannerResize(containerId) {
+  watchResponsiveBannerResize(containerId, 'sticky');
+}
+
 /**
  * Membuat satu slot Native Banner (div container + script invoke) untuk disisipkan
  * di manapun lewat appendChild — dipakai untuk native banner di feed per-post.
