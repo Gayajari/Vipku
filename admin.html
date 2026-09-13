@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - Catatan Konten</title>
+<title>Dasbor - Catatan Konten</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -134,6 +134,162 @@
     padding: 0;
     margin: 0;
     cursor: pointer;
+    z-index: 2;
+  }
+  .preview-item .editCropBtn {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    font-size: 11px;
+    line-height: 20px;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  /* ================== MODAL CROPPING FOTO ================== */
+  .crop-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(43,36,32,0.92);
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 16px;
+  }
+  .crop-modal-overlay.open { display: flex; }
+  .crop-modal-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .crop-modal-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin: 0 0 12px;
+    padding-right: 30px;
+  }
+  .crop-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .crop-close-btn:active { border-color: var(--raspberry); color: var(--raspberry); }
+  .crop-stage-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .crop-stage {
+    position: relative;
+    overflow: hidden;
+    background: #111;
+    border-radius: 12px;
+    touch-action: none;
+    max-width: 100%;
+    cursor: grab;
+  }
+  .crop-stage.dragging { cursor: grabbing; }
+  .crop-stage img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+    max-height: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+  .crop-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.35) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.35) 1px, transparent 1px);
+    background-size: 33.34% 33.34%;
+  }
+  .crop-aspect-bar {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 2px 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .crop-aspect-bar::-webkit-scrollbar { display: none; }
+  .crop-aspect-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background: var(--cream);
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    padding: 6px 12px;
+    margin: 0;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .crop-aspect-chip.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .crop-zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .crop-zoom-row span { font-size: 15px; flex-shrink: 0; }
+  .crop-zoom-row input[type="range"] {
+    flex: 1;
+    width: auto;
+    padding: 0;
+    accent-color: var(--raspberry);
+  }
+  .crop-actions-row { display: flex; gap: 8px; }
+  .crop-actions-row button { margin-top: 0; }
+  .crop-secondary-btn {
+    background: transparent !important;
+    color: var(--ink) !important;
+    border: 1.5px solid var(--line) !important;
+  }
+  .crop-secondary-btn:active { border-color: var(--raspberry) !important; color: var(--raspberry) !important; }
+  .crop-hint {
+    font-size: 11.5px;
+    color: rgba(43,36,32,0.5);
+    text-align: center;
+    margin: -4px 0 12px;
   }
 
   .post-item {
@@ -191,6 +347,34 @@
     font-size: 11px;
     color: rgba(43,36,32,0.45);
     margin-bottom: 10px;
+  }
+  .admin-sort-chip-bar {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 2px 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-sort-chip-bar::-webkit-scrollbar { display: none; }
+  .admin-sort-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    padding: 5px 12px;
+    margin: 0;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .admin-sort-chip.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
   }
   .post-item mark {
     background: rgba(244,201,93,0.55);
@@ -563,7 +747,48 @@ iframe{
   </div>
   <div class="admin-search-count" id="adminSearchCount"></div>
 
+  <div class="admin-sort-chip-bar" id="adminSortChipBar">
+    <button type="button" class="admin-sort-chip active" data-sort="terbaru">🕒 Terbaru</button>
+    <button type="button" class="admin-sort-chip" data-sort="terlama">📜 Terlama</button>
+    <button type="button" class="admin-sort-chip" data-sort="terpopuler">🔥 Terpopuler</button>
+  </div>
+
   <div id="postList"><p class="empty">Memuat...</p></div>
+</div>
+
+<div class="crop-modal-overlay" id="cropModalOverlay">
+  <div class="crop-modal-card">
+    <button type="button" class="crop-close-btn" id="cropCloseBtn" title="Batal">✕</button>
+    <h2 class="crop-modal-title">✂️ Atur Foto</h2>
+
+    <div class="crop-stage-wrap">
+      <div class="crop-stage" id="cropStage">
+        <img id="cropImg" src="" alt="">
+        <div class="crop-grid"></div>
+      </div>
+    </div>
+
+    <div class="crop-aspect-bar" id="cropAspectBar">
+      <button type="button" class="crop-aspect-chip active" data-ratio="0">Bebas</button>
+      <button type="button" class="crop-aspect-chip" data-ratio="1">1:1</button>
+      <button type="button" class="crop-aspect-chip" data-ratio="0.8">4:5</button>
+      <button type="button" class="crop-aspect-chip" data-ratio="0.75">3:4</button>
+      <button type="button" class="crop-aspect-chip" data-ratio="1.7778">16:9</button>
+      <button type="button" class="crop-aspect-chip" data-ratio="0.5625">9:16</button>
+    </div>
+
+    <div class="crop-zoom-row">
+      <span>🔍</span>
+      <input type="range" id="cropZoomRange" min="100" max="300" value="100">
+    </div>
+    <div class="crop-hint">Geser foto untuk atur posisi, gunakan slider untuk zoom</div>
+
+    <div class="crop-actions-row">
+      <button type="button" class="crop-secondary-btn" id="cropSwapBtn">🔁 Ganti Foto</button>
+      <button type="button" id="cropConfirmBtn">✓ Gunakan Foto</button>
+    </div>
+    <input type="file" id="cropSwapInput" accept="image/*" style="display:none;">
+  </div>
 </div>
 
 <script type="module">
@@ -679,16 +904,265 @@ document.getElementById("loginBtn").onclick = async () => {
 
 document.getElementById("logoutBtn").onclick = () => signOut(auth);
 
-document.getElementById("photos").addEventListener("change", (e) => {
-  selectedFiles = Array.from(e.target.files);
-  const preview = document.getElementById("preview");
-  preview.innerHTML = "";
-  selectedFiles.forEach(file => {
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(file);
-    preview.appendChild(img);
+/* ================== ENGINE CROPPING FOTO FLEKSIBEL ==================
+   Modal crop gaya aplikasi jaman sekarang: geser (drag/pointer) untuk atur
+   posisi, slider untuk zoom, dan chip rasio (Bebas/1:1/4:5/3:4/16:9/9:16).
+   Output di-render ke <canvas> lalu dikompres jadi JPEG sebelum diupload,
+   supaya ukuran file tetap ringan & framing-nya konsisten dengan tampilan
+   di index (post-photos: object-fit cover). */
+const cropOverlay = document.getElementById("cropModalOverlay");
+const cropStage = document.getElementById("cropStage");
+const cropImgEl = document.getElementById("cropImg");
+const cropZoomRange = document.getElementById("cropZoomRange");
+const cropAspectBar = document.getElementById("cropAspectBar");
+const cropCloseBtn = document.getElementById("cropCloseBtn");
+const cropConfirmBtn = document.getElementById("cropConfirmBtn");
+const cropSwapBtn = document.getElementById("cropSwapBtn");
+const cropSwapInput = document.getElementById("cropSwapInput");
+
+const CROP_STAGE_MAX_W = 360; // lebar dasar area crop (px), menyesuaikan layar kecil via CSS max-width:100%
+
+let cropResolve = null;
+let cropObjectUrl = null;
+let cropNaturalW = 0, cropNaturalH = 0;
+let cropRatio = 0; // 0 = Bebas (ikut rasio asli foto)
+let cropBaseScale = 1;
+let cropScale = 1;
+let cropOffsetX = 0, cropOffsetY = 0;
+let cropDragging = false;
+let cropDragStartX = 0, cropDragStartY = 0;
+let cropOffsetStartX = 0, cropOffsetStartY = 0;
+const cropActivePointers = new Map();
+let cropPinchStartDist = 0;
+let cropPinchStartScale = 1;
+
+function openCropperForFile(file) {
+  return new Promise((resolve) => {
+    cropResolve = resolve;
+    loadFileIntoCropper(file);
+  });
+}
+
+function loadFileIntoCropper(file) {
+  if (cropObjectUrl) URL.revokeObjectURL(cropObjectUrl);
+  cropObjectUrl = URL.createObjectURL(file);
+  cropImgEl.src = cropObjectUrl;
+  cropImgEl.onload = () => {
+    cropNaturalW = cropImgEl.naturalWidth;
+    cropNaturalH = cropImgEl.naturalHeight;
+    cropAspectBar.querySelectorAll(".crop-aspect-chip").forEach((c) => c.classList.remove("active"));
+    cropAspectBar.querySelector('[data-ratio="0"]').classList.add("active");
+    cropRatio = 0;
+    setupCropStageSize();
+    resetCropTransform();
+    cropOverlay.classList.add("open");
+  };
+}
+
+function setupCropStageSize() {
+  const stageW = Math.min(CROP_STAGE_MAX_W, window.innerWidth - 64);
+  const ratio = cropRatio > 0 ? cropRatio : (cropNaturalW / cropNaturalH);
+  const stageH = stageW / ratio;
+  cropStage.style.width = stageW + "px";
+  cropStage.style.height = stageH + "px";
+}
+
+function resetCropTransform() {
+  const stageW = cropStage.clientWidth;
+  const stageH = cropStage.clientHeight;
+  // skala minimum supaya foto selalu menutupi seluruh area frame ("cover")
+  cropBaseScale = Math.max(stageW / cropNaturalW, stageH / cropNaturalH);
+  cropScale = cropBaseScale;
+  cropOffsetX = 0;
+  cropOffsetY = 0;
+  cropZoomRange.value = 100;
+  applyCropTransform();
+}
+
+function clampCropOffsets() {
+  const stageW = cropStage.clientWidth;
+  const stageH = cropStage.clientHeight;
+  const dispW = cropNaturalW * cropScale;
+  const dispH = cropNaturalH * cropScale;
+  const maxX = Math.max(0, (dispW - stageW) / 2);
+  const maxY = Math.max(0, (dispH - stageH) / 2);
+  cropOffsetX = Math.min(maxX, Math.max(-maxX, cropOffsetX));
+  cropOffsetY = Math.min(maxY, Math.max(-maxY, cropOffsetY));
+}
+
+function applyCropTransform() {
+  clampCropOffsets();
+  const stageW = cropStage.clientWidth;
+  const stageH = cropStage.clientHeight;
+  const dispW = cropNaturalW * cropScale;
+  const dispH = cropNaturalH * cropScale;
+  cropImgEl.style.width = dispW + "px";
+  cropImgEl.style.height = dispH + "px";
+  cropImgEl.style.left = ((stageW - dispW) / 2 + cropOffsetX) + "px";
+  cropImgEl.style.top = ((stageH - dispH) / 2 + cropOffsetY) + "px";
+}
+
+cropAspectBar.querySelectorAll(".crop-aspect-chip").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    cropAspectBar.querySelectorAll(".crop-aspect-chip").forEach((c) => c.classList.remove("active"));
+    btn.classList.add("active");
+    cropRatio = Number(btn.dataset.ratio);
+    setupCropStageSize();
+    resetCropTransform();
   });
 });
+
+cropZoomRange.addEventListener("input", () => {
+  const pct = Number(cropZoomRange.value) / 100;
+  cropScale = cropBaseScale * pct;
+  applyCropTransform();
+});
+
+function cropPointerDown(e) {
+  cropActivePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  cropStage.setPointerCapture(e.pointerId);
+  if (cropActivePointers.size === 1) {
+    cropDragging = true;
+    cropStage.classList.add("dragging");
+    cropDragStartX = e.clientX;
+    cropDragStartY = e.clientY;
+    cropOffsetStartX = cropOffsetX;
+    cropOffsetStartY = cropOffsetY;
+  } else if (cropActivePointers.size === 2) {
+    cropDragging = false;
+    const pts = Array.from(cropActivePointers.values());
+    cropPinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    cropPinchStartScale = cropScale;
+  }
+}
+function cropPointerMove(e) {
+  if (!cropActivePointers.has(e.pointerId)) return;
+  cropActivePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (cropActivePointers.size === 2) {
+    const pts = Array.from(cropActivePointers.values());
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    if (cropPinchStartDist > 0) {
+      const minScale = cropBaseScale;
+      const maxScale = cropBaseScale * 3;
+      cropScale = Math.min(maxScale, Math.max(minScale, cropPinchStartScale * (dist / cropPinchStartDist)));
+      cropZoomRange.value = Math.round((cropScale / cropBaseScale) * 100);
+      applyCropTransform();
+    }
+  } else if (cropDragging) {
+    cropOffsetX = cropOffsetStartX + (e.clientX - cropDragStartX);
+    cropOffsetY = cropOffsetStartY + (e.clientY - cropDragStartY);
+    applyCropTransform();
+  }
+}
+function cropPointerUp(e) {
+  cropActivePointers.delete(e.pointerId);
+  if (cropActivePointers.size < 2) cropPinchStartDist = 0;
+  if (cropActivePointers.size === 0) {
+    cropDragging = false;
+    cropStage.classList.remove("dragging");
+  }
+}
+cropStage.addEventListener("pointerdown", cropPointerDown);
+cropStage.addEventListener("pointermove", cropPointerMove);
+cropStage.addEventListener("pointerup", cropPointerUp);
+cropStage.addEventListener("pointercancel", cropPointerUp);
+cropStage.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 1.08 : 0.93;
+  const minScale = cropBaseScale;
+  const maxScale = cropBaseScale * 3;
+  cropScale = Math.min(maxScale, Math.max(minScale, cropScale * delta));
+  cropZoomRange.value = Math.round((cropScale / cropBaseScale) * 100);
+  applyCropTransform();
+}, { passive: false });
+
+function closeCropModal(result) {
+  cropOverlay.classList.remove("open");
+  if (cropObjectUrl) { URL.revokeObjectURL(cropObjectUrl); cropObjectUrl = null; }
+  const resolve = cropResolve;
+  cropResolve = null;
+  if (resolve) resolve(result);
+}
+
+cropCloseBtn.onclick = () => closeCropModal(null);
+
+cropSwapBtn.onclick = () => cropSwapInput.click();
+cropSwapInput.addEventListener("change", () => {
+  const file = cropSwapInput.files[0];
+  cropSwapInput.value = "";
+  if (file) loadFileIntoCropper(file);
+});
+
+cropConfirmBtn.onclick = () => {
+  // Render hasil crop ke canvas dengan resolusi output tetap terjaga (bukan
+  // cuma ukuran layar), lalu kompres ke JPEG sebelum diupload ke ImgBB.
+  const stageW = cropStage.clientWidth;
+  const stageH = cropStage.clientHeight;
+  const outW = 1080;
+  const outH = Math.round(outW * (stageH / stageW));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext("2d");
+
+  const renderScale = outW / stageW;
+  const dispW = cropNaturalW * cropScale * renderScale;
+  const dispH = cropNaturalH * cropScale * renderScale;
+  const centerX = outW / 2 + cropOffsetX * renderScale;
+  const centerY = outH / 2 + cropOffsetY * renderScale;
+
+  ctx.drawImage(cropImgEl, centerX - dispW / 2, centerY - dispH / 2, dispW, dispH);
+
+  canvas.toBlob((blob) => {
+    closeCropModal(blob);
+  }, "image/jpeg", 0.9);
+};
+
+document.getElementById("photos").addEventListener("change", async (e) => {
+  const files = Array.from(e.target.files);
+  e.target.value = ""; // biar file yang sama bisa dipilih ulang lain kali
+  for (const file of files) {
+    const cropped = await openCropperForFile(file);
+    if (cropped) {
+      selectedFiles.push(makeCroppedFile(cropped, file.name));
+      renderNewPreview();
+    }
+  }
+});
+
+function makeCroppedFile(blob, originalName) {
+  const base = (originalName || "foto").replace(/\.[^./\\]+$/, "");
+  return new File([blob], `${base}-crop.jpg`, { type: "image/jpeg" });
+}
+
+function renderNewPreview() {
+  const preview = document.getElementById("preview");
+  preview.innerHTML = "";
+  selectedFiles.forEach((file, idx) => {
+    const wrap = document.createElement("div");
+    wrap.className = "preview-item";
+    const objUrl = URL.createObjectURL(file);
+    wrap.innerHTML = `
+      <img src="${objUrl}" title="Foto baru">
+      <button type="button" class="editCropBtn" title="Atur ulang crop">✎</button>
+      <button type="button" class="removeBtn" title="Hapus foto">✕</button>
+    `;
+    wrap.querySelector(".removeBtn").onclick = () => {
+      selectedFiles.splice(idx, 1);
+      renderNewPreview();
+    };
+    wrap.querySelector(".editCropBtn").onclick = async () => {
+      const cropped = await openCropperForFile(file);
+      if (cropped) {
+        selectedFiles[idx] = makeCroppedFile(cropped, file.name);
+        renderNewPreview();
+      }
+    };
+    preview.appendChild(wrap);
+  });
+}
 
 const linksContainer = document.getElementById("linksContainer");
 
@@ -941,6 +1415,8 @@ function resetFieldsOnly() {
 async function startEdit(id, data) {
   editingId = id;
   editingExistingPhotos = data.photoUrls || [];
+  selectedFiles = [];
+  document.getElementById("preview").innerHTML = "";
   formTitle.textContent = "✏️ Edit konten";
   submitBtn.textContent = "Simpan Perubahan";
   cancelEditBtn.style.display = "block";
@@ -987,11 +1463,36 @@ function renderExistingPreview() {
     wrap.className = "preview-item";
     wrap.innerHTML = `
       <img src="${url}" title="Foto lama">
-      <button type="button" class="removeBtn">✕</button>
+      <button type="button" class="editCropBtn" title="Ganti foto ini">🔁</button>
+      <button type="button" class="removeBtn" title="Hapus foto">✕</button>
     `;
     wrap.querySelector(".removeBtn").onclick = () => {
       editingExistingPhotos = editingExistingPhotos.filter(u => u !== url);
       renderExistingPreview();
+    };
+    wrap.querySelector(".editCropBtn").onclick = () => {
+      // Foto lama sudah ter-hosting di server gambar (bukan file lokal), jadi
+      // tidak bisa dibuka ulang untuk di-crop langsung (kendala CORS canvas).
+      // Solusinya: pilih foto baru sebagai pengganti, lalu foto baru itu yang
+      // melewati alur cropping fleksibel seperti biasa.
+      const swapInput = document.createElement("input");
+      swapInput.type = "file";
+      swapInput.accept = "image/*";
+      swapInput.style.display = "none";
+      swapInput.onchange = async () => {
+        const file = swapInput.files[0];
+        swapInput.remove();
+        if (!file) return;
+        const cropped = await openCropperForFile(file);
+        if (cropped) {
+          editingExistingPhotos = editingExistingPhotos.filter(u => u !== url);
+          selectedFiles.push(makeCroppedFile(cropped, file.name));
+          renderExistingPreview();
+          renderNewPreview();
+        }
+      };
+      document.body.appendChild(swapInput);
+      swapInput.click();
     };
     existingPreview.appendChild(wrap);
   });
@@ -1012,6 +1513,29 @@ async function removePost(id) {
 }
 
 let allPostsCache = []; // [{ id, data }]
+let currentAdminSort = "terbaru";
+
+const adminSortBarEl = document.getElementById("adminSortChipBar");
+if (adminSortBarEl) {
+  adminSortBarEl.querySelectorAll(".admin-sort-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      adminSortBarEl.querySelectorAll(".admin-sort-chip").forEach((t) => t.classList.remove("active"));
+      btn.classList.add("active");
+      currentAdminSort = btn.dataset.sort;
+      applyAdminSearch();
+    });
+  });
+}
+
+function sortAdminPosts(list) {
+  const arr = [...list];
+  if (currentAdminSort === "terlama") {
+    arr.reverse();
+  } else if (currentAdminSort === "terpopuler") {
+    arr.sort((a, b) => (b.data.views || 0) - (a.data.views || 0));
+  }
+  return arr;
+}
 
 function normalizeSearchText(str) {
   return (str || "")
@@ -1089,7 +1613,7 @@ function applyAdminSearch() {
   }
 
   listEl.innerHTML = "";
-  filtered.forEach(({ id, data }) => {
+  sortAdminPosts(filtered).forEach(({ id, data }) => {
     const date = data.createdAt?.toDate
       ? data.createdAt.toDate().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
       : "";
