@@ -31,8 +31,8 @@
   header {
     background: var(--cream);
     color: var(--ink);
-    padding: 20px 20px 16px;
-    text-align: center;
+    padding: 16px 15px 10px;
+    text-align: left;
     position: relative;
     border-bottom: 1px solid var(--line);
   }
@@ -40,11 +40,37 @@
     margin: 0;
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 24px;
+    font-size: 22px;
     letter-spacing: -0.2px;
   }
   header h1 em { font-style: italic; font-weight: 400; color: var(--raspberry); }
-  header p { margin: 6px 0 0; font-size: 12.5px; color: rgba(43,36,32,0.55); font-family: 'JetBrains Mono', monospace; }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .home-icon-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+  .home-icon-btn:active { border-color: var(--raspberry); color: var(--raspberry); background: rgba(232,93,117,0.06); }
+  .header-row .search-bar {
+    flex: 1;
+    padding: 0;
+    min-width: 0;
+  }
 
   .container {
     max-width: 640px;
@@ -55,31 +81,51 @@
   .post {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: var(--radius);
+    border-radius: 14px;
     box-shadow: 0 2px 10px rgba(43,36,32,0.05);
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     overflow: hidden;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
   .post:active { transform: translateY(-1px); box-shadow: 0 10px 22px -14px rgba(43,36,32,0.28); }
   .post-date {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 10.5px;
     color: rgba(43,36,32,0.45);
-    padding: 14px 18px 0 18px;
+    padding: 10px 14px 0 14px;
   }
   .post-caption {
-    padding: 8px 18px 0 18px;
-    font-size: 15px;
-    line-height: 1.55;
+    padding: 6px 14px 0 14px;
+    font-size: 14px;
+    line-height: 1.5;
     white-space: pre-wrap;
+    max-height: 68px;
+    overflow: hidden;
+    position: relative;
+  }
+  .post-caption.expanded {
+    max-height: none;
+  }
+  .post-caption-toggle {
+    display: inline-block;
+    margin: 2px 14px 0 14px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--raspberry);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
   }
   .post-photos {
-    padding: 10px 15px;
+    padding: 8px 12px;
   }
   .post-photos.single img {
     width: 100%;
-    border-radius: 14px;
+    max-height: 280px;
+    object-fit: cover;
+    border-radius: 12px;
     display: block;
     cursor: pointer;
   }
@@ -89,15 +135,21 @@
   }
   .post-photos.multi img {
     width: 100%;
-    border-radius: 12px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
     display: block;
     cursor: pointer;
     margin-bottom: 4px;
     break-inside: avoid;
   }
   .post-link {
-    display: block;
-    margin: 0 18px 18px 18px;
+    display: flex;
+    width: calc(100% - 28px);
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0 14px 10px 14px;
     background: var(--ink);
     color: var(--cream);
     text-align: center;
@@ -108,16 +160,25 @@
     font-size: 14px;
     transition: background 0.2s ease;
   }
+  .play-icon-ring {
+    transform-origin: 12px 12px;
+    animation: playRingPulse 1.8s ease-in-out infinite;
+  }
+  .post-link:active .play-icon-tri { transform: scale(0.85); }
+  @keyframes playRingPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.9); opacity: 0.85; }
+  }
   .post-link:active { background: var(--raspberry); }
   .post-link-paid {
-    width: calc(100% - 36px);
-    margin: 0 18px 18px 18px;
+    width: calc(100% - 28px);
+    margin: 0 14px 14px 14px;
     background: linear-gradient(135deg, var(--raspberry), var(--yolk));
     background-size: 200% 200%;
     color: white;
     border: none;
     text-align: center;
-    padding: 11px;
+    padding: 11px 16px;
     border-radius: 999px;
     font-weight: 600;
     font-size: 14px;
@@ -142,13 +203,13 @@
     50% { transform: rotate(-6deg); }
   }
   .post-link-unlocked {
-    width: calc(100% - 36px);
-    margin: 0 18px 18px 18px;
+    width: calc(100% - 28px);
+    margin: 0 14px 14px 14px;
     background: var(--teal);
     color: white;
     border: none;
     text-align: center;
-    padding: 11px;
+    padding: 11px 16px;
     border-radius: 999px;
     font-weight: 600;
     font-size: 14px;
@@ -181,7 +242,7 @@
     justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
-    margin: 0 18px 12px 18px;
+    margin: 0 14px 10px 14px;
   }
   .post-chip-bar a {
     text-decoration: none;
@@ -230,43 +291,85 @@
   .category-bar::-webkit-scrollbar { display: none; }
 
   .home-btn {
-    position: absolute;
-    left: 15px;
-    top: 18px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     text-decoration: none;
     background: var(--card);
     border: 1.5px solid var(--line);
     color: var(--ink);
-    padding: 6px 11px;
+    padding: 6px 12px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 500;
+    margin-bottom: 8px;
     transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
   }
   .home-btn:active { border-color: var(--raspberry); color: var(--raspberry); background: rgba(232,93,117,0.06); }
+
+  .logo-home-link {
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    transition: opacity 0.2s ease;
+  }
+  .logo-home-link:active { opacity: 0.65; }
+  .logo-home-link h1 { margin: 0; }
+
+  .sort-chip-bar {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 0 15px;
+    -webkit-overflow-scrolling: touch;
+    position: sticky;
+    top: var(--category-bar-h, 52px);
+    z-index: 39;
+    background: var(--cream);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 2px 6px rgba(43,36,32,0.04);
+  }
+  .sort-chip-bar::-webkit-scrollbar { display: none; }
+  .sort-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    padding: 3px 10px;
+    margin: 0;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .sort-chip.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
 
   .site-footer {
     max-width: 640px;
     margin: 24px auto 0;
     padding: 20px 15px 0;
-    text-align: center;
+    text-align: left;
     border-top: 1px solid var(--line);
   }
   .home-btn-footer {
     display: inline-block;
     text-decoration: none;
-    background: var(--ink);
-    color: var(--cream);
-    padding: 10px 22px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: background 0.2s ease;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+    padding: 6px 0;
+    transition: opacity 0.2s ease;
   }
-  .home-btn-footer:active { background: var(--raspberry); }
+  .home-btn-footer em { font-style: italic; font-weight: 400; color: var(--raspberry); }
+  .home-btn-footer:active { opacity: 0.65; }
 
   .sticky-ad-bar {
     position: fixed;
@@ -305,15 +408,33 @@
     z-index: 101;
   }
 
+  /* Native banner di feed — sekarang tampil di MOBILE & DESKTOP.
+     Struktur: .feed-native-ad (wrap) > .native-ad-crop (potong tinggi) >
+     .native-ad-render-area (area render asli dari script Adsterra, dikasih
+     ruang lega lewat min-height supaya kartu iklan render utuh dulu,
+     baru dipotong rapi oleh .native-ad-crop). */
   .feed-native-ad {
-    display: none;
+    display: flex;
     justify-content: center;
     margin: 14px 0;
     max-width: 100%;
-    overflow: hidden;
   }
-  @media (max-width: 768px) {
-    .feed-native-ad { display: flex; }
+  .native-ad-crop {
+    width: 100%;
+    overflow: hidden;
+    max-height: 295px; /* nilai default/mobile — sesuaikan lagi kalau kartu masih kurang/lebih pas */
+  }
+  .native-ad-render-area {
+    /* Ruang render LEGA — biarkan script Adsterra render kartu iklan
+       sepenuhnya (gambar + judul utuh) tanpa disensor di sini. Yang
+       motong tampilannya adalah .native-ad-crop (overflow:hidden),
+       BUKAN elemen ini. */
+    min-height: 500px;
+  }
+  @media (min-width: 769px) {
+    .native-ad-crop {
+      max-height: 340px; /* desktop: kartu biasanya sedikit lebih besar, container tetap 640px */
+    }
   }
 
   .search-bar {
@@ -370,6 +491,20 @@
     0%, 100% { transform: translateY(-50%) scale(1); }
     40% { transform: translateY(-50%) scale(1.18) rotate(-12deg); }
     70% { transform: translateY(-50%) scale(0.95) rotate(4deg); }
+  }
+  .header-row .search-input-wrap input {
+    padding: 8px 30px 8px 36px;
+    font-size: 12px;
+  }
+  .header-row .search-input-wrap #searchBtn {
+    width: 26px;
+    height: 26px;
+  }
+  .header-row .search-input-wrap #searchBtn svg { width: 12px; height: 12px; }
+  .header-row .search-input-wrap #clearBtn {
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
   }
   .search-input-wrap #clearBtn {
     display: none;
@@ -437,35 +572,6 @@
     background: var(--ink);
     color: var(--cream);
     border-color: var(--ink);
-  }
-  .tabs {
-    display: flex;
-    gap: 4px;
-    padding: 3px;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    width: fit-content;
-    margin: 12px 15px;
-    overflow-x: auto;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    padding: 7px 13px;
-    border-radius: 999px;
-    border: none;
-    background: transparent;
-    color: rgba(43,36,32,0.55);
-    font-size: 11.5px;
-    font-weight: 500;
-    font-family: inherit;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .tab.active {
-    background: var(--ink);
-    color: var(--cream);
   }
   .empty {
     text-align: center;
@@ -707,34 +813,37 @@
 <body>
 
 <header>
-  <a href="./" class="home-btn" aria-label="Kembali ke Beranda">🏠 Beranda</a>
-  <h1>Vip<em>ku</em>🥵</h1>
-  <p>Konten update tiap hari</p>
+  <a href="./" class="logo-home-link" aria-label="Kembali ke Beranda">
+    <h1>Vip<em>ku</em>🥵</h1>
+  </a>
+  <div class="header-row">
+    <a href="./" class="home-icon-btn" aria-label="Kembali ke Beranda">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+    </a>
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <button type="button" id="searchBtn" aria-label="Cari">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+        </button>
+        <input type="text" id="searchInput" placeholder="Cari">
+        <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
+      </div>
+      <div class="search-suggestions" id="searchSuggestions"></div>
+    </div>
+  </div>
 </header>
-
-<div class="ads-banner" id="adsBannerHeader"></div>
 
 <div class="contact-bar" id="contactBar"></div>
 
-<div class="search-bar">
-  <div class="search-input-wrap">
-    <button type="button" id="searchBtn" aria-label="Cari">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
-    </button>
-    <input type="text" id="searchInput" placeholder="Cari">
-    <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
-  </div>
-  <div class="search-suggestions" id="searchSuggestions"></div>
-</div>
-
 <div class="category-bar" id="categoryBar"></div>
 
-<div class="tabs" id="feedTabs">
-  <button class="tab active" data-tab="untukKamu">Untuk Kamu</button>
-  <button class="tab" data-tab="terbaru">Terbaru</button>
-  <button class="tab" data-tab="terlama">Terlama</button>
-  <button class="tab" data-tab="terpopuler">Terpopuler</button>
+<div class="sort-chip-bar" id="sortChipBar">
+  <button type="button" class="sort-chip active" data-sort="terbaru">Terbaru</button>
+  <button type="button" class="sort-chip" data-sort="terlama">Terlama</button>
+  <button type="button" class="sort-chip" data-sort="terpopuler">Terpopuler</button>
 </div>
+
+<div class="ads-banner" id="adsFeedTopBanner"></div>
 
 <div class="container" id="posts">
   <p class="empty">Memuat konten...</p>
@@ -801,7 +910,7 @@
 </div>
 
 <footer class="site-footer">
-  <a href="./" class="home-btn-footer">🏠 Kembali ke Beranda</a>
+  <a href="./" class="home-btn-footer">Vip<em>ku</em></a>
 </footer>
 
 <div class="sticky-ad-bar" id="stickyAdBar">
@@ -887,8 +996,9 @@ function getBuyerId() {
 // Ikon dipakai bareng di renderPost() (render awal) dan di titik-titik sukses
 // pembayaran (biar tombol yang sudah dibayar langsung ganti tampilan, bukan
 // cuma ganti teks doang).
-const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path class="lock-shackle" d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>`;
-const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16 9.3"/></svg>`;
+const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"><path class="lock-shackle" d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4.5" y="10" width="15" height="10" rx="3" fill="currentColor"/><circle cx="12" cy="14.3" r="1.3" fill="rgba(0,0,0,0.35)"/></svg>`;
+const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.18"/><path d="M8 12.3l2.6 2.6L16 9.3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const playIconSvg = `<svg class="play-icon" viewBox="0 0 24 24" width="16" height="16" fill="none"><circle class="play-icon-ring" cx="12" cy="12" r="10.5" fill="currentColor"/><path class="play-icon-tri" d="M10 8.3l6.2 3.7-6.2 3.7V8.3z" fill="var(--ink)"/></svg>`;
 
 // Cache lokal "sudah kebeli" per link (per accessId), supaya begitu halaman
 // di-reload, tombol yang sudah dibayar LANGSUNG kelihatan beda dari yang
@@ -930,58 +1040,11 @@ function trackPostView(postId) {
   } catch (err) {
     // sessionStorage tidak tersedia (mode private ekstrem dsb) — tetap kirim saja
   }
-  fetch(`${PAYWALL_BACKEND_URL}/api/track-view`, {
+  fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ postId })
+    body: JSON.stringify({ postId, action: "trackView" })
   }).catch((err) => console.error("Gagal mencatat view:", err));
-}
-
-/* ================== CACHE LOKAL untuk post yang dibuka via link /p/kode ==================
-   Cuma dipakai buat halaman detail satu post (link yang dibagikan), BUKAN buat feed utama —
-   supaya buka link yang sama berkali-kali (mis. post viral yang dibagikan ke banyak orang)
-   tidak selalu baca ulang Firestore. Data tetap divalidasi ulang ke server tiap kali
-   (stale-while-revalidate): cache cuma mempercepat tampilan awal, bukan pengganti sumber asli,
-   supaya harga/status link paywall yang mungkin baru diubah admin tetap akurat. */
-const POST_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 jam — konten post jarang berubah setelah dipublikasikan
-
-// Firestore Timestamp tidak bisa disimpan langsung ke localStorage (bukan JSON murni,
-// method toDate() akan hilang) — dikonversi dulu ke angka milidetik biasa.
-function serializePostData(data) {
-  const copy = { ...data };
-  if (copy.createdAt && typeof copy.createdAt.toMillis === "function") {
-    copy.createdAt = { __ts: copy.createdAt.toMillis() };
-  }
-  return copy;
-}
-function revivePostData(data) {
-  const copy = { ...data };
-  if (copy.createdAt && typeof copy.createdAt.__ts === "number") {
-    const millis = copy.createdAt.__ts;
-    copy.createdAt = { toDate: () => new Date(millis) };
-  }
-  return copy;
-}
-function getCachedPost(id) {
-  try {
-    const raw = localStorage.getItem("vp_post_" + id);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.data || !parsed.ts) return null;
-    if (Date.now() - parsed.ts > POST_CACHE_TTL) return null;
-    return parsed.data;
-  } catch (err) { return null; }
-}
-function setCachedPost(id, serializedData) {
-  try {
-    localStorage.setItem("vp_post_" + id, JSON.stringify({ data: serializedData, ts: Date.now() }));
-  } catch (err) { /* storage penuh/diblokir — cache bersifat opsional, abaikan */ }
-}
-// Bungkus data cache jadi bentuk mirip Firestore DocumentSnapshot supaya bisa
-// langsung dipakai renderPost() tanpa mengubah fungsi itu sama sekali.
-function wrapCachedDoc(id, serializedData) {
-  const revived = revivePostData(serializedData);
-  return { id, data: () => revived };
 }
 
 async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
@@ -1171,10 +1234,10 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
   // ngapa-ngapain selain nunggu.
   qrisPollTimer = setInterval(async () => {
     try {
-      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/check-invoice-status`, {
+      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, linkIndex, buyerId })
+        body: JSON.stringify({ postId, linkIndex, buyerId, action: "checkStatus" })
       });
       const resData = await res.json();
       if (resData.status === "paid") {
@@ -1363,8 +1426,7 @@ async function openManualPaymentModal(postId, linkIndex, price, label, btnEl) {
 }
 
 const postsEl = document.getElementById("posts");
-const pathCodeMatch = window.location.pathname.match(/^\/p\/([^\/?#]+)/i);
-const postId = (pathCodeMatch && decodeURIComponent(pathCodeMatch[1])) || new URLSearchParams(window.location.search).get("post");
+const postId = new URLSearchParams(window.location.search).get("post");
 const tagParam = new URLSearchParams(window.location.search).get("tag");
 const paidReturnParam = new URLSearchParams(window.location.search).get("paid");
 
@@ -1379,7 +1441,7 @@ let allDocsCache = [];
 let searchActive = false;
 let postChipBarHtml = "";
 let mainFeedDocsCache = [];
-let currentFeedTab = "untukKamu";
+let currentFeedTab = "terbaru";
 const MAIN_FEED_LIMIT = 50;
 
 loadContactBar();
@@ -1388,12 +1450,13 @@ loadCategoryBar();
 setupSearch();
 
 try {
-  loadBannerAd("adsBannerHeader", "headerBanner", () => {
-    loadStickyBanner("adsStickyBottom");
-    watchStickyBannerResize("adsStickyBottom");
+  loadResponsiveBanner("adsFeedTopBanner", "sticky", () => {
+    loadResponsiveBanner("adsStickyBottom", "sticky");
+    watchResponsiveBannerResize("adsStickyBottom", "sticky");
   });
+  watchResponsiveBannerResize("adsFeedTopBanner", "sticky");
   loadSocialBar();
-  hardenAdIframes(["#adsBannerHeader", "#adsStickyBottom"]);
+  hardenAdIframes(["#adsFeedTopBanner", "#adsStickyBottom"]);
 } catch (err) {
   console.error("Gagal memuat iklan (ads.js mungkin tidak termuat):", err);
 }
@@ -1460,7 +1523,6 @@ function loadCategoryBar() {
   onSnapshot(qAll, (snapshot) => {
     allDocsCache = snapshot.docs;
     renderOldPostsRotation();
-    renderMainFeedTabs();
 
     const allTags = new Set();
     snapshot.forEach((docSnap) => {
@@ -1468,14 +1530,18 @@ function loadCategoryBar() {
     });
     if (allTags.size === 0) {
       bar.innerHTML = "";
+      bar.style.display = "none";
+      renderMainFeedTabs();
       return;
     }
+    bar.style.display = "flex";
     let html = `<a class="category-chip${!tagParam ? " active" : ""}" href="${window.location.origin}/">Semua</a>`;
     allTags.forEach((t) => {
       const isActive = tagParam === t;
       html += `<a class="category-chip${isActive ? " active" : ""}" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`;
     });
     bar.innerHTML = html;
+    renderMainFeedTabs();
   });
 }
 
@@ -1608,7 +1674,7 @@ function renderSuggestions(qText) {
     html += `<a class="search-suggestion-item" href="?tag=${encodeURIComponent(t)}">🏷️ <span class="tag-label">#${escapeHtml(t)}</span></a>`;
   });
   matchedPosts.slice(0, 5).forEach((p) => {
-    html += `<a class="search-suggestion-item" href="/p/${p.id}">📄 ${escapeHtml(p.caption)}</a>`;
+    html += `<a class="search-suggestion-item" href="?post=${p.id}">📄 ${escapeHtml(p.caption)}</a>`;
   });
 
   if (!html) {
@@ -1680,12 +1746,14 @@ function renderPost(docSnap) {
         const priceLabel = Number(l.price).toLocaleString("id-ID");
         return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
       }
-      return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">▶️ ${escapeHtml(l.label)}</a>`;
+      return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">${playIconSvg} ${escapeHtml(l.label)}</a>`;
     })
     .join("");
 
+  const captionId = `caption-${docSnap.id}`;
+  const isLongCaption = (data.caption || "").length > 130;
   const caption = data.caption
-    ? `<div class="post-caption">${escapeHtml(data.caption)}</div>`
+    ? `<div class="post-caption" id="${captionId}">${escapeHtml(data.caption)}</div>${isLongCaption ? `<button type="button" class="post-caption-toggle" data-target="${captionId}">Lihat selengkapnya</button>` : ""}`
     : "";
 
   const tagsList = data.tags || [];
@@ -1693,19 +1761,28 @@ function renderPost(docSnap) {
     ? `<div class="post-tags">${tagsList.map(t => `<a class="tag-chip" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`).join("")}</div>`
     : "";
 
-  const shareUrl = `${window.location.origin}/p/${docSnap.id}`;
+  const shareUrl = `${window.location.origin}/?post=${docSnap.id}`;
 
   const post = document.createElement("div");
   post.className = "post";
   post.innerHTML = `
     <div class="post-date">${date}</div>
+    <div class="${photosClass}">${photos}</div>
     ${caption}
     ${tagsHtml}
-    <div class="${photosClass}">${photos}</div>
     ${linkBtns}
     ${postChipBarHtml}
     <button class="post-share" onclick="sharePost('${shareUrl}')">🔗 Bagikan Konten</button>
   `;
+
+  const captionToggleBtn = post.querySelector(".post-caption-toggle");
+  if (captionToggleBtn) {
+    captionToggleBtn.addEventListener("click", () => {
+      const target = document.getElementById(captionToggleBtn.dataset.target);
+      const expanded = target.classList.toggle("expanded");
+      captionToggleBtn.textContent = expanded ? "Sembunyikan" : "Lihat selengkapnya";
+    });
+  }
 
   post.querySelectorAll(".post-link-paid, .post-link-unlocked").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1733,31 +1810,13 @@ function renderPost(docSnap) {
 }
 
 if (postId) {
-  document.getElementById("feedTabs").style.display = "none";
-
-  const cachedSerialized = getCachedPost(postId);
-  let paintedFromCache = false;
-  if (cachedSerialized) {
-    postsEl.innerHTML = "";
-    postsEl.appendChild(renderPost(wrapCachedDoc(postId, cachedSerialized)));
-    trackPostView(postId);
-    paintedFromCache = true;
-  }
-
   getDoc(doc(db, "posts", postId)).then((docSnap) => {
     if (!docSnap.exists()) {
-      if (!paintedFromCache) postsEl.innerHTML = '<p class="empty">Materi tidak ditemukan.</p>';
+      postsEl.innerHTML = '<p class="empty">Materi tidak ditemukan.</p>';
       return;
     }
-
-    const freshSerialized = serializePostData(docSnap.data());
-    const unchanged = paintedFromCache && JSON.stringify(freshSerialized) === JSON.stringify(cachedSerialized);
-    setCachedPost(postId, freshSerialized);
-
-    if (!unchanged) {
-      postsEl.innerHTML = "";
-      postsEl.appendChild(renderPost(docSnap));
-    }
+    postsEl.innerHTML = "";
+    postsEl.appendChild(renderPost(docSnap));
     trackPostView(postId);
 
     // Bar konten lainnya, live update, di bawah post yang dibagikan
@@ -1786,10 +1845,9 @@ if (postId) {
       otherWrap.appendChild(seeAll);
     });
   }).catch(() => {
-    if (!paintedFromCache) postsEl.innerHTML = '<p class="empty">Gagal memuat materi.</p>';
+    postsEl.innerHTML = '<p class="empty">Gagal memuat materi.</p>';
   });
 } else if (tagParam) {
-  document.getElementById("feedTabs").style.display = "none";
   const qTag = query(collection(db, "posts"), where("tags", "array-contains", tagParam), orderBy("createdAt", "desc"));
   onSnapshot(qTag, (snapshot) => {
     if (searchActive) return;
@@ -1822,66 +1880,27 @@ if (postId) {
       postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
       return;
     }
+
+    // Cadence penyisipan native ad dibuat senatural mungkin: TIDAK langsung
+    // muncul di 1-2 post pertama (kesan awal jangan langsung "dijejali"
+    // iklan), lalu setelah itu berjarak lebih lega supaya tidak spam.
+    // Iklan pertama: setelah 4 post. Selanjutnya: tiap 6 post.
+    const FIRST_AD_AFTER = 4;
+    const AD_EVERY = 6;
     let counter = 0;
+    let nextAdAt = FIRST_AD_AFTER;
+
     docsArray.forEach((docSnap) => {
       postsEl.appendChild(renderPost(docSnap));
       counter++;
-      if (counter % 3 === 0) {
+      if (counter === nextAdAt) {
         try {
           postsEl.appendChild(createNativeAdSlot());
         } catch (err) {
           console.error("Gagal memuat native ad slot:", err);
         }
+        nextAdAt = counter + AD_EVERY;
       }
-    });
-  }
-
-  function renderPostsSectioned(docsArray) {
-    postsEl.innerHTML = "";
-    if (docsArray.length === 0) {
-      postsEl.innerHTML = '<p class="empty">Belum ada konten.</p>';
-      return;
-    }
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const sevenDaysAgo = new Date(startOfToday.getTime() - 6 * 24 * 60 * 60 * 1000);
-    const groups = { hariIni: [], mingguIni: [], lebihLama: [] };
-
-    docsArray.forEach((docSnap) => {
-      const data = docSnap.data();
-      const created = data.createdAt?.toDate ? data.createdAt.toDate() : null;
-      if (created && created >= startOfToday) {
-        groups.hariIni.push(docSnap);
-      } else if (created && created >= sevenDaysAgo) {
-        groups.mingguIni.push(docSnap);
-      } else {
-        groups.lebihLama.push(docSnap);
-      }
-    });
-
-    let counter = 0;
-    const sections = [
-      { key: "hariIni", label: "Hari Ini" },
-      { key: "mingguIni", label: "Minggu Ini" },
-      { key: "lebihLama", label: "Lebih Lama" }
-    ];
-    sections.forEach(({ key, label }) => {
-      if (groups[key].length === 0) return;
-      const title = document.createElement("div");
-      title.className = "section-title";
-      title.textContent = label;
-      postsEl.appendChild(title);
-      groups[key].forEach((docSnap) => {
-        postsEl.appendChild(renderPost(docSnap));
-        counter++;
-        if (counter % 3 === 0) {
-          try {
-            postsEl.appendChild(createNativeAdSlot());
-          } catch (err) {
-            console.error("Gagal memuat native ad slot:", err);
-          }
-        }
-      });
     });
   }
 
@@ -1906,7 +1925,7 @@ if (postId) {
 
   function renderFeedForTab() {
     if (currentFeedTab === "terbaru") {
-      renderPostsSectioned(mainFeedDocsCache); // urutan asli dari query (terbaru dulu)
+      renderPostsFlat(mainFeedDocsCache); // urutan asli dari query (terbaru dulu)
     } else if (currentFeedTab === "terlama") {
       renderPostsFlat([...mainFeedDocsCache].reverse());
     } else if (currentFeedTab === "terpopuler") {
@@ -1921,15 +1940,19 @@ if (postId) {
     }
   }
 
-  document.querySelectorAll("#feedTabs .tab").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (searchActive) return;
-      document.querySelectorAll("#feedTabs .tab").forEach((t) => t.classList.remove("active"));
-      btn.classList.add("active");
-      currentFeedTab = btn.dataset.tab;
-      renderFeedForTab();
+  const sortBarEl = document.getElementById("sortChipBar");
+  if (sortBarEl && !sortBarEl._wired) {
+    sortBarEl._wired = true;
+    sortBarEl.querySelectorAll(".sort-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (searchActive) return;
+        sortBarEl.querySelectorAll(".sort-chip").forEach((t) => t.classList.remove("active"));
+        btn.classList.add("active");
+        currentFeedTab = btn.dataset.sort;
+        renderFeedForTab();
+      });
     });
-  });
+  }
 
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(MAIN_FEED_LIMIT));
   onSnapshot(q, (snapshot) => {
@@ -1937,6 +1960,23 @@ if (postId) {
     mainFeedDocsCache = snapshot.docs;
     renderFeedForTab();
   });
+}
+
+// Hitung tinggi category-bar secara dinamis buat offset sticky sort-chip-bar
+// di bawahnya (category-bar bisa 1-2 baris tergantung jumlah tag). Dipanggil
+// dari loadCategoryBar() tiap kali kontennya berubah.
+function renderMainFeedTabs() {
+  const categoryBarEl = document.getElementById("categoryBar");
+  if (!categoryBarEl) return;
+
+  function updateOffset() {
+    document.documentElement.style.setProperty("--category-bar-h", categoryBarEl.offsetHeight + "px");
+  }
+  updateOffset();
+  if (window.ResizeObserver && !categoryBarEl._roAttached) {
+    new ResizeObserver(updateOffset).observe(categoryBarEl);
+    categoryBarEl._roAttached = true;
+  }
 }
 
 function escapeHtml(str) {
