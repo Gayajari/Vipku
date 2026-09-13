@@ -24,12 +24,9 @@ const RESPONSIVE_UNITS = {
   }
 };
 
-// Native Banner yang disisipkan di feed. Sekarang tampil di HP & desktop.
+// Native Banner yang disisipkan di feed. Sekarang tampil di MOBILE & DESKTOP
+// (sebelumnya cuma mobile) — lihat CSS .feed-native-ad di index.html.
 const NATIVE_AD_KEY = 'a34e353b3f1f0806d6dd98636848d1e3';
-
-// Native ad disisipkan tiap N post di feed utama. Dijadikan konstanta biar
-// gampang diubah dari satu tempat saja (dipakai di index.html).
-const NATIVE_AD_INTERVAL = 3;
 
 // Script social bar / popunder (tanpa atOptions)
 const SOCIAL_BAR_SRC = 'https://inputoppose.com/dc/36/31/dc3631cbbf8e7e7cd864408473a542ac.js';
@@ -100,55 +97,38 @@ function loadResponsiveBanner(containerId, placementName, onDone) {
 // Melacak status HP/desktop per container supaya banner responsif otomatis
 // ganti ukuran saat layar di-resize/rotate.
 const _responsiveWatchState = {};
-
-// Debounce kecil biar matchMedia nggak dicek berkali-kali tiap event resize
-// nembak (misal pas drag ubah lebar jendela browser) — murni optimasi
-// performa, tidak mengubah kapan banner diganti ukurannya.
-function _debounce(fn, waitMs) {
-  let timer;
-  return function debounced(...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), waitMs);
-  };
-}
-
 function watchResponsiveBannerResize(containerId, placementName) {
   _responsiveWatchState[containerId] = window.matchMedia('(max-width: 768px)').matches;
-  const handleResize = _debounce(() => {
+  window.addEventListener('resize', () => {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     if (isMobile !== _responsiveWatchState[containerId]) {
       _responsiveWatchState[containerId] = isMobile;
       loadResponsiveBanner(containerId, placementName);
     }
-  }, 150);
-  window.addEventListener('resize', handleResize);
+  });
 }
 
-// Alias khusus untuk penempatan "sticky" (dipakai index.html untuk banner
-// sticky di bawah layar) — supaya pemanggilnya nggak perlu tahu/ketik nama
-// placement "sticky" berulang-ulang tiap dipanggil. Murni pembungkus tipis
-// di atas loadResponsiveBanner/watchResponsiveBannerResize yang generik,
-// tidak mengubah perilaku aslinya sama sekali.
-function loadStickyBanner(containerId, onDone) {
-  loadResponsiveBanner(containerId, 'sticky', onDone);
-}
-function watchStickyBannerResize(containerId) {
-  watchResponsiveBannerResize(containerId, 'sticky');
-}
+// Counter global supaya tiap slot Native Banner di feed punya ID unik.
+// PENTING: sekarang native banner tampil di mobile MAUPUN desktop, artinya
+// jumlah slot yang berpotensi aktif sekaligus di satu halaman jadi lebih
+// banyak dari sebelumnya. Kalau semua slot memakai ID yang SAMA, network
+// iklan bisa salah menargetkan render (numpuk ke satu slot / ukuran kacau)
+// begitu ada lebih dari satu slot di halaman — makanya tiap slot WAJIB
+// dapat ID sendiri-sendiri.
+let _nativeAdSlotCounter = 0;
 
 /**
  * Membuat satu slot Native Banner (div container + script invoke) untuk disisipkan
  * di manapun lewat appendChild — dipakai untuk native banner di feed per-post.
  *
- * Strukturnya sengaja 2 lapis:
- *   .feed-native-ad (wrap luar, cuma atur margin & max-width)
+ * Strukturnya 2 lapis:
+ *   .feed-native-ad (wrap luar, atur margin & tampil di mobile+desktop)
  *     └─ .native-ad-crop (wrapper crop: overflow:hidden + max-height dibatasi
- *        manual lewat CSS, beda untuk HP vs desktop — INI yang nentuin cuma
- *        1 kartu iklan yang kelihatan)
- *         └─ .native-ad-render-area (area render sesungguhnya, dikasih
- *            min-height LEGA — script Adsterra bebas render sebanyak apa pun
- *            kartu di sini tanpa sensor, biar kartu PERTAMA selalu utuh
- *            gambar+judulnya, baru dipotong rapi oleh crop wrapper di atas)
+ *        manual lewat CSS, beda nilai untuk mobile vs desktop)
+ *         └─ .native-ad-render-area (area render sesungguhnya, id UNIK per
+ *            slot, dikasih min-height lega — script Adsterra bebas render
+ *            kartu utuh gambar+judul di sini, baru dipotong rapi oleh crop
+ *            wrapper di atasnya)
  *
  * @returns {HTMLElement}
  */
@@ -170,8 +150,9 @@ function createNativeAdSlot() {
   script.src = 'https://inputoppose.com/' + NATIVE_AD_KEY + '/invoke.js';
   crop.appendChild(script);
 
+  const slotId = 'container-' + NATIVE_AD_KEY + '-' + (_nativeAdSlotCounter++);
   const container = document.createElement('div');
-  container.id = 'container-' + NATIVE_AD_KEY;
+  container.id = slotId;
   container.className = 'native-ad-render-area';
   crop.appendChild(container);
 
