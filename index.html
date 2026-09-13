@@ -192,13 +192,23 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     animation: paidBtnGlow 3s ease-in-out infinite;
   }
   .post-link-paid:active { background: var(--raspberry); animation: none; }
   .post-link-paid:disabled { opacity: 0.6; cursor: default; animation: none; }
   .post-link-paid .lock-icon { flex-shrink: 0; }
   .post-link-paid .lock-shackle { transform-origin: 12px 9.5px; animation: lockShackleSwing 2.4s ease-in-out infinite; }
+  .paid-btn-label { white-space: nowrap; }
+  .paid-btn-sep {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.75);
+    flex-shrink: 0;
+  }
+  .paid-btn-price { font-weight: 800; letter-spacing: 0.2px; }
+  .post-link-unlocked .paid-btn-sep { background: rgba(255,255,255,0.6); }
   @keyframes paidBtnGlow {
     0%, 100% { background-position: 0% 50%; box-shadow: 0 0 0 rgba(232,93,117,0); }
     50% { background-position: 100% 50%; box-shadow: 0 0 12px rgba(232,93,117,0.5); }
@@ -223,7 +233,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
   }
   .post-link-unlocked:active { background: #1f5252; }
   .post-share {
@@ -1001,11 +1011,11 @@ function getBuyerId() {
   return id;
 }
 
-const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="16" height="16" fill="none">
-  <rect x="5" y="11" width="14" height="9" rx="3" fill="currentColor" opacity="0.15"/>
-  <rect x="5" y="11" width="14" height="9" rx="3" stroke="currentColor" stroke-width="2"/>
-  <path class="lock-shackle" d="M8 11V7.5a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <circle cx="12" cy="15.3" r="1.4" fill="currentColor"/>
+const lockIconSvg = `<svg class="lock-icon" viewBox="0 0 24 24" width="19" height="19" fill="none">
+  <circle cx="12" cy="12" r="11" fill="currentColor" opacity="0.16"/>
+  <rect x="7.2" y="11" width="9.6" height="7.4" rx="2.6" fill="currentColor"/>
+  <path class="lock-shackle" d="M9 11V8.3a3 3 0 0 1 6 0V11" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="12" cy="14.4" r="1.05" fill="var(--raspberry)"/>
 </svg>`;
 const unlockIconSvg = `<svg class="unlock-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16 9.3"/></svg>`;
 const playIconSvg = `<svg class="play-icon" viewBox="0 0 24 24" width="17" height="17" fill="none">
@@ -1031,7 +1041,7 @@ function isUnlockedLocally(accessId) {
 function setButtonUnlockedStyle(btnEl, label) {
   btnEl.classList.remove("post-link-paid");
   btnEl.classList.add("post-link-unlocked");
-  btnEl.innerHTML = `${unlockIconSvg} ${label} — Sudah Dibeli`;
+  btnEl.innerHTML = `${unlockIconSvg}<span class="paid-btn-label">${label}</span><span class="paid-btn-sep"></span><span>Sudah Dibeli</span>`;
 }
 
 function trackPostView(postId) {
@@ -1742,10 +1752,10 @@ function renderPost(docSnap) {
         const category = l.category === "manual" ? "manual" : "auto";
         const accessId = `${buyerIdForRender}_${docSnap.id}_${idx}`;
         if (isUnlockedLocally(accessId)) {
-          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg} ${escapeHtml(l.label)} — Sudah Dibeli</button>`;
+          return `<button type="button" class="post-link post-link-unlocked" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${unlockIconSvg}<span class="paid-btn-label">${escapeHtml(l.label)}</span><span class="paid-btn-sep"></span><span>Sudah Dibeli</span></button>`;
         }
         const priceLabel = Number(l.price).toLocaleString("id-ID");
-        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg} ${escapeHtml(l.label)} — Rp ${priceLabel}</button>`;
+        return `<button type="button" class="post-link post-link-paid" data-post-id="${docSnap.id}" data-link-index="${idx}" data-price="${l.price}" data-label="${escapeHtmlAttr(l.label)}" data-category="${category}">${lockIconSvg}<span class="paid-btn-label">${escapeHtml(l.label)}</span><span class="paid-btn-sep"></span><span class="paid-btn-price">Rp ${priceLabel}</span></button>`;
       }
       return `<a class="post-link" href="${escapeHtmlAttr(l.url)}" target="_blank" rel="noopener noreferrer">${playIconSvg} ${escapeHtml(l.label)}</a>`;
     })
