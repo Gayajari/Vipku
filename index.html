@@ -28,6 +28,20 @@
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
   }
+
+  /* ================== STICKY HEADER WRAP ==================
+     Membungkus header (logo+search), contact-bar, category-bar,
+     dan sort-chip-bar jadi satu blok. Cukup satu position:sticky
+     di sini — semua isinya ikut nempel sebagai satu kesatuan saat
+     discroll, tanpa perlu hitung-hitung offset top tiap lapis. */
+  .sticky-header-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    background: var(--cream);
+    box-shadow: 0 2px 6px rgba(43,36,32,0.06);
+  }
+
   header {
     background: var(--cream);
     color: var(--ink);
@@ -301,11 +315,6 @@
     margin-top: 14px;
     border-top: 1px solid var(--line);
     -webkit-overflow-scrolling: touch;
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    background: var(--cream);
-    box-shadow: 0 2px 6px rgba(43,36,32,0.04);
   }
   .category-bar::-webkit-scrollbar { display: none; }
 
@@ -339,14 +348,9 @@
     display: flex;
     gap: 6px;
     overflow-x: auto;
-    padding: 0 15px;
+    padding: 8px 15px;
     -webkit-overflow-scrolling: touch;
-    position: sticky;
-    top: var(--category-bar-h, 52px);
-    z-index: 39;
-    background: var(--cream);
     border-bottom: 1px solid var(--line);
-    box-shadow: 0 2px 6px rgba(43,36,32,0.04);
   }
   .sort-chip-bar::-webkit-scrollbar { display: none; }
   .sort-chip {
@@ -826,35 +830,37 @@
 </head>
 <body>
 
-<header>
-  <a href="./" class="logo-home-link" aria-label="Kembali ke Beranda">
-    <h1>Vip<em>ku</em>🥵</h1>
-  </a>
-  <div class="header-row">
-    <a href="./" class="home-icon-btn" aria-label="Kembali ke Beranda">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+<div class="sticky-header-wrap" id="stickyHeaderWrap">
+  <header>
+    <a href="./" class="logo-home-link" aria-label="Kembali ke Beranda">
+      <h1>Vip<em>ku</em>🥵</h1>
     </a>
-    <div class="search-bar">
-      <div class="search-input-wrap">
-        <button type="button" id="searchBtn" aria-label="Cari">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
-        </button>
-        <input type="text" id="searchInput" placeholder="Cari">
-        <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
+    <div class="header-row">
+      <a href="./" class="home-icon-btn" aria-label="Kembali ke Beranda">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      </a>
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <button type="button" id="searchBtn" aria-label="Cari">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+          </button>
+          <input type="text" id="searchInput" placeholder="Cari">
+          <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
+        </div>
+        <div class="search-suggestions" id="searchSuggestions"></div>
       </div>
-      <div class="search-suggestions" id="searchSuggestions"></div>
     </div>
+  </header>
+
+  <div class="contact-bar" id="contactBar"></div>
+
+  <div class="category-bar" id="categoryBar"></div>
+
+  <div class="sort-chip-bar" id="sortChipBar">
+    <button type="button" class="sort-chip active" data-sort="terbaru">Terbaru</button>
+    <button type="button" class="sort-chip" data-sort="terlama">Terlama</button>
+    <button type="button" class="sort-chip" data-sort="terpopuler">Terpopuler</button>
   </div>
-</header>
-
-<div class="contact-bar" id="contactBar"></div>
-
-<div class="category-bar" id="categoryBar"></div>
-
-<div class="sort-chip-bar" id="sortChipBar">
-  <button type="button" class="sort-chip active" data-sort="terbaru">Terbaru</button>
-  <button type="button" class="sort-chip" data-sort="terlama">Terlama</button>
-  <button type="button" class="sort-chip" data-sort="terpopuler">Terpopuler</button>
 </div>
 
 <div class="ads-banner" id="adsFeedTopBanner"></div>
@@ -1545,7 +1551,6 @@ function loadCategoryBar() {
     if (allTags.size === 0) {
       bar.innerHTML = "";
       bar.style.display = "none";
-      renderMainFeedTabs();
       return;
     }
     bar.style.display = "flex";
@@ -1555,7 +1560,6 @@ function loadCategoryBar() {
       html += `<a class="category-chip${isActive ? " active" : ""}" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`;
     });
     bar.innerHTML = html;
-    renderMainFeedTabs();
   });
 }
 
@@ -1964,23 +1968,6 @@ if (postId) {
     mainFeedDocsCache = snapshot.docs;
     renderFeedForTab();
   });
-}
-
-// Hitung tinggi category-bar secara dinamis buat offset sticky sort-chip-bar
-// di bawahnya (category-bar bisa 1-2 baris tergantung jumlah tag). Dipanggil
-// dari loadCategoryBar() tiap kali kontennya berubah.
-function renderMainFeedTabs() {
-  const categoryBarEl = document.getElementById("categoryBar");
-  if (!categoryBarEl) return;
-
-  function updateOffset() {
-    document.documentElement.style.setProperty("--category-bar-h", categoryBarEl.offsetHeight + "px");
-  }
-  updateOffset();
-  if (window.ResizeObserver && !categoryBarEl._roAttached) {
-    new ResizeObserver(updateOffset).observe(categoryBarEl);
-    categoryBarEl._roAttached = true;
-  }
 }
 
 function escapeHtml(str) {
