@@ -953,9 +953,18 @@ function loadFileIntoCropper(file) {
     cropAspectBar.querySelectorAll(".crop-aspect-chip").forEach((c) => c.classList.remove("active"));
     cropAspectBar.querySelector('[data-ratio="0"]').classList.add("active");
     cropRatio = 0;
+    // PENTING: modal harus sudah ditampilkan (display:flex) DULU sebelum
+    // menghitung ukuran stage. Kalau dihitung sewaktu modal masih
+    // display:none, cropStage.clientWidth/Height selalu kebaca 0 (elemen
+    // di dalam display:none tidak punya ukuran layout sama sekali),
+    // akibatnya skala foto ikut kehitung 0 dan fotonya jadi tidak
+    // kelihatan (kotak hitam kosong) sampai ada aksi lain (klik chip
+    // rasio) yang memicu hitung ulang setelah modal baru benar-benar
+    // kelihatan. Kalau keburu klik "Gunakan Foto" sebelum itu, hasil
+    // crop-nya jadi gambar kosong (0x0) alias rusak.
+    cropOverlay.classList.add("open");
     setupCropStageSize();
     resetCropTransform();
-    cropOverlay.classList.add("open");
   };
 }
 
@@ -968,8 +977,15 @@ function setupCropStageSize() {
 }
 
 function resetCropTransform() {
-  const stageW = cropStage.clientWidth;
-  const stageH = cropStage.clientHeight;
+  let stageW = cropStage.clientWidth;
+  let stageH = cropStage.clientHeight;
+  // Pengaman: kalau karena sebab tak terduga stage masih kebaca 0 (misal
+  // modal belum sempat ke-render), pakai fallback ukuran dasar supaya
+  // skala TIDAK PERNAH jadi 0 — skala 0 = foto hasil crop kosong/rusak.
+  if (!stageW || !stageH) {
+    stageW = CROP_STAGE_MAX_W;
+    stageH = cropRatio > 0 ? stageW / cropRatio : stageW * (cropNaturalH / cropNaturalW);
+  }
   // skala minimum supaya foto selalu menutupi seluruh area frame ("cover")
   cropBaseScale = Math.max(stageW / cropNaturalW, stageH / cropNaturalH);
   cropScale = cropBaseScale;
@@ -1099,6 +1115,15 @@ cropConfirmBtn.onclick = () => {
   // cuma ukuran layar), lalu kompres ke JPEG sebelum diupload ke ImgBB.
   const stageW = cropStage.clientWidth;
   const stageH = cropStage.clientHeight;
+
+  // Pengaman: kalau ukuran stage atau skala foto tidak valid (0/NaN, misal
+  // modal belum sempat ke-render sempurna), JANGAN lanjut crop — itu yang
+  // dulu bikin foto hasil crop jadi kosong/rusak. Minta pakai lagi.
+  if (!stageW || !stageH || !cropScale || !cropNaturalW || !cropNaturalH) {
+    alert("Foto belum siap di-crop, coba tunggu sebentar lalu ulangi.");
+    return;
+  }
+
   const outW = 1080;
   const outH = Math.round(outW * (stageH / stageW));
 
