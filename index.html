@@ -466,6 +466,22 @@
     border: none;
   }
 
+  /* Di layar lebar (desktop), 3 slot iklan native ditampilkan sejajar
+     kiri-kanan alih-alih 1 slot besar, supaya ruang kosong di sisi kolom
+     tidak percuma. Di HP (viewport sempit) tetap tampil 1 slot seperti
+     biasa — lihat createNativeAdBlock() di script. */
+  .feed-native-ad-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 14px auto;
+    width: 100%;
+  }
+  .feed-native-ad-row .feed-native-ad {
+    max-width: 200px;
+    margin: 0;
+  }
+
   .search-bar {
     padding: 10px 15px 0 15px;
     position: relative;
@@ -1894,6 +1910,38 @@ if (postId) {
   });
 } else {
 
+  function createNativeAdBlock() {
+    // HP (viewport sempit): selalu 1 slot.
+    // Desktop/layar lebar (>=640px): idealnya 3 slot sejajar kiri-kanan,
+    // TAPI dibatasi oleh berapa banyak key Native Banner yang tersedia di
+    // ads.js (getNativeAdCapacity) — 1 key cuma aman untuk 1 slot aktif
+    // dalam satu waktu (lihat catatan di ads.js). Begitu ada 2-3 key
+    // dikonfigurasi di sana, baris sejajar ini otomatis terisi penuh tanpa
+    // perlu ubah apa-apa di sini.
+    const capacity = (typeof getNativeAdCapacity === "function") ? getNativeAdCapacity() : 1;
+    const slotsWanted = window.innerWidth >= 640 ? Math.min(3, Math.max(1, capacity)) : 1;
+
+    if (slotsWanted <= 1) {
+      try {
+        return createNativeAdSlot();
+      } catch (err) {
+        console.error("Gagal memuat native ad slot:", err);
+        return null;
+      }
+    }
+
+    const row = document.createElement("div");
+    row.className = "feed-native-ad-row";
+    for (let n = 0; n < slotsWanted; n++) {
+      try {
+        row.appendChild(createNativeAdSlot());
+      } catch (err) {
+        console.error("Gagal memuat native ad slot:", err);
+      }
+    }
+    return row.childElementCount > 0 ? row : null;
+  }
+
   function renderPostsFlat(docsArray) {
     postsEl.innerHTML = "";
     if (docsArray.length === 0) {
@@ -1905,11 +1953,8 @@ if (postId) {
       postsEl.appendChild(renderPost(docSnap));
       counter++;
       if (counter % 3 === 0) {
-        try {
-          postsEl.appendChild(createNativeAdSlot());
-        } catch (err) {
-          console.error("Gagal memuat native ad slot:", err);
-        }
+        const adBlock = createNativeAdBlock();
+        if (adBlock) postsEl.appendChild(adBlock);
       }
     });
   }
