@@ -24,8 +24,42 @@ const RESPONSIVE_UNITS = {
   }
 };
 
-// Native Banner yang disisipkan di feed (tiap 3 post), hanya tampil mode HP
-const NATIVE_AD_KEY = 'a34e353b3f1f0806d6dd98636848d1e3';
+// Native Banner yang disisipkan di feed (tiap 3 post).
+//
+// PENTING soal kenapa iklan ini sempat total tidak pernah muncul:
+// Vendor iklan (invoke.js) menyasar div dengan id "container-<KEY>" yang
+// harus PERSIS SAMA dengan key-nya sendiri (bukan sekadar posisi di DOM).
+// Versi sebelumnya menambah angka counter di belakang id
+// ("container-<KEY>-0", "-1", dst) supaya tiap slot unik — niatnya bagus
+// (menghindari 2 slot rebutan 1 id yang sama), TAPI akibatnya invoke.js
+// jadi tidak pernah ketemu id yang dia cari sama sekali, jadi iklan gagal
+// render TOTAL di semua slot, di semua device. Itu penyebab utamanya.
+//
+// Perbaikannya: id sekarang balik ke format asli "container-<KEY>" (tanpa
+// suffix apapun), dan supaya tetap tidak ada 2 slot dengan key yang sama
+// aktif bersamaan di DOM, dipakai mekanisme "gantian" (lihat
+// claimNativeAdKey) — kalau key yang sama dibutuhkan lagi buat slot baru,
+// konten di slot lama otomatis dikosongkan dulu.
+//
+// Bisa diisi LEBIH DARI 1 key kalau suatu saat mau beberapa slot Native
+// Banner tampil BERSAMAAN sekaligus di halaman yang sama (misal untuk
+// tampilan 3 sejajar di desktop). WAJIB key yang berbeda-beda untuk tiap
+// slot yang tampil bersamaan — 2+ slot dengan key SAMA yang aktif
+// bersamaan akan rebutan target & gagal render semua.
+const NATIVE_AD_KEYS = [
+  'a34e353b3f1f0806d6dd98636848d1e3'
+  // tambahkan key Native Banner lain di sini (dari dashboard iklan) kalau
+  // mau tampilan beberapa slot sejajar sekaligus di desktop, misal:
+  // 'key_kedua_di_sini',
+  // 'key_ketiga_di_sini',
+];
+
+// Berapa banyak slot Native Banner yang bisa tampil BERSAMAAN saat ini,
+// dibatasi oleh jumlah key yang tersedia di NATIVE_AD_KEYS. Dipakai index.html
+// untuk memutuskan mau bikin berapa slot sejajar di layar lebar (desktop).
+function getNativeAdCapacity() {
+  return NATIVE_AD_KEYS.length;
+}
 
 // Script social bar / popunder (tanpa atOptions)
 const SOCIAL_BAR_SRC = 'https://inputoppose.com/dc/36/31/dc3631cbbf8e7e7cd864408473a542ac.js';
@@ -107,37 +141,41 @@ function watchResponsiveBannerResize(containerId, placementName) {
   });
 }
 
-// Counter global supaya tiap slot Native Banner di feed punya ID unik.
-// Sebelumnya semua slot memakai ID yang SAMA ("container-<KEY>"), yang
-// menyebabkan network iklan salah menargetkan render (numpuk/salah ukuran)
-// begitu ada lebih dari satu slot di halaman yang sama.
-let _nativeAdSlotCounter = 0;
+// Menyimpan wrap (elemen slot) mana yang SEDANG memegang tiap key Native
+// Banner, supaya kalau key yang sama dibutuhkan lagi oleh slot baru (karena
+// stok key terbatas), konten di slot LAMA dibersihkan dulu sebelum slot BARU
+// mengisi — jadi tidak pernah ada 2 elemen dengan id "container-<key>" yang
+// sama-sama aktif/terisi konten dalam satu waktu (itu yang bikin iklan salah
+// render/numpuk cuma ke slot pertama).
+const _nativeAdKeyOwner = new Array(NATIVE_AD_KEYS.length).fill(null);
+let _nativeAdRoundRobin = 0;
 
 /**
- * Membuat satu slot Native Banner (div container + script invoke) untuk disisipkan
- * di manapun lewat appendChild — dipakai untuk native banner di feed per-post.
+ * Membuat satu slot Native Banner (placeholder) untuk disisipkan di manapun
+ * lewat appendChild — dipakai untuk native banner di feed per-post.
  *
- * Kontennya (script + container) TIDAK langsung disuntik saat elemen ini dibuat.
- * Slot hanya berupa placeholder kosong dulu; baru saat placeholder ini betulan
- * mendekati area layar (di-scroll ke sana), script iklan diminta oleh
- * IntersectionObserver. Ini mencegah semua slot iklan di sepanjang feed
- * ikut memuat network request sekaligus di awal — lebih ringan terutama
- * kalau feed berisi banyak post.
+ * Kontennya (script + container) TIDAK langsung disuntik saat elemen ini
+ * dibuat. Slot hanya berupa placeholder kosong dulu; baru saat placeholder
+ * ini betulan mendekati area layar (di-scroll ke sana), script iklan diminta
+ * lewat IntersectionObserver. Ini mencegah semua slot iklan di sepanjang
+ * feed ikut memuat network request sekaligus di awal.
  * @returns {HTMLElement}
  */
 function createNativeAdSlot() {
+  const keyIndex = _nativeAdRoundRobin % NATIVE_AD_KEYS.length;
+  _nativeAdRoundRobin++;
+  const key = NATIVE_AD_KEYS[keyIndex];
+
   const wrap = document.createElement('div');
   wrap.className = 'feed-native-ad';
   wrap.dataset.loaded = 'false';
-
-  const slotId = 'container-' + NATIVE_AD_KEY + '-' + (_nativeAdSlotCounter++);
-  wrap.dataset.slotId = slotId;
+  wrap.dataset.slotId = 'container-' + key;
 
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && wrap.dataset.loaded === 'false') {
-          injectNativeAdContent(wrap, slotId);
+          claimNativeAdKey(keyIndex, wrap);
           observer.unobserve(wrap);
         }
       });
@@ -145,35 +183,50 @@ function createNativeAdSlot() {
     observer.observe(wrap);
   } else {
     // Fallback untuk browser lama tanpa IntersectionObserver: muat langsung.
-    injectNativeAdContent(wrap, slotId);
+    claimNativeAdKey(keyIndex, wrap);
   }
 
   return wrap;
 }
 
 /**
- * Menyuntikkan script + container iklan Native Banner yang sesungguhnya ke
- * dalam sebuah slot placeholder. Dipisah dari createNativeAdSlot() supaya
- * bisa dipanggil belakangan (lazy) oleh IntersectionObserver.
- * @param {HTMLElement} wrap - elemen placeholder dari createNativeAdSlot()
- * @param {string} slotId - id unik container untuk slot ini
+ * "Memindahkan" kepemilikan sebuah key Native Banner ke slot (wrap) yang
+ * baru. Kalau key ini sebelumnya sudah dipakai slot lain yang masih ada di
+ * DOM (karena user sudah scroll lewat), slot lama itu dikosongkan dulu.
+ * @param {number} keyIndex
+ * @param {HTMLElement} wrap
  */
-function injectNativeAdContent(wrap, slotId) {
+function claimNativeAdKey(keyIndex, wrap) {
+  const prevWrap = _nativeAdKeyOwner[keyIndex];
+  if (prevWrap && prevWrap !== wrap) {
+    prevWrap.innerHTML = '';
+    prevWrap.dataset.loaded = 'false';
+  }
+  _nativeAdKeyOwner[keyIndex] = wrap;
+  injectNativeAdContent(wrap, NATIVE_AD_KEYS[keyIndex]);
+}
+
+/**
+ * Menyuntikkan script + container iklan Native Banner yang sesungguhnya ke
+ * dalam sebuah slot placeholder. Id container HARUS "container-<key>" persis
+ * (tanpa suffix apapun) karena invoke.js dari vendor menyasar id ini secara
+ * hardcode berdasarkan key di URL-nya sendiri.
+ * @param {HTMLElement} wrap - elemen placeholder dari createNativeAdSlot()
+ * @param {string} key - key Native Banner untuk slot ini
+ */
+function injectNativeAdContent(wrap, key) {
   wrap.dataset.loaded = 'true';
+  wrap.innerHTML = '';
 
   // PENTING: urutan HARUS script dulu baru div (persis snippet asli vendor).
-  // Banyak jaringan native ad merender relatif ke posisi <script> itu sendiri
-  // di DOM (bukan lookup by id semata) — kalau urutannya dibalik, tiap slot
-  // baru yang dimuat bisa salah sasaran dan malah numpuk render ke SEMUA slot
-  // yang sudah ada di halaman, bukan cuma slot-nya sendiri.
   const script = document.createElement('script');
   script.async = true;
   script.setAttribute('data-cfasync', 'false');
-  script.src = 'https://inputoppose.com/' + NATIVE_AD_KEY + '/invoke.js';
+  script.src = 'https://inputoppose.com/' + key + '/invoke.js';
   wrap.appendChild(script);
 
   const container = document.createElement('div');
-  container.id = slotId;
+  container.id = 'container-' + key;
   wrap.appendChild(container);
 }
 
