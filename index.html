@@ -437,9 +437,11 @@
   }
 
   /* Native banner di feed — dikunci rasio 1:1 supaya konsisten berapa pun
-     ukuran/aspect ratio konten yang disuntikkan oleh vendor iklan. */
+     ukuran/aspect ratio konten yang disuntikkan oleh vendor iklan. Selalu
+     tampil di semua ukuran layar (mobile maupun desktop), lebar slotnya
+     otomatis menyesuaikan lebar kolom konten lewat max-width. */
   .feed-native-ad {
-    display: none;
+    display: flex;
     justify-content: center;
     align-items: center;
     margin: 14px auto;
@@ -450,9 +452,6 @@
     border-radius: 12px;
     position: relative;
     background: rgba(43,36,32,0.03);
-  }
-  @media (max-width: 768px) {
-    .feed-native-ad { display: flex; }
   }
   .feed-native-ad iframe,
   .feed-native-ad img,
@@ -1696,7 +1695,7 @@ function renderSuggestions(qText) {
     html += `<a class="search-suggestion-item" href="?tag=${encodeURIComponent(t)}">🏷️ <span class="tag-label">#${escapeHtml(t)}</span></a>`;
   });
   matchedPosts.slice(0, 5).forEach((p) => {
-    html += `<a class="search-suggestion-item" href="?post=${p.id}">📄 ${escapeHtml(p.caption)}</a>`;
+    html += `<a class="search-suggestion-item" href="/p/${p.id}">📄 ${escapeHtml(p.caption)}</a>`;
   });
 
   if (!html) {
@@ -1783,7 +1782,7 @@ function renderPost(docSnap) {
     ? `<div class="post-tags">${tagsList.map(t => `<a class="tag-chip" href="?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`).join("")}</div>`
     : "";
 
-  const shareUrl = `${window.location.origin}/?post=${docSnap.id}`;
+  const shareUrl = `${window.location.origin}/p/${docSnap.id}`;
 
   const post = document.createElement("div");
   post.className = "post";
