@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dasbor - Konten</title>
+<title>Dasbor - Catatan Konten</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -351,14 +351,15 @@
   .admin-sort-chip-bar {
     display: flex;
     gap: 6px;
-    overflow-x: auto;
     padding: 2px 2px 10px;
-    -webkit-overflow-scrolling: touch;
   }
-  .admin-sort-chip-bar::-webkit-scrollbar { display: none; }
   .admin-sort-chip {
-    flex: 0 0 auto;
+    flex: 1 1 0;
+    min-width: 0;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
     background: var(--card);
     border: 1.5px solid var(--line);
     color: var(--ink);
