@@ -61,6 +61,13 @@
     background: var(--ink);
     color: var(--cream);
     border-color: var(--ink);
+    /* Nempel di atas layar pas discroll (khusus bar utama "Pengaturan Utama
+       Web"), supaya gampang dibuka/ditutup lagi tanpa perlu scroll balik ke
+       atas — cuma nempel selama isinya (kartu Pengaturan) masih kelihatan
+       di layar, lepas lagi begitu sudah lewat semua. */
+    position: sticky;
+    top: 0;
+    z-index: 20;
   }
   .accordion-arrow { font-size: 12px; opacity: 0.6; }
   .accordion-body { display: none; padding: 14px 2px 2px; }
@@ -91,7 +98,16 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  .icon-sm { width: 14px; height: 14px; stroke-width: 2.2; }
+  .icon-sm {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
   label { font-size: 12px; font-weight: 500; color: rgba(43,36,32,0.65); display: block; margin: 12px 0 5px; }
   input[type="email"], input[type="password"], input[type="url"], input[type="text"], input[type="number"], input[type="file"], select, textarea {
     width: 100%;
@@ -1314,22 +1330,21 @@ function splitLinksForSave(links) {
 
 /* ================== KODE LINK PENDEK (/p/kode) ==================
    Dipakai sebagai ID dokumen "posts" langsung (bukan field terpisah) supaya
-   pengambilan data tetap 1x baca dokumen by-ID (paling irit bandwidth),
-   sama seperti sebelumnya — cuma ID-nya sekarang pendek & acak, bukan
-   ID otomatis Firestore yang panjang.
+   pengambilan data tetap 1x baca dokumen by-ID (paling irit bandwidth).
 
-   Panjang kode naik otomatis mengikuti jumlah post (dihitung dari
-   settings/postCounter) supaya peluang tabrakan kode tetap sangat kecil
-   dalam jangka panjang, tanpa perlu bikin kode panjang dari awal padahal
-   post masih sedikit:
-     < 10.000 post      → 6 karakter  (36^6 ≈ 2,1 miliar kemungkinan)
-     < 1.000.000 post    → 8 karakter
-     < 100.000.000 post  → 10 karakter
-     selebihnya           → 12 karakter
-   Post lama yang masih pakai ID panjang bawaan Firestore TIDAK diubah/
-   dimigrasikan — link lama tetap jalan apa adanya, cuma post BARU yang
-   dapat kode pendek ini. */
-const CODE_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+   Kode PENDEK 6 karakter tetap, kombinasi huruf besar + huruf kecil + angka
+   (62 karakter berbeda) → 62^6 ≈ 56,8 miliar kemungkinan kode. Sebelumnya
+   kode cuma huruf kecil+angka (36 karakter) dan panjangnya naik otomatis
+   sampai 8/10/12 karakter seiring jumlah post bertambah — sekarang dengan
+   charset yang lebih besar ini, cukup 6 karakter TETAP tanpa perlu scaling,
+   jadi tidak perlu lagi baca/tulis counter jumlah post di setiap publikasi.
+
+   Post lama yang masih pakai ID/kode format lama (6-12 karakter huruf
+   kecil+angka, atau ID panjang bawaan Firestore) TIDAK diubah/dimigrasikan —
+   link yang sudah kadung dibagikan tetap jalan normal apa adanya, cuma post
+   BARU yang dapat kode dengan sistem baru ini. */
+const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+const CODE_LENGTH = 6;
 
 function randomCode(len) {
   let out = "";
@@ -1337,38 +1352,17 @@ function randomCode(len) {
   return out;
 }
 
-async function getNextCodeLength() {
-  const counterRef = doc(db, "settings", "postCounter");
-  try {
-    let total = 0;
-    await runTransaction(db, async (tx) => {
-      const snap = await tx.get(counterRef);
-      total = snap.exists() ? (snap.data().total || 0) : 0;
-      tx.set(counterRef, { total: total + 1 }, { merge: true });
-    });
-    if (total < 10000) return 6;
-    if (total < 1000000) return 8;
-    if (total < 100000000) return 10;
-    return 12;
-  } catch (err) {
-    // Gagal baca/update counter (jarang terjadi) — tetap lanjut dengan kode
-    // terpendek supaya proses publikasi post tidak ikut gagal cuma gara-gara ini.
-    console.error("Gagal update counter post:", err);
-    return 6;
-  }
-}
-
 async function generateUniquePostCode() {
-  const len = await getNextCodeLength();
   for (let attempt = 0; attempt < 20; attempt++) {
-    const candidate = randomCode(len);
+    const candidate = randomCode(CODE_LENGTH);
     const snap = await getDoc(doc(db, "posts", candidate));
     if (!snap.exists()) return candidate;
   }
   // Fallback ekstrem kalau 20x tabrakan berturut-turut (harusnya nyaris
-  // mustahil) — perpanjang kode 2 karakter khusus percobaan terakhir ini
-  // supaya proses publikasi tetap bisa selesai, bukan macet total.
-  return randomCode(len + 2);
+  // mustahil pada kombinasi 62^6 ≈ 56,8 miliar) — perpanjang kode 2 karakter
+  // khusus percobaan terakhir ini supaya proses publikasi tetap bisa
+  // selesai, bukan macet total.
+  return randomCode(CODE_LENGTH + 2);
 }
 
 submitBtn.onclick = async () => {
