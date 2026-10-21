@@ -2027,7 +2027,65 @@ function escapeHtml(str) {
 window.openLightbox = function(url) {
   document.getElementById("lightbox-img").src = url;
   document.getElementById("lightbox").style.display = "flex";
-};
+};<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="p:domain_verify" content="5dcf3dff6e20d60b5e57b53d11dfbf26"/>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=2">
+<title>Serba Nikmat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap">
+<link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+<header>
+  <a href="/" class="logo-home-link" aria-label="Kembali ke Beranda">
+    <h1>Serba <em>Nikmat</em></h1>
+  </a>
+  <div class="header-row">
+    <a href="/" class="home-icon-btn" aria-label="Kembali ke Beranda">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+    </a>
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <button type="button" id="searchBtn" aria-label="Cari">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+        </button>
+        <input type="text" id="searchInput" placeholder="Cari">
+        <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
+      </div>
+      <div class="search-suggestions" id="searchSuggestions"></div>
+    </div>
+  </div>
+</header>
+<div class="ads-banner" id="headerAdsSlot"></div>
+<div class="contact-bar" id="contactBar"></div>
+<div class="category-bar" id="categoryBar"></div>
+<div class="sort-chip-bar" id="sortChipBar">
+  <button type="button" class="sort-chip active" data-sort="terbaru">Terbaru</button>
+  <button type="button" class="sort-chip" data-sort="terlama">Terlama</button>
+  <button type="button" class="sort-chip" data-sort="terpopuler">Populer</button>
+</div>
+<div class="container feed-meta" id="feedMeta" style="display:none;"></div>
+<div class="container" id="posts">
+  <div class="loading-spinner" id="loadingSpinner"></div>
+</div>
+<div class="container" id="oldRotationWrap"></div>
+<div id="lightbox" class="lightbox" style="display:none;">
+  <button type="button" id="lightboxClose" class="lightbox-close" aria-label="Tutup">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+<div class="sticky-ad-bar" id="stickyAdBar" style="display:none;">
+  <span class="sticky-ad-close" id="stickyAdClose">✕</span>
+  <div id="stickyAdSlot"></div>
+</div>
+<script type="module" src="/js/index.js"></script>
+</body>
+</html>
+
 
 window.sharePost = async function(url) {
   const shareData = { url: url };
