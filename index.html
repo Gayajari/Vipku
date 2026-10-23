@@ -1088,6 +1088,14 @@ function trackPostView(postId) {
 }
 
 async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
+  // FIX Safari iOS: buka tab kosong SEKARANG JUGA, selagi masih di dalam
+  // event klik langsung (synchronous) — belum ada "await" sama sekali.
+  // Safari iOS cuma mengizinkan window.open() kalau dipicu langsung dari
+  // gesture user; begitu ada await (getDoc/fetch) sebelum window.open(),
+  // Safari diam-diam memblokirnya tanpa error. Tab kosong ini nanti
+  // tinggal diarahkan (newTab.location.href) setelah proses async selesai.
+  const newTab = window.open("", "_blank");
+
   const buyerId = getBuyerId();
   const accessId = `${buyerId}_${postId}_${linkIndex}`;
   const originalText = btnEl.textContent;
@@ -1112,14 +1120,25 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
       const resData = await res.json();
       if (resData.url) {
         markUnlocked(accessId);
-        window.open(resData.url, "_blank", "noopener,noreferrer");
+        if (newTab) {
+          newTab.location.href = resData.url;
+        } else {
+          // Fallback kalau browser block popup di awal (jarang terjadi karena
+          // ini dipicu sinkron dari klik) — coba buka cara biasa.
+          window.open(resData.url, "_blank", "noopener,noreferrer");
+        }
         setButtonUnlockedStyle(btnEl, label);
         return;
       }
+      if (newTab) newTab.close();
       alert(resData.error || "Gagal membuka link.");
       btnEl.textContent = originalText;
       return;
     }
+
+    // Belum bayar — tab kosong tadi belum perlu, tutup dulu supaya tidak
+    // ada tab blank nganggur selama proses pembuatan transaksi/QRIS.
+    if (newTab) newTab.close();
 
     btnEl.textContent = "Menyiapkan pembayaran...";
     const res = await fetch(`${PAYWALL_BACKEND_URL}/api/create-transaction`, {
@@ -1143,6 +1162,7 @@ async function handlePaidLinkClick(postId, linkIndex, price, label, btnEl) {
     btnEl.textContent = originalText;
   } catch (err) {
     console.error(err);
+    if (newTab) { try { newTab.close(); } catch (e2) {} }
     alert("Terjadi kesalahan koneksi ke server pembayaran. Coba lagi.");
     btnEl.textContent = originalText;
   } finally {
@@ -1222,38 +1242,65 @@ function openQrisModal({ postId, linkIndex, buyerId, label, btnEl, invoiceData }
   }
 
   async function handleQrisPaidConfirmed() {
+    // FIX Safari iOS: fungsi ini dipicu OTOMATIS dari onSnapshot/polling —
+    // tidak ada gesture klik user sama sekali di titik ini. Di Safari iOS,
+    // window.open() tanpa gesture user SELALU diblokir, tanpa pengecualian,
+    // tanpa error yang kelihatan. Makanya dulu teks tombol berubah jadi
+    // "Membuka..." tapi tidak ada apa-apa yang terbuka.
+    //
+    // Solusinya: jangan auto window.open(). Tunjukkan link <a href> asli
+    // di dalam modal supaya user tap sendiri — tap itu gesture user yang
+    // sah, jadi link-nya kebuka normal di semua browser termasuk Safari.
     if (qrisCountdownTimer) { clearInterval(qrisCountdownTimer); qrisCountdownTimer = null; }
     if (qrisPollTimer) { clearInterval(qrisPollTimer); qrisPollTimer = null; }
     document.getElementById("qrisModalQrWrap").style.display = "none";
     setQrisModalStatus("", "");
     document.getElementById("qrisSuccessAnim").classList.add("show");
-    setTimeout(async () => {
-      closeQrisModal();
-      btnEl.textContent = "Membuka...";
-      btnEl.disabled = true;
-      try {
-        const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ postId, linkIndex, buyerId })
-        });
-        const resData = await res.json();
+
+    btnEl.textContent = "Mengambil link...";
+    btnEl.disabled = true;
+
+    try {
+      const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, linkIndex, buyerId })
+      });
+      const resData = await res.json();
+
+      setTimeout(() => {
+        document.getElementById("qrisSuccessAnim").classList.remove("show");
+
         if (resData.url) {
           markUnlocked(accessId);
-          window.open(resData.url, "_blank", "noopener,noreferrer");
           setButtonUnlockedStyle(btnEl, label);
+          btnEl.disabled = false;
+
+          const statusEl = document.getElementById("qrisModalStatus");
+          statusEl.className = "manual-modal-status verified";
+          statusEl.innerHTML =
+            `✅ Pembayaran berhasil!<br>` +
+            `<a href="${resData.url}" target="_blank" rel="noopener noreferrer" ` +
+            `style="display:inline-block;margin-top:10px;background:var(--teal);color:#fff;` +
+            `padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:600;font-size:13.5px;">` +
+            `Buka Konten Sekarang</a>`;
+
+          // Ketuk tombol di atas langsung dianggap sah sebagai gesture user,
+          // jadi tetap aman dibuka di Safari. Modal sengaja TIDAK ditutup
+          // otomatis di sini supaya user sempat tap tombolnya dulu.
         } else {
-          alert(resData.error || "Gagal membuka link.");
           btnEl.textContent = label;
+          btnEl.disabled = false;
+          setQrisModalStatus(resData.error || "Gagal membuka link.", "rejected");
         }
-      } catch (err) {
-        console.error(err);
-        alert("Gagal terhubung ke server. Coba lagi.");
-        btnEl.textContent = label;
-      } finally {
-        btnEl.disabled = false;
-      }
-    }, 1400);
+      }, 1400);
+    } catch (err) {
+      console.error(err);
+      document.getElementById("qrisSuccessAnim").classList.remove("show");
+      btnEl.textContent = label;
+      btnEl.disabled = false;
+      setQrisModalStatus("Gagal terhubung ke server. Coba lagi.", "rejected");
+    }
   }
 
   qrisUnsub = onSnapshot(doc(db, "paidAccess", accessId), (snap) => {
@@ -1347,6 +1394,11 @@ function setManualModalStatus(text, kind) {
 }
 
 async function openManualBuyLink(postId, linkIndex, buyerId, btnEl, label) {
+  // FIX Safari iOS: fungsi ini dipicu otomatis dari onSnapshot (saat admin
+  // memverifikasi), bukan dari klik user. Sama seperti kasus QRIS: Safari
+  // iOS selalu blokir window.open() tanpa gesture user, tanpa error. Jadi
+  // tampilkan tombol <a href> di modal untuk user tap sendiri, jangan
+  // auto-buka.
   try {
     const res = await fetch(`${PAYWALL_BACKEND_URL}/api/get-link`, {
       method: "POST",
@@ -1356,14 +1408,21 @@ async function openManualBuyLink(postId, linkIndex, buyerId, btnEl, label) {
     const resData = await res.json();
     if (resData.url) {
       markUnlocked(`${buyerId}_${postId}_${linkIndex}`);
-      window.open(resData.url, "_blank", "noopener,noreferrer");
       if (btnEl) setButtonUnlockedStyle(btnEl, label || "Link");
+      const statusEl = document.getElementById("manualModalStatus");
+      statusEl.className = "manual-modal-status verified";
+      statusEl.innerHTML =
+        `✅ Pembayaran terverifikasi!<br>` +
+        `<a href="${resData.url}" target="_blank" rel="noopener noreferrer" ` +
+        `style="display:inline-block;margin-top:10px;background:var(--teal);color:#fff;` +
+        `padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:600;font-size:13.5px;">` +
+        `Buka Konten Sekarang</a>`;
     } else {
-      alert(resData.error || "Gagal membuka link.");
+      setManualModalStatus(resData.error || "Gagal membuka link.", "rejected");
     }
   } catch (err) {
     console.error(err);
-    alert("Gagal terhubung ke server. Coba lagi.");
+    setManualModalStatus("Gagal terhubung ke server. Coba lagi.", "rejected");
   }
 }
 
@@ -1415,7 +1474,6 @@ async function openManualPaymentModal(postId, linkIndex, price, label, btnEl) {
       setManualModalStatus("⏳ Klaim kamu sedang menunggu diverifikasi admin. Halaman ini akan otomatis update begitu diverifikasi.", "pending");
     } else if (orderData.status === "verified") {
       formEl.style.display = "none";
-      setManualModalStatus("✅ Pembayaran terverifikasi! Membuka link...", "verified");
       openManualBuyLink(postId, linkIndex, buyerId, btnEl, label);
     } else if (orderData.status === "rejected") {
       formEl.style.display = "block";
@@ -2027,67 +2085,7 @@ function escapeHtml(str) {
 window.openLightbox = function(url) {
   document.getElementById("lightbox-img").src = url;
   document.getElementById("lightbox").style.display = "flex";
-};<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="p:domain_verify" content="5dcf3dff6e20d60b5e57b53d11dfbf26"/>
-<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=2">
-<title>Serba Nikmat</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap">
-<link rel="stylesheet" href="/css/index.css">
-</head>
-<body>
-<header>
-  <a href="/" class="logo-home-link" aria-label="Kembali ke Beranda">
-    <h1>Serba <em>Nikmat</em></h1>
-  </a>
-  <div class="header-row">
-    <a href="/" class="home-icon-btn" aria-label="Kembali ke Beranda">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
-    </a>
-    <div class="search-bar">
-      <div class="search-input-wrap">
-        <button type="button" id="searchBtn" aria-label="Cari">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
-        </button>
-        <input type="text" id="searchInput" placeholder="Cari">
-        <button type="button" id="clearBtn" aria-label="Hapus teks">✕</button>
-      </div>
-      <div class="search-suggestions" id="searchSuggestions"></div>
-    </div>
-  </div>
-</header>
-<div class="ads-banner" id="headerAdsSlot"></div>
-<div class="contact-bar" id="contactBar"></div>
-<div class="category-bar" id="categoryBar"></div>
-<div class="sort-chip-bar" id="sortChipBar">
-  <button type="button" class="sort-chip active" data-sort="terbaru">Terbaru</button>
-  <button type="button" class="sort-chip" data-sort="terlama">Terlama</button>
-  <button type="button" class="sort-chip" data-sort="terpopuler">Populer</button>
-</div>
-<div class="container feed-meta" id="feedMeta" style="display:none;"></div>
-<div class="container" id="posts">
-  <div class="loading-spinner" id="loadingSpinner"></div>
-</div>
-<div class="container" id="oldRotationWrap"></div>
-<div id="lightbox" class="lightbox" style="display:none;">
-  <button type="button" id="lightboxClose" class="lightbox-close" aria-label="Tutup">✕</button>
-  <img id="lightboxImg" src="" alt="">
-</div>
-<div class="sticky-ad-bar" id="stickyAdBar" style="display:none;">
-  <span class="sticky-ad-close" id="stickyAdClose">✕</span>
-  <div id="stickyAdSlot"></div>
-</div>
-<script type="module" src="/js/index.js"></script>
-</body>
-</html>
-
-
-window.sharePost = async function(url) {
+};window.sharePost = async function(url) {
   const shareData = { url: url };
 
   if (navigator.share) {
