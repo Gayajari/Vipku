@@ -12,7 +12,7 @@
 
 const crypto = require("crypto");
 const { getDb } = require("../lib/firebaseAdmin");
-const { API_KEY } = require("../lib/dongtube");
+const { API_KEY, markAccessPaid } = require("../lib/dongtube");
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -24,13 +24,13 @@ function readRawBody(req) {
 }
 
 function isValidSignature(rawBody, signatureHeader) {
-  if (!signatureHeader || !API_KEY) return false;
+  if (!signatureHeader || !API_KEY) return { valid: false, expected: null };
   const expected =
     "sha256=" + crypto.createHmac("sha256", API_KEY).update(rawBody).digest("hex");
   const a = Buffer.from(expected);
   const b = Buffer.from(signatureHeader);
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
+  if (a.length !== b.length) return { valid: false, expected };
+  return { valid: crypto.timingSafeEqual(a, b), expected };
 }
 
 async function handler(req, res) {
@@ -40,8 +40,26 @@ async function handler(req, res) {
     const rawBody = await readRawBody(req);
     const signature = req.headers["x-signature"];
 
-    if (!isValidSignature(rawBody, signature)) {
-      console.warn("Signature webhook Dongtube tidak valid — kemungkinan bukan dari Dongtube.");
+    // --- DIAGNOSTIK SEMENTARA ---
+    // Tidak membocorkan API key — cuma menampilkan hash yang dihitung vs
+    // yang diterima dari Dongtube, supaya kelihatan di Vercel Logs apakah
+    // cocok. Hapus blok ini kalau sudah yakin webhook jalan normal.
+    console.log("[dongtube-callback] Headers diterima:", JSON.stringify(req.headers));
+    console.log("[dongtube-callback] Body mentah diterima:", rawBody.slice(0, 500));
+    // --- END DIAGNOSTIK ---
+
+    const { valid, expected } = isValidSignature(rawBody, signature);
+
+    if (!valid) {
+      console.warn(
+        "[dongtube-callback] Signature TIDAK VALID. Diterima:",
+        signature || "(tidak ada header X-Signature)",
+        "| Dihitung (pakai DONGTUBE_API_KEY sebagai secret):",
+        expected || "(API_KEY kosong/tidak diset)"
+      );
+      console.warn(
+        "[dongtube-callback] Kalau kedua nilai di atas beda, kemungkinan besar Dongtube pakai 'Webhook Secret' TERPISAH dari API Key — cek dashboard Dongtube > Profil, apakah ada field secret khusus untuk webhook."
+      );
       return res.status(401).send("Invalid signature");
     }
 
@@ -60,36 +78,22 @@ async function handler(req, res) {
       .get();
 
     if (snap.empty) {
-      console.warn("Invoice tidak ditemukan di Firestore:", invoiceId);
+      console.warn("[dongtube-callback] Invoice tidak ditemukan di Firestore:", invoiceId);
       return res.status(200).send("OK"); // tetap 200 supaya Dongtube tidak retry terus
     }
 
     const docRef = snap.docs[0].ref;
 
     if (status === "paid" || payload.event === "invoice.paid") {
-      // Ambil durasi akses yang diset admin (settings/accessDuration.hours).
-      // 0/kosong = permanen (nggak dikasih expiresAt sama sekali).
-      let expiresAt = null;
-      try {
-        const durationSnap = await db.collection("settings").doc("accessDuration").get();
-        const hours = durationSnap.exists ? Number(durationSnap.data().hours) || 0 : 0;
-        if (hours > 0) {
-          expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
-        }
-      } catch (err) {
-        console.error("Gagal ambil setting durasi akses, fallback ke permanen:", err);
-      }
-
-      await docRef.update({
-        status: "paid",
-        paidAt: paidAt || new Date().toISOString(),
-        expiresAt // null = permanen
-      });
+      // Pakai helper yang sama dengan jalur polling cadangan (lib/dongtube.js)
+      // supaya logikanya SAMA PERSIS di kedua jalur, tidak dobel-tulis.
+      await markAccessPaid(db, docRef, paidAt);
+      console.log("[dongtube-callback] Berhasil menandai paid:", invoiceId);
     }
 
     return res.status(200).send("OK");
   } catch (err) {
-    console.error(err);
+    console.error("[dongtube-callback] Error:", err.message, err.cause || "");
     return res.status(500).send("Server error");
   }
 }
