@@ -69,7 +69,19 @@ module.exports = async (req, res) => {
       }
     }
 
-    const invoice = await createInvoice(amount);
+    let invoice;
+    try {
+      invoice = await createInvoice(amount);
+    } catch (err) {
+      // Log penyebab ASLI ke Vercel logs (err.cause bisa berisi kode error
+      // jaringan sebenarnya seperti ENOTFOUND/ECONNREFUSED/timeout, yang
+      // sebelumnya ketelan oleh pesan generik "fetch failed"). Pesan yang
+      // dikirim ke frontend tetap yang ramah-user (dari lib/dongtube.js).
+      console.error("[create-transaction] Gagal createInvoice:", err.message, err.cause || "");
+      return res.status(502).json({
+        error: err.message || "Gagal terhubung ke payment gateway (Dongtube). Coba lagi sebentar atau pakai metode pembayaran manual."
+      });
+    }
 
     // Simpan transaksi berstatus "pending" — nanti diupdate jadi "paid" oleh
     // webhook (lihat api/dongtube-callback.js), lalu frontend memantau
@@ -98,7 +110,7 @@ module.exports = async (req, res) => {
       expiredAt: invoice.expired_at
     });
   } catch (err) {
-    console.error(err);
+    console.error("[create-transaction] Error tak terduga:", err.message, err.cause || "");
     return res.status(500).json({ error: err.message || "Terjadi kesalahan server." });
   }
 };
